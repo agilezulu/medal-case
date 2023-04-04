@@ -1,18 +1,18 @@
 {
   "totals": {
-    "runs": 1664,
-    "distance": 17667866.79999999,
-    "time": 7526046
+    "runs": 1668,
+    "distance": 17725751.199999996,
+    "time": 7549494
   },
   "by_mile": {
-    "3": 309,
+    "3": 311,
+    "2": 194,
+    "26": 15,
     "4": 287,
-    "2": 193,
     "6": 191,
     "8": 73,
     "7": 93,
     "5": 143,
-    "26": 14,
     "11": 35,
     "12": 19,
     "15": 14,
@@ -59,7 +59,8 @@
           "start_date": "2022-07-10T05:41:21+00:00",
           "start_date_local": "2022-07-10T06:41:21",
           "average_heartrate": 154.3,
-          "average_cadence": 83.0
+          "average_cadence": 83.0,
+          "race": false
         },
         {
           "id": 7047733026,
@@ -72,7 +73,8 @@
           "start_date": "2022-04-27T04:29:11+00:00",
           "start_date_local": "2022-04-27T05:29:11",
           "average_heartrate": 146.1,
-          "average_cadence": 83.0
+          "average_cadence": 83.0,
+          "race": false
         },
         {
           "id": 7032325264,
@@ -85,7 +87,8 @@
           "start_date": "2022-04-24T08:00:59+00:00",
           "start_date_local": "2022-04-24T09:00:59",
           "average_heartrate": 140.5,
-          "average_cadence": 82.9
+          "average_cadence": 82.9,
+          "race": false
         },
         {
           "id": 6924228215,
@@ -98,7 +101,8 @@
           "start_date": "2022-04-03T06:20:28+00:00",
           "start_date_local": "2022-04-03T07:20:28",
           "average_heartrate": 139.8,
-          "average_cadence": 78.3
+          "average_cadence": 78.3,
+          "race": false
         },
         {
           "id": 6885689193,
@@ -111,7 +115,8 @@
           "start_date": "2022-03-26T10:49:54+00:00",
           "start_date_local": "2022-03-26T10:49:54",
           "average_heartrate": 143.8,
-          "average_cadence": 77.5
+          "average_cadence": 77.5,
+          "race": false
         },
         {
           "id": 6567477755,
@@ -124,7 +129,8 @@
           "start_date": "2022-01-23T07:33:48+00:00",
           "start_date_local": "2022-01-23T07:33:48",
           "average_heartrate": 152.7,
-          "average_cadence": 83.3
+          "average_cadence": 83.3,
+          "race": false
         },
         {
           "id": 6370176630,
@@ -137,7 +143,8 @@
           "start_date": "2021-12-11T09:46:34+00:00",
           "start_date_local": "2021-12-11T09:46:34",
           "average_heartrate": 151.5,
-          "average_cadence": 81.5
+          "average_cadence": 81.5,
+          "race": false
         },
         {
           "id": 5908549613,
@@ -150,7 +157,8 @@
           "start_date": "2021-09-05T08:07:17+00:00",
           "start_date_local": "2021-09-05T09:07:17",
           "average_heartrate": 163.5,
-          "average_cadence": 88.2
+          "average_cadence": 88.2,
+          "race": false
         },
         {
           "id": 5878666474,
@@ -163,7 +171,8 @@
           "start_date": "2021-08-30T15:54:04+00:00",
           "start_date_local": "2021-08-30T16:54:04",
           "average_heartrate": 149.2,
-          "average_cadence": 81.0
+          "average_cadence": 81.0,
+          "race": false
         },
         {
           "id": 5865793863,
@@ -176,7 +185,8 @@
           "start_date": "2021-08-28T07:10:36+00:00",
           "start_date_local": "2021-08-28T08:10:36",
           "average_heartrate": 135.3,
-          "average_cadence": 78.9
+          "average_cadence": 78.9,
+          "race": false
         },
         {
           "id": 5675302977,
@@ -189,7 +199,8 @@
           "start_date": "2021-07-23T14:21:14+00:00",
           "start_date_local": "2021-07-23T15:21:14",
           "average_heartrate": 133.3,
-          "average_cadence": 73.5
+          "average_cadence": 73.5,
+          "race": false
         },
         {
           "id": 5609417108,
@@ -202,7 +213,8 @@
           "start_date": "2021-07-11T07:38:42+00:00",
           "start_date_local": "2021-07-11T08:38:42",
           "average_heartrate": 146.8,
-          "average_cadence": 81.4
+          "average_cadence": 81.4,
+          "race": false
         },
         {
           "id": 5327220471,
@@ -215,7 +227,8 @@
           "start_date": "2021-05-20T04:22:01+00:00",
           "start_date_local": "2021-05-20T05:22:01",
           "average_heartrate": 150.2,
-          "average_cadence": 81.0
+          "average_cadence": 81.0,
+          "race": false
         },
         {
           "id": 4666706521,
@@ -228,7 +241,8 @@
           "start_date": "2021-01-23T07:57:58+00:00",
           "start_date_local": "2021-01-23T07:57:58",
           "average_heartrate": 142.1,
-          "average_cadence": 70.1
+          "average_cadence": 70.1,
+          "race": true
         },
         {
           "id": 4192742766,
@@ -241,7 +255,8 @@
           "start_date": "2020-10-14T05:03:14+00:00",
           "start_date_local": "2020-10-14T06:03:14",
           "average_heartrate": 149.5,
-          "average_cadence": 78.8
+          "average_cadence": 78.8,
+          "race": false
         },
         {
           "id": 3810354750,
@@ -254,7 +269,8 @@
           "start_date": "2020-07-23T04:26:26+00:00",
           "start_date_local": "2020-07-23T05:26:26",
           "average_heartrate": 144.0,
-          "average_cadence": 80.7
+          "average_cadence": 80.7,
+          "race": false
         },
         {
           "id": 3362795561,
@@ -267,7 +283,8 @@
           "start_date": "2020-04-27T16:35:29+00:00",
           "start_date_local": "2020-04-27T17:35:29",
           "average_heartrate": null,
-          "average_cadence": 84.2
+          "average_cadence": 84.2,
+          "race": false
         },
         {
           "id": 3003789125,
@@ -280,7 +297,8 @@
           "start_date": "2020-01-12T07:15:54+00:00",
           "start_date_local": "2020-01-12T07:15:54",
           "average_heartrate": 152.5,
-          "average_cadence": 80.7
+          "average_cadence": 80.7,
+          "race": false
         },
         {
           "id": 2827062432,
@@ -293,7 +311,8 @@
           "start_date": "2019-10-29T18:40:31+00:00",
           "start_date_local": "2019-10-29T18:40:31",
           "average_heartrate": 150.8,
-          "average_cadence": 81.7
+          "average_cadence": 81.7,
+          "race": false
         },
         {
           "id": 2637346057,
@@ -306,7 +325,8 @@
           "start_date": "2019-08-21T03:09:28+00:00",
           "start_date_local": "2019-08-21T04:09:28",
           "average_heartrate": 144.2,
-          "average_cadence": 80.1
+          "average_cadence": 80.1,
+          "race": false
         },
         {
           "id": 2378998947,
@@ -319,7 +339,8 @@
           "start_date": "2019-05-19T04:53:07+00:00",
           "start_date_local": "2019-05-19T05:53:07",
           "average_heartrate": 145.0,
-          "average_cadence": 81.8
+          "average_cadence": 81.8,
+          "race": false
         },
         {
           "id": 2324772006,
@@ -332,7 +353,8 @@
           "start_date": "2019-04-28T08:00:33+00:00",
           "start_date_local": "2019-04-28T09:00:33",
           "average_heartrate": 161.0,
-          "average_cadence": 88.5
+          "average_cadence": 88.5,
+          "race": true
         },
         {
           "id": 2288294334,
@@ -345,7 +367,8 @@
           "start_date": "2019-04-14T05:14:15+00:00",
           "start_date_local": "2019-04-14T06:14:15",
           "average_heartrate": 154.4,
-          "average_cadence": 87.5
+          "average_cadence": 87.5,
+          "race": false
         },
         {
           "id": 2171401654,
@@ -358,7 +381,8 @@
           "start_date": "2019-02-24T09:00:33+00:00",
           "start_date_local": "2019-02-24T09:00:33",
           "average_heartrate": 163.1,
-          "average_cadence": 90.3
+          "average_cadence": 90.3,
+          "race": true
         },
         {
           "id": 2136285380,
@@ -371,7 +395,8 @@
           "start_date": "2019-02-10T07:49:13+00:00",
           "start_date_local": "2019-02-10T07:49:13",
           "average_heartrate": 154.6,
-          "average_cadence": 88.5
+          "average_cadence": 88.5,
+          "race": false
         },
         {
           "id": 2090701205,
@@ -384,7 +409,8 @@
           "start_date": "2019-01-20T06:31:36+00:00",
           "start_date_local": "2019-01-20T06:31:36",
           "average_heartrate": 148.7,
-          "average_cadence": 85.7
+          "average_cadence": 85.7,
+          "race": false
         },
         {
           "id": 2043917329,
@@ -397,7 +423,8 @@
           "start_date": "2018-12-30T09:06:19+00:00",
           "start_date_local": "2018-12-30T09:06:19",
           "average_heartrate": 163.7,
-          "average_cadence": 85.2
+          "average_cadence": 85.2,
+          "race": false
         },
         {
           "id": 1970986471,
@@ -410,7 +437,8 @@
           "start_date": "2018-11-18T06:01:41+00:00",
           "start_date_local": "2018-11-18T06:01:41",
           "average_heartrate": 147.7,
-          "average_cadence": 85.6
+          "average_cadence": 85.6,
+          "race": false
         },
         {
           "id": 1931383237,
@@ -423,7 +451,8 @@
           "start_date": "2018-10-28T05:48:39+00:00",
           "start_date_local": "2018-10-28T05:48:39",
           "average_heartrate": 155.4,
-          "average_cadence": 85.6
+          "average_cadence": 85.6,
+          "race": false
         },
         {
           "id": 1927060604,
@@ -436,7 +465,8 @@
           "start_date": "2018-10-25T16:15:25+00:00",
           "start_date_local": "2018-10-25T17:15:25",
           "average_heartrate": 151.8,
-          "average_cadence": 84.2
+          "average_cadence": 84.2,
+          "race": false
         },
         {
           "id": 1889546083,
@@ -449,7 +479,8 @@
           "start_date": "2018-10-07T07:31:25+00:00",
           "start_date_local": "2018-10-07T08:31:25",
           "average_heartrate": 160.4,
-          "average_cadence": 86.3
+          "average_cadence": 86.3,
+          "race": false
         },
         {
           "id": 1859716708,
@@ -462,7 +493,8 @@
           "start_date": "2018-09-23T04:45:46+00:00",
           "start_date_local": "2018-09-23T05:45:46",
           "average_heartrate": 162.1,
-          "average_cadence": 83.9
+          "average_cadence": 83.9,
+          "race": false
         },
         {
           "id": 1643530536,
@@ -475,7 +507,8 @@
           "start_date": "2018-06-17T05:41:47+00:00",
           "start_date_local": "2018-06-17T06:41:47",
           "average_heartrate": 165.8,
-          "average_cadence": 83.0
+          "average_cadence": 83.0,
+          "race": false
         },
         {
           "id": 1569882706,
@@ -488,7 +521,8 @@
           "start_date": "2018-05-13T08:04:05+00:00",
           "start_date_local": "2018-05-13T09:04:05",
           "average_heartrate": 169.3,
-          "average_cadence": 82.2
+          "average_cadence": 82.2,
+          "race": false
         },
         {
           "id": 1435235293,
@@ -501,7 +535,8 @@
           "start_date": "2018-03-04T07:06:19+00:00",
           "start_date_local": "2018-03-04T07:06:19",
           "average_heartrate": 153.2,
-          "average_cadence": 83.2
+          "average_cadence": 83.2,
+          "race": false
         },
         {
           "id": 1198706693,
@@ -514,7 +549,8 @@
           "start_date": "2017-09-24T05:56:14+00:00",
           "start_date_local": "2017-09-24T06:56:14",
           "average_heartrate": 149.4,
-          "average_cadence": 84.5
+          "average_cadence": 84.5,
+          "race": false
         },
         {
           "id": 1188185197,
@@ -527,7 +563,8 @@
           "start_date": "2017-09-17T08:19:47+00:00",
           "start_date_local": "2017-09-17T09:19:47",
           "average_heartrate": 165.7,
-          "average_cadence": 87.7
+          "average_cadence": 87.7,
+          "race": false
         },
         {
           "id": 1108130801,
@@ -540,7 +577,8 @@
           "start_date": "2017-07-30T04:39:03+00:00",
           "start_date_local": "2017-07-30T05:39:03",
           "average_heartrate": 148.1,
-          "average_cadence": 82.9
+          "average_cadence": 82.9,
+          "race": false
         },
         {
           "id": 1064412379,
@@ -553,7 +591,8 @@
           "start_date": "2017-07-02T08:30:23+00:00",
           "start_date_local": "2017-07-02T09:30:23",
           "average_heartrate": 153.4,
-          "average_cadence": 81.6
+          "average_cadence": 81.6,
+          "race": false
         },
         {
           "id": 974687334,
@@ -566,7 +605,8 @@
           "start_date": "2017-05-07T08:00:54+00:00",
           "start_date_local": "2017-05-07T09:00:54",
           "average_heartrate": 174.6,
-          "average_cadence": 85.1
+          "average_cadence": 85.1,
+          "race": false
         },
         {
           "id": 944294807,
@@ -579,7 +619,8 @@
           "start_date": "2017-04-16T06:22:23+00:00",
           "start_date_local": "2017-04-16T07:22:23",
           "average_heartrate": 158.9,
-          "average_cadence": 83.4
+          "average_cadence": 83.4,
+          "race": false
         },
         {
           "id": 880875142,
@@ -592,7 +633,8 @@
           "start_date": "2017-02-26T09:01:46+00:00",
           "start_date_local": "2017-02-26T09:01:46",
           "average_heartrate": 171.6,
-          "average_cadence": 85.7
+          "average_cadence": 85.7,
+          "race": false
         },
         {
           "id": 724475700,
@@ -605,7 +647,8 @@
           "start_date": "2016-09-25T09:13:50+00:00",
           "start_date_local": "2016-09-25T10:13:50",
           "average_heartrate": 163.2,
-          "average_cadence": 87.2
+          "average_cadence": 87.2,
+          "race": false
         },
         {
           "id": 716402288,
@@ -618,7 +661,8 @@
           "start_date": "2016-09-18T08:17:28+00:00",
           "start_date_local": "2016-09-18T09:17:28",
           "average_heartrate": 168.1,
-          "average_cadence": 89.2
+          "average_cadence": 89.2,
+          "race": false
         },
         {
           "id": 707912799,
@@ -631,7 +675,8 @@
           "start_date": "2016-09-11T05:30:05+00:00",
           "start_date_local": "2016-09-11T06:30:05",
           "average_heartrate": 151.7,
-          "average_cadence": 84.5
+          "average_cadence": 84.5,
+          "race": false
         },
         {
           "id": 691607162,
@@ -644,7 +689,8 @@
           "start_date": "2016-08-28T06:22:58+00:00",
           "start_date_local": "2016-08-28T07:22:58",
           "average_heartrate": 154.8,
-          "average_cadence": 86.7
+          "average_cadence": 86.7,
+          "race": false
         },
         {
           "id": 667948896,
@@ -657,7 +703,8 @@
           "start_date": "2016-08-07T11:33:17+00:00",
           "start_date_local": "2016-08-07T12:33:17",
           "average_heartrate": 147.0,
-          "average_cadence": 75.4
+          "average_cadence": 75.4,
+          "race": false
         },
         {
           "id": 625329024,
@@ -670,7 +717,8 @@
           "start_date": "2016-06-05T05:43:07+00:00",
           "start_date_local": "2016-06-05T06:43:07",
           "average_heartrate": 161.2,
-          "average_cadence": 85.9
+          "average_cadence": 85.9,
+          "race": false
         },
         {
           "id": 625333901,
@@ -683,7 +731,8 @@
           "start_date": "2016-05-22T05:48:48+00:00",
           "start_date_local": "2016-05-22T06:48:48",
           "average_heartrate": 155.9,
-          "average_cadence": 83.1
+          "average_cadence": 83.1,
+          "race": false
         },
         {
           "id": 625342537,
@@ -696,7 +745,8 @@
           "start_date": "2016-04-03T09:44:34+00:00",
           "start_date_local": "2016-04-03T10:44:34",
           "average_heartrate": 166.2,
-          "average_cadence": 85.5
+          "average_cadence": 85.5,
+          "race": false
         },
         {
           "id": 625350853,
@@ -709,7 +759,8 @@
           "start_date": "2016-03-13T07:16:06+00:00",
           "start_date_local": "2016-03-13T07:16:06",
           "average_heartrate": 157.7,
-          "average_cadence": 86.4
+          "average_cadence": 86.4,
+          "race": false
         },
         {
           "id": 625355625,
@@ -722,7 +773,8 @@
           "start_date": "2016-02-28T06:25:06+00:00",
           "start_date_local": "2016-02-28T06:25:06",
           "average_heartrate": 160.0,
-          "average_cadence": 86.6
+          "average_cadence": 86.6,
+          "race": false
         },
         {
           "id": 625357650,
@@ -735,7 +787,8 @@
           "start_date": "2016-02-21T07:47:42+00:00",
           "start_date_local": "2016-02-21T07:47:42",
           "average_heartrate": 156.4,
-          "average_cadence": 83.2
+          "average_cadence": 83.2,
+          "race": false
         },
         {
           "id": 625390013,
@@ -748,13 +801,28 @@
           "start_date": "2015-09-27T12:06:05+00:00",
           "start_date_local": "2015-09-27T13:06:05",
           "average_heartrate": 171.8,
-          "average_cadence": 77.2
+          "average_cadence": 77.2,
+          "race": false
         }
       ]
     },
     "marathon": {
-      "tot": 22,
+      "tot": 23,
       "runs": [
+        {
+          "id": 8819064754,
+          "name": "Paris Marathon",
+          "distance": 42686.9,
+          "moving_time": 15063,
+          "elapsed_time": 15119,
+          "total_elevation_gain": 180.0,
+          "type": "Run",
+          "start_date": "2023-04-02T08:04:28+00:00",
+          "start_date_local": "2023-04-02T10:04:28",
+          "average_heartrate": 153.1,
+          "average_cadence": 84.4,
+          "race": true
+        },
         {
           "id": 8697872144,
           "name": "Beer run recce(ish)",
@@ -766,7 +834,8 @@
           "start_date": "2023-03-11T09:50:04+00:00",
           "start_date_local": "2023-03-11T09:50:04",
           "average_heartrate": 151.0,
-          "average_cadence": 78.4
+          "average_cadence": 78.4,
+          "race": false
         },
         {
           "id": 7070495975,
@@ -779,7 +848,8 @@
           "start_date": "2022-05-01T06:25:18+00:00",
           "start_date_local": "2022-05-01T07:25:18",
           "average_heartrate": 147.6,
-          "average_cadence": 79.8
+          "average_cadence": 79.8,
+          "race": false
         },
         {
           "id": 6057625575,
@@ -792,7 +862,8 @@
           "start_date": "2021-10-03T09:01:46+00:00",
           "start_date_local": "2021-10-03T10:01:46",
           "average_heartrate": 158.1,
-          "average_cadence": 84.6
+          "average_cadence": 84.6,
+          "race": false
         },
         {
           "id": 5383220088,
@@ -805,7 +876,8 @@
           "start_date": "2021-05-30T04:58:40+00:00",
           "start_date_local": "2021-05-30T05:58:40",
           "average_heartrate": 132.2,
-          "average_cadence": 70.7
+          "average_cadence": 70.7,
+          "race": true
         },
         {
           "id": 4462240565,
@@ -818,7 +890,8 @@
           "start_date": "2020-12-12T07:37:25+00:00",
           "start_date_local": "2020-12-12T07:37:25",
           "average_heartrate": 163.0,
-          "average_cadence": 78.3
+          "average_cadence": 78.3,
+          "race": true
         },
         {
           "id": 4151149553,
@@ -831,7 +904,8 @@
           "start_date": "2020-10-04T07:07:59+00:00",
           "start_date_local": "2020-10-04T08:07:59",
           "average_heartrate": 149.1,
-          "average_cadence": 79.2
+          "average_cadence": 79.2,
+          "race": true
         },
         {
           "id": 4001253169,
@@ -844,7 +918,8 @@
           "start_date": "2020-09-02T05:17:07+00:00",
           "start_date_local": "2020-09-02T06:17:07",
           "average_heartrate": 130.3,
-          "average_cadence": 70.3
+          "average_cadence": 70.3,
+          "race": true
         },
         {
           "id": 3750343772,
@@ -857,7 +932,8 @@
           "start_date": "2020-07-12T04:25:34+00:00",
           "start_date_local": "2020-07-12T05:25:34",
           "average_heartrate": null,
-          "average_cadence": 74.4
+          "average_cadence": 74.4,
+          "race": true
         },
         {
           "id": 3389612613,
@@ -870,7 +946,8 @@
           "start_date": "2020-05-03T04:21:02+00:00",
           "start_date_local": "2020-05-03T05:21:02",
           "average_heartrate": null,
-          "average_cadence": 76.5
+          "average_cadence": 76.5,
+          "race": false
         },
         {
           "id": 3282685760,
@@ -883,7 +960,8 @@
           "start_date": "2020-04-11T02:47:32+00:00",
           "start_date_local": "2020-04-11T03:47:32",
           "average_heartrate": 155.4,
-          "average_cadence": 84.5
+          "average_cadence": 84.5,
+          "race": true
         },
         {
           "id": 3182885358,
@@ -896,7 +974,8 @@
           "start_date": "2020-03-14T09:08:52+00:00",
           "start_date_local": "2020-03-14T09:08:52",
           "average_heartrate": null,
-          "average_cadence": 72.5
+          "average_cadence": 72.5,
+          "race": true
         },
         {
           "id": 3122997020,
@@ -909,7 +988,8 @@
           "start_date": "2020-02-22T09:35:52+00:00",
           "start_date_local": "2020-02-22T09:35:52",
           "average_heartrate": null,
-          "average_cadence": 81.0
+          "average_cadence": 81.0,
+          "race": true
         },
         {
           "id": 3025039624,
@@ -922,7 +1002,8 @@
           "start_date": "2020-01-19T09:01:21+00:00",
           "start_date_local": "2020-01-19T09:01:21",
           "average_heartrate": 160.0,
-          "average_cadence": 85.1
+          "average_cadence": 85.1,
+          "race": true
         },
         {
           "id": 2786802394,
@@ -935,7 +1016,8 @@
           "start_date": "2019-10-13T13:16:38+00:00",
           "start_date_local": "2019-10-13T08:16:38",
           "average_heartrate": 156.4,
-          "average_cadence": 85.4
+          "average_cadence": 85.4,
+          "race": true
         },
         {
           "id": 2649766122,
@@ -948,7 +1030,8 @@
           "start_date": "2019-08-25T03:57:58+00:00",
           "start_date_local": "2019-08-25T04:57:58",
           "average_heartrate": 148.7,
-          "average_cadence": 75.5
+          "average_cadence": 75.5,
+          "race": false
         },
         {
           "id": 2493055576,
@@ -961,7 +1044,8 @@
           "start_date": "2019-06-30T04:51:23+00:00",
           "start_date_local": "2019-06-30T05:51:23",
           "average_heartrate": 140.0,
-          "average_cadence": 74.9
+          "average_cadence": 74.9,
+          "race": false
         },
         {
           "id": 2271584800,
@@ -974,7 +1058,8 @@
           "start_date": "2019-04-07T07:03:16+00:00",
           "start_date_local": "2019-04-07T09:03:16",
           "average_heartrate": 156.6,
-          "average_cadence": 86.0
+          "average_cadence": 86.0,
+          "race": true
         },
         {
           "id": 1845611242,
@@ -987,7 +1072,8 @@
           "start_date": "2018-09-16T07:50:27+00:00",
           "start_date_local": "2018-09-16T09:50:27",
           "average_heartrate": 163.6,
-          "average_cadence": 80.7
+          "average_cadence": 80.7,
+          "race": true
         },
         {
           "id": 1511448065,
@@ -1000,7 +1086,8 @@
           "start_date": "2018-04-15T09:00:39+00:00",
           "start_date_local": "2018-04-15T10:00:39",
           "average_heartrate": 164.2,
-          "average_cadence": 83.4
+          "average_cadence": 83.4,
+          "race": true
         },
         {
           "id": 1221613010,
@@ -1013,7 +1100,8 @@
           "start_date": "2017-10-08T13:35:40+00:00",
           "start_date_local": "2017-10-08T08:35:40",
           "average_heartrate": 165.1,
-          "average_cadence": 80.4
+          "average_cadence": 80.4,
+          "race": true
         },
         {
           "id": 768169621,
@@ -1026,7 +1114,8 @@
           "start_date": "2016-11-06T15:44:02+00:00",
           "start_date_local": "2016-11-06T10:44:02",
           "average_heartrate": 157.4,
-          "average_cadence": 82.4
+          "average_cadence": 82.4,
+          "race": true
         },
         {
           "id": 625337124,
@@ -1039,7 +1128,8 @@
           "start_date": "2016-04-24T09:16:00+00:00",
           "start_date_local": "2016-04-24T10:16:00",
           "average_heartrate": null,
-          "average_cadence": null
+          "average_cadence": null,
+          "race": true
         }
       ]
     },
@@ -1064,6 +1154,7 @@
           "start_date_local": "2022-09-24T06:25:01",
           "average_heartrate": 151.2,
           "average_cadence": 79.4,
+          "race": false,
           "subclass": "50k"
         },
         {
@@ -1078,6 +1169,7 @@
           "start_date_local": "2022-09-17T10:29:49",
           "average_heartrate": 140.6,
           "average_cadence": 73.5,
+          "race": false,
           "subclass": "50k"
         },
         {
@@ -1092,6 +1184,7 @@
           "start_date_local": "2022-08-13T08:08:34",
           "average_heartrate": 148.4,
           "average_cadence": 78.0,
+          "race": false,
           "subclass": "50k"
         },
         {
@@ -1106,6 +1199,7 @@
           "start_date_local": "2022-06-11T05:00:04",
           "average_heartrate": 145.8,
           "average_cadence": 70.0,
+          "race": true,
           "subclass": "50mi"
         },
         {
@@ -1120,6 +1214,7 @@
           "start_date_local": "2022-05-28T06:41:36",
           "average_heartrate": 153.2,
           "average_cadence": 79.9,
+          "race": true,
           "subclass": "50k"
         },
         {
@@ -1134,6 +1229,7 @@
           "start_date_local": "2021-09-18T10:32:38",
           "average_heartrate": 153.6,
           "average_cadence": 76.6,
+          "race": true,
           "subclass": "50k"
         },
         {
@@ -1148,6 +1244,7 @@
           "start_date_local": "2020-11-28T05:20:09",
           "average_heartrate": 156.6,
           "average_cadence": 74.4,
+          "race": true,
           "subclass": "50k"
         },
         {
@@ -1162,6 +1259,7 @@
           "start_date_local": "2020-08-08T05:34:15",
           "average_heartrate": 137.0,
           "average_cadence": 69.7,
+          "race": true,
           "subclass": "100mi"
         },
         {
@@ -1176,6 +1274,7 @@
           "start_date_local": "2020-06-13T13:03:35",
           "average_heartrate": null,
           "average_cadence": 75.3,
+          "race": true,
           "subclass": "50k"
         },
         {
@@ -1190,6 +1289,7 @@
           "start_date_local": "2020-05-23T04:36:56",
           "average_heartrate": null,
           "average_cadence": 75.9,
+          "race": true,
           "subclass": "100k"
         },
         {
@@ -1204,6 +1304,7 @@
           "start_date_local": "2019-09-07T06:51:19",
           "average_heartrate": 147.0,
           "average_cadence": 77.3,
+          "race": true,
           "subclass": "50mi"
         },
         {
@@ -1218,6 +1319,7 @@
           "start_date_local": "2019-07-27T06:45:13",
           "average_heartrate": 139.5,
           "average_cadence": 69.6,
+          "race": true,
           "subclass": "100k"
         },
         {
@@ -1232,6 +1334,7 @@
           "start_date_local": "2019-07-07T04:34:31",
           "average_heartrate": 144.4,
           "average_cadence": 75.5,
+          "race": false,
           "subclass": "50k"
         }
       ]

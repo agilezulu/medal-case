@@ -142,8 +142,8 @@ class StravaRuns:
         activities = strava.get_activities(after=after, before=before)
         acts = []
         drop_keys = [
-            'segment_efforts', 'laps', 'similar_activities', 'splits_metric',
-            'splits_standard', 'best_efforts', 'stats_visibility'
+            "segment_efforts", "laps", "similar_activities", "splits_metric",
+            "splits_standard", "best_efforts", "stats_visibility", "athlete"
         ]
         for activity in activities:
             act = activity.to_dict()
@@ -235,6 +235,7 @@ class StravaRuns:
                 "start_date_local": act["start_date_local"],
                 "average_heartrate": act["average_heartrate"],
                 "average_cadence": act["average_cadence"],
+                "race": act["workout_type"] == 1,
             }
 
             mi_round = f"{mi}"
@@ -267,7 +268,7 @@ class StravaRuns:
 
     def get_activity(self, activity_id):
         """
-        Get an activity and attache all photos to it
+        Get an activity
         """
         print(f"getting act: {activity_id}")
         act = requests.get(self.url_activity.format(activity_id), headers=self.get_auth_header())

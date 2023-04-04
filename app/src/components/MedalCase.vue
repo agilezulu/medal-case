@@ -12,13 +12,17 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+  <div id="case-header">
     Runs: {{store.runs.totals.runs}} - {{ metersToDistanceUnits(store.runs.totals.distance, 'mi')}}mi
+    <div>
+      <SelectButton v-model="store.selectedUnits" :options="store.units" aria-labelledby="basic" />
+    </div>
   </div>
   <div id="case-summary">
+    <!--
     <div class="run-type by-mile">
       <ChartBar />
-      <!--
+
       <table>
         <tbody>
           <tr v-for="dist in store.runsByMile" :key="dist.mile">
@@ -27,9 +31,9 @@ onMounted(() => {
           </tr>
         </tbody>
       </table>
-      -->
-    </div>
 
+    </div>
+    -->
     <div v-for="runclass in store.classes" :key="runclass.getter" class="run-type" :class="runclass.classname">
       <div class="class-header">
         <div class="run-class">{{runclass.name}}</div>
@@ -48,11 +52,11 @@ onMounted(() => {
           <tr v-for="(run, index) in store[runclass.getter]" :key="run.id">
             <td class="idx">{{index+1}}</td>
             <td>
-              <div class="run-title">{{run.name}}</div>
+              <div class="run-title"><a :href="`https://www.strava.com/activities/${run.id}/overview`" target="_new">{{run.name}}</a></div>
               <div class="run-date">{{getDate(run.start_date_local)}}</div>
             </td>
             <td>
-              <div class="run-time">{{ secsToHMS(run.elapsed_time)}}</div>
+              <div class="run-time" :class="{ race :run.race }">{{ secsToHMS(run.elapsed_time)}}</div>
               <div class="run-dist">{{ metersToDistanceUnits(run.distance, 'mi')}}</div>
             </td>
           </tr>
@@ -65,6 +69,11 @@ onMounted(() => {
 </template>
 
 <style lang="scss">
+#case-header {
+  .p-button {
+    padding: 0px 12px;
+  }
+}
 #case-summary {
   display: flex;
   flex-direction: row;
@@ -77,6 +86,8 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    flex: 1 1 0px;
+    min-width: 360px;
     .class-header {
       display: flex;
       flex-direction: column;
@@ -132,6 +143,11 @@ onMounted(() => {
     font-weight: 300;
     font-size: 0.8em;
     color: #666666;
+  }
+  .run-time {
+    &.race {
+      color: #ff4e00;
+    }
   }
 }
 </style>

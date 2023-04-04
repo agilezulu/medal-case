@@ -9,6 +9,8 @@ const apiClient = axios.create({
  */
 export const medalStore = defineStore('todos', {
   state: () => ({
+    units: ['mi', 'km'],
+    selectedUnits: "mi",
     classes: [
       {
         name: "Ultra",
