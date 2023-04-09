@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  mysql:
+    build:
+      context: .
+      dockerfile: mysql/DockerfileDevMySQL
+    ports:
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - type: bind
+        source: .data
+        target: /.data
+        volume:
+          nocopy: true
+    networks:
+      - medalcase_net
+
+    environment:
+      MYSQL_DATABASE: "medalcase"
+      MYSQL_USER: "mcase_user"
+      MYSQL_PASSWORD: "PUP5ezt0kxc*tny7mad"
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+
+volumes:
+  mysql_data:
+  tmp_dir:
+
+networks:
+  medalcase_net:
+    external: true
