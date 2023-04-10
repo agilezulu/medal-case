@@ -1,9 +1,9 @@
 <script setup>
-import TheWelcome from '../components/MedalCase.vue'
+import AthleteList from "../components/AthleteList.vue";
 </script>
 
 <template>
   <main>
-    <TheWelcome />
+    <AthleteList />
   </main>
 </template>

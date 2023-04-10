@@ -1,0 +1,3 @@
+FROM mysql:8.0
+
+COPY mysql/mysql.cnf.dev /etc/mysql/my.cnf

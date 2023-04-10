@@ -1,8 +1,7 @@
 <script setup>
 import { medalStore } from "@/store";
-import { onMounted, computed } from "vue";
+import { onMounted } from "vue";
 import { metersToDistanceUnits, getDate, secsToHMS } from "@/utils/helpers.js";
-import ChartBar from "@/components/ChartBar.vue";
 
 const store = medalStore();
 
@@ -19,21 +18,6 @@ onMounted(() => {
     </div>
   </div>
   <div id="case-summary">
-    <!--
-    <div class="run-type by-mile">
-      <ChartBar />
-
-      <table>
-        <tbody>
-          <tr v-for="dist in store.runsByMile" :key="dist.mile">
-            <td>{{dist.mile}}</td>
-            <td>{{dist.count}}</td>
-          </tr>
-        </tbody>
-      </table>
-
-    </div>
-    -->
     <div v-for="runclass in store.classes" :key="runclass.getter" class="run-type" :class="runclass.classname">
       <div class="class-header">
         <div class="run-class">{{runclass.name}}</div>
@@ -47,6 +31,7 @@ onMounted(() => {
         </div>
       </div>
       <div class="class-body">
+
         <table>
           <tbody>
           <tr v-for="(run, index) in store[runclass.getter]" :key="run.id">
@@ -55,6 +40,7 @@ onMounted(() => {
               <div class="run-title"><a :href="`https://www.strava.com/activities/${run.id}/overview`" target="_new">{{run.name}}</a></div>
               <div class="run-date">{{getDate(run.start_date_local)}}</div>
             </td>
+            <td>{{run.subclass}}</td>
             <td>
               <div class="run-time" :class="{ race :run.race }">{{ secsToHMS(run.elapsed_time)}}</div>
               <div class="run-dist">{{ metersToDistanceUnits(run.distance, 'mi')}}</div>
@@ -126,8 +112,8 @@ onMounted(() => {
     }
     .class-body {
       padding: 12px;
-      max-height: 500px;
-      overflow-y: scroll;
+      //max-height: 500px;
+      //overflow-y: scroll;
     }
   }
   .run-title {

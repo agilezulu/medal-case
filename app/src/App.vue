@@ -1,17 +1,53 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
+import {onMounted} from "vue";
+import { RouterLink, RouterView } from "vue-router";
+import { medalStore } from "@/store";
+import LoginStrava from "@/components/LoginStrava.vue";
+const store = medalStore();
+
+const items = [
+  {
+    label: "Athletes",
+    icon: "pi pi-fw pi-bolt",
+    to: "/",
+  },
+  {
+    label: "Me",
+    icon: "pi pi-fw pi-user",
+    to: "/me",
+    visible: () => store.isLoggedIn,
+  },
+];
+onMounted(() => {
+  store.setAccess();
+});
 </script>
 
 <template>
-  <header>
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
-  <RouterView />
+  <Menubar :model="items">
+    <template #item="{ item }">
+      <router-link
+          :to="item.to"
+          custom
+          v-slot="{ href, navigate, isActive, isExactActive }"
+      >
+        <a
+            :href="href"
+            @click="navigate"
+            class="p-menuitem-link"
+            :class="{
+              'active-link': isActive,
+              'active-link-exact': isExactActive,
+            }"
+        ><i :class="item.icon"></i>{{ item.label }}</a
+        >
+      </router-link>
+    </template>
+    <template #end>
+      <LoginStrava />
+    </template>
+  </Menubar>
+  <router-view></router-view>
 </template>
 
 <style lang="scss">
