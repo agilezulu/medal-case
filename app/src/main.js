@@ -8,7 +8,8 @@ import awsExports from "./aws-exports";
 
 import PrimeVue from "primevue/config";
 import SelectButton from "primevue/selectbutton";
-
+import Menubar from "primevue/menubar";
+import Button from "primevue/button";
 import "./assets/main.css";
 
 import "primevue/resources/themes/lara-light-indigo/theme.css";
@@ -22,8 +23,11 @@ const pinia = createPinia();
 
 app.use(router);
 app.use(pinia);
-app.use(PrimeVue);
+app.use(PrimeVue, { ripple: true });
 
 app.component("SelectButton", SelectButton);
+app.component("Menubar", Menubar);
+app.component("Button", Button);
+
 
 app.mount('#app');

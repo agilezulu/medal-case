@@ -6,10 +6,11 @@ import uuid
 import os
 import time
 import copy
-
+from pony import orm
 from datetime import datetime, date
 from flask import current_app as app, abort
 from resources.strava import Strava
+from resources.db.models import Athlete, Run
 
 
 class MedalCase:
@@ -93,7 +94,7 @@ class MedalCase:
     def user_login(self, code):
         """
         Log a user into streaks
-            - create if does ot exist
+            - create if does not exist
             - set tokens
             - set athele info
         :param code:
@@ -105,67 +106,11 @@ class MedalCase:
 
         # expect Strava Code
         user = self.strava.auth(code)
-
-        print("ACCESS", user)
-        '''
-        {
-            'athlete': <Athlete>{
-                "id": 1234567890987654400,
-                "username": "marianne_t",
-                "resource_state": 3,
-                "firstname": "Marianne",
-                "lastname": "Teutenberg",
-                "city": "San Francisco",
-                "state": "CA",
-                "country": "US",
-                "sex": "F",
-                "premium": true,
-                "created_at": "2017-11-14T02:30:05Z",
-                "updated_at": "2018-02-06T19:32:20Z",
-                "badge_type_id": 4,
-                "profile_medium": "https://xxxxxx.cloudfront.net/pictures/athletes/123456789/123456789/2/medium.jpg",
-                "profile": "https://xxxxx.cloudfront.net/pictures/athletes/123456789/123456789/2/large.jpg",
-                "friend": null,
-                "follower": null,
-                "follower_count": 5,
-                "friend_count": 5,
-                "mutual_friend_count": 0,
-                "athlete_type": 1,
-                "date_preference": "%m/%d/%Y",
-                "measurement_preference": "feet",
-                "clubs": [],
-                "ftp": null,
-                "weight": 0,
-                "bikes": [
-                {
-                  "id": "b12345678987655",
-                  "primary": true,
-                  "name": "EMC",
-                  "resource_state": 2,
-                  "distance": 0
-                }
-                ],
-                "shoes": [
-                {
-                  "id": "g12345678987655",
-                  "primary": true,
-                  "name": "adidas",
-                  "resource_state": 2,
-                  "distance": 4904
-                }
-                ]
-            }, 
-            'access_creds': {
-                'access_token': 'e4d0c4b65d31a429fc54203679fdcc68fb3f40bd', 
-                'refresh_token': '0714c57ed8a713ffe26c551cf8581931819a76dc', 
-                'expires_at': 1665406226
-            }
-        }
-        '''
+        #print("ACCESS", user)
         return self.get_or_create_athlete(user)
 
     @staticmethod
-    def update_user_tokens(athlete_id, tokens, athlete_model=None):
+    def update_user_tokens(strava_id, tokens, athlete_model=None):
         """
         tokens = {
             'access_token': user['access_creds']['access_token'],
@@ -173,25 +118,20 @@ class MedalCase:
             'expires_at': user['access_creds']['expires_at']
         }
 
-        :param athlete_id: int for athlete id
+        :param strava_id: int for athlete id
         :param tokens: dict of new tokens
         :param athlete_model: optional model
         :return:
         """
-        if not athlete_model:
-            a_ddb = Athlete()
-            pk_athlete = a_ddb.get_pk(athlete_id)
-
-            athlete_model = list(a_ddb.query(
-                pk_athlete,
-                filter_condition=(Athlete.recordType == 'athlete')))[0]
+        with orm.db_session:
             if not athlete_model:
-                abort(404, description=f"Error: Cannot locate athlete")
+                try:
+                    athlete_model = Athlete.get(strava_id=strava_id)
+                except orm.ObjectNotFound:
+                    abort(404, description=f"Error: Cannot locate athlete")
 
-        # update tokens from client side Strava login
-        athlete_model.update(actions=[
-            Athlete.tokens.set(tokens),
-        ])
+            # update tokens from client side Strava login
+            athlete_model.set(**tokens)
 
     def get_or_create_athlete(self, user):
         """
@@ -200,78 +140,98 @@ class MedalCase:
         :param user: logged in strava user - user = Strava API results for user
         :return:
         """
-        provider = 'Strava'
 
         # get existing user from strava
-        athlete_id = user['athlete'].id
+        strava_id = user['athlete'].id
 
-        a_ddb = Athlete()
-        pk_athlete = a_ddb.get_pk(athlete_id)
-        sk_athlete = a_ddb.get_sk(user['athlete'].firstname, user['athlete'].lastname)
         tokens = {
             'access_token': user['access_creds']['access_token'],
             'refresh_token': user['access_creds']['refresh_token'],
             'expires_at': user['access_creds']['expires_at']
         }
-        try:
-            athlete_model = a_ddb.get(pk_athlete, sk_athlete)
-            self.update_user_tokens(athlete_id, tokens, athlete_model=athlete_model)
+        with orm.db_session:
 
-        except Athlete.DoesNotExist as noex:
-            # create if not exists
-            created_at = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')
-            new_athelete = {
-                'athleteId': athlete_id,
-                'athlete': {
+            athlete = Athlete.get(strava_id=strava_id)
+            if athlete:
+                print('ATHLETE=', strava_id, athlete)
+                self.update_user_tokens(strava_id, tokens, athlete_model=athlete)
+
+            else:
+                # create if not exists
+                created_at = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')
+                print('UNITS', user['athlete'].measurement_preference)
+                units = 'mi' if user['athlete'].measurement_preference == 'feet' else 'km'
+                new_athelete = {
                     'uuid': str(uuid.uuid4()),
-                    'id': user['athlete'].id,
-                    'slug': athlete_id,
-                    'firstName': user['athlete'].firstname,
-                    'lastName': user['athlete'].lastname,
+                    'strava_id': strava_id,
+                    'slug': f's-{strava_id}',
+                    'firstname': user['athlete'].firstname,
+                    'lastname': user['athlete'].lastname,
+                    'units': units,
                     'country': user['athlete'].country,
                     'city': user['athlete'].city,
-                    'gender': user['athlete'].sex,
-                    'dateFmt': user['athlete'].date_preference,
-                    'profileMedium': user['athlete'].profile_medium,
-                    'profileLarge': user['athlete'].profile,
-                    'units': user['athlete'].measurement_preference,
-                    'emoji': ''
+                    'sex': user['athlete'].sex,
+                    'date_fmt': user['athlete'].date_preference,
+                    'photo_m': user['athlete'].profile_medium,
+                    'photo_l': user['athlete'].profile,
+
+                    'access_token': user['access_creds']['access_token'],
+                    'refresh_token': user['access_creds']['refresh_token'],
+                    'expires_at': user['access_creds']['expires_at'],
+                    'created_at': created_at
+                }
+
+                athlete = Athlete(**new_athelete)
+                athlete.flush()
+
+            return {
+                "user": {
+                    "id": athlete.id,
+                    "firstname": athlete.firstname,
+                    "lastname": athlete.lastname,
+                    "country": athlete.country,
+                    "city": athlete.city,
+                    "units": athlete.units,
+                    "date_fmt": athlete.date_fmt,
+                    "sex": athlete.sex,
                 },
-                'tokens': tokens,
-                'subscription': {},
-                'athleteSlug': athlete_id,
-                'providerId': app.config["PROVIDERS"][provider]['id'],
-                'provider': provider,
-                'recordType': 'athlete',
-                'createdAt': created_at
+                "tokens": {
+                    'access_token': user['access_creds']['access_token'],
+                    'refresh_token': user['access_creds']['refresh_token'],
+                    'expires_at': user['access_creds']['expires_at']
+                }
             }
 
-            athlete_model = Athlete(pk_athlete, sk_athlete, **new_athelete)
-        athlete_model.save()
-
-        return {
-            "user": {
-                "athleteId": athlete_model.athlete.id,
-                "firstName": athlete_model.athlete.firstName,
-                "lastName": athlete_model.athlete.lastName,
-                "city": athlete_model.athlete.city,
-                "country": athlete_model.athlete.country,
-                "units": athlete_model.athlete.units,
-                "dateFmt": athlete_model.athlete.dateFmt,
-                "gender": athlete_model.athlete.gender,
-            },
-            "tokens": {
-                'access_token': user['access_creds']['access_token'],
-                'refresh_token': user['access_creds']['refresh_token'],
-                'expires_at': user['access_creds']['expires_at']
-            }
-        }
-
-
-    def get_history(self):
+    def get_athletes(self):
         """
-        Get all actis summarised
+        Get all athletes summary
         :return:
         """
-        all_acts = self.get_cache()
-        summary = {}
+        with orm.db_session:
+            return [
+                {
+
+                    "c_100k": a.c_100k,
+                    "c_100k_race": a.c_100k_race,
+                    "c_100mi": a.c_100mi,
+                    "c_100mi_race": a.c_100mi_race,
+                    "c_50k": a.c_50k,
+                    "c_50k_race": a.c_50k_race,
+                    "c_50mi": a.c_50mi,
+                    "c_50mi_race": a.c_50mi_race,
+                    "c_extreme": a.c_extreme,
+                    "c_extreme_race": a.c_extreme_race,
+                    "c_marathon": a.c_marathon,
+                    "c_marathon_race": a.c_marathon_race,
+                    "city": a.city,
+                    "country": a.country,
+                    "firstname": a.firstname,
+                    "last_run_date": a.c_100k,
+                    "lastname": a.lastname,
+                    "photo_m": a.photo_m,
+                    "sex": a.sex,
+                    "slug": a.slug,
+                    "uuid": a.uuid
+                }
+                    for a in Athlete.select().order_by(orm.desc(Athlete.total_runs))
+            ]

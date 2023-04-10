@@ -1,18 +1,18 @@
 {
   "totals": {
-    "runs": 1668,
-    "distance": 17725751.199999996,
-    "time": 7549494
+    "runs": 1664,
+    "distance": 17667866.79999999,
+    "time": 7526046
   },
   "by_mile": {
-    "3": 311,
-    "2": 194,
-    "26": 15,
+    "3": 309,
     "4": 287,
+    "2": 193,
     "6": 191,
     "8": 73,
     "7": 93,
     "5": 143,
+    "26": 14,
     "11": 35,
     "12": 19,
     "15": 14,
@@ -807,22 +807,8 @@
       ]
     },
     "marathon": {
-      "tot": 23,
+      "tot": 22,
       "runs": [
-        {
-          "id": 8819064754,
-          "name": "Paris Marathon",
-          "distance": 42686.9,
-          "moving_time": 15063,
-          "elapsed_time": 15119,
-          "total_elevation_gain": 180.0,
-          "type": "Run",
-          "start_date": "2023-04-02T08:04:28+00:00",
-          "start_date_local": "2023-04-02T10:04:28",
-          "average_heartrate": 153.1,
-          "average_cadence": 84.4,
-          "race": true
-        },
         {
           "id": 8697872144,
           "name": "Beer run recce(ish)",
@@ -1137,9 +1123,9 @@
       "tot": 13,
       "subclass": {
         "50k": 8,
-        "50mi": 2,
+        "50mi": 1,
         "100mi": 1,
-        "100k": 2
+        "100k": 3
       },
       "runs": [
         {
@@ -1305,7 +1291,7 @@
           "average_heartrate": 147.0,
           "average_cadence": 77.3,
           "race": true,
-          "subclass": "50mi"
+          "subclass": "100k"
         },
         {
           "id": 2568847718,

@@ -1,4 +1,3 @@
-import uuid
 from decimal import Decimal
 from pony.orm import Database, Required, Optional, PrimaryKey, Set
 from datetime import datetime
@@ -6,7 +5,9 @@ from datetime import datetime
 db = Database()
 
 
-class User(db.Entity):
+class Athlete(db.Entity):
+    _table_ = 'athlete'
+
     id = PrimaryKey(int, auto=True)
     uuid = Required(str, unique=True)
     strava_id = Required(int, unique=True)
@@ -15,12 +16,15 @@ class User(db.Entity):
     lastname = Optional(str)
     units = Optional(str)
     country = Optional(str)
+    city = Optional(str)
     sex = Optional(str)
+    date_fmt = Optional(str)
     photo_m = Optional(str)
     photo_l = Optional(str)
     access_token = Optional(str)
     refresh_token = Optional(str)
     expires_at = Optional(int)
+    total_runs = Optional(int)
     c_marathon = Optional(int)
     c_marathon_race = Optional(int)
     c_50k = Optional(int)
@@ -32,7 +36,7 @@ class User(db.Entity):
     c_100mi = Optional(int)
     c_100mi_race = Optional(int)
     c_extreme = Optional(int)
-    c_cxtreme_race = Optional(int)
+    c_extreme_race = Optional(int)
 
     created_at = Optional(datetime)
     last_run_date = Optional(datetime)
@@ -40,6 +44,8 @@ class User(db.Entity):
 
 
 class Run(db.Entity):
+    _table_ = 'run'
+
     id = PrimaryKey(int, auto=True)
     user_id = Required(int)
     strava_id = Required(int, unique=True)
@@ -57,3 +63,5 @@ class Run(db.Entity):
     average_cadence = Optional(Decimal)
     race = Required(int)
     summary_polyline = Optional(str)
+
+    athlete = Required('Athlete')

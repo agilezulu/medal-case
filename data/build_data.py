@@ -192,23 +192,23 @@ class StravaRuns:
                 "name": "Extreme"
             },
             {
-                "min": 100,
+                "min": 98,
                 "max": 110,
                 "name": "100mi"
             },
             {
-                "min": 60,
+                "min": 58,
                 "max": 70,
                 "name": "100k"
             },
             {
-                "min": 50,
-                "max": 60,
+                "min": 48,
+                "max": 58,
                 "name": "50mi"
             },
             {
                 "min": 30,
-                "max": 50,
+                "max": 48,
                 "name": "50k"
             }
         ]
@@ -310,5 +310,5 @@ if __name__ == '__main__':
 
     strava = StravaRuns(athlete_id=16055914)
 
-    strava.get_activities()
-    #strava.build_summary()
+    #strava.get_activities()
+    strava.build_summary()

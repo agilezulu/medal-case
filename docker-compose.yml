@@ -19,9 +19,9 @@ services:
 
     environment:
       MYSQL_DATABASE: "medalcase"
-      MYSQL_USER: "mcase_user"
-      MYSQL_PASSWORD: "PUP5ezt0kxc*tny7mad"
-      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_USER: ${DBUSER}
+      MYSQL_PASSWORD: ${DBPWD}
+      MYSQL_ROOT_PASSWORD: ${ROOTPWD}
       MYSQL_ALLOW_EMPTY_PASSWORD: "no"
 
 volumes:
