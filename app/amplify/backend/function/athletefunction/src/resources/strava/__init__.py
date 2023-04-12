@@ -24,7 +24,6 @@ class Strava:
             client_secret=self.STRAVA_CLIENT_SECRET,
             refresh_token=last_refresh_token
         )
-        print(f"REFRESH RESPONSE: {token_response}")
         return token_response
 
     def auth(self, code):
@@ -55,27 +54,11 @@ class Strava:
             "access_creds": access_creds
         }
 
-    def get_activities(self, after=None, before=None, activity_ids=None, by_day=False):
+    def get_activities(self, after=None, before=None):
         """
         Get activites after give date or no date for all
         :param after:
         :param activity_ids: optional list of ids e.g. [123123,324234,567567]
-        :param by_day: if true return a dict with date as keys
         :return:
         """
-        activities = self.client.get_activities(after=after, before=before)
-        if by_day:
-            acts_by_day = {}
-            drop_keys = [
-                'segment_efforts', 'laps', 'similar_activities', 'splits_metric',
-                'splits_standard', 'best_efforts', 'stats_visibility'
-            ]
-            for activity in activities:
-                for key in drop_keys:
-                    activity.pop(key, None)
-                act_date = activity["start_date_local"].split('T')[0]
-                if act_date not in acts_by_day:
-                    acts_by_day[act_date] = []
-                acts_by_day[act_date].append(activity)
-            return acts_by_day
-        return activities
+        return self.client.get_activities(after=after, before=before)

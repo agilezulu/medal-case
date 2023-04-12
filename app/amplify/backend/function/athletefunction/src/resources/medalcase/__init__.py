@@ -1,41 +1,37 @@
 """
     Interface class for accessing Evessio data via the API
 """
-import json
 import uuid
-import os
 import time
-import copy
+import json
+from bisect import bisect_right
 from pony import orm
 from datetime import datetime, date
+from geopy.geocoders import GoogleV3
 from flask import current_app as app, abort
 from resources.strava import Strava
-from resources.db.models import Athlete, Run
+from resources.db.models import Athlete, Run, RunClass
 
 
 class MedalCase:
     """
     Class for admin tasks - inherited by:
     """
-    def __init__(self, athlete_id=None):
-
-        self.athlete_attributes = [
-            "pk", "sk", "athlete", "startDate", "endDate", "athleteSlug", "provider", "providerId", "meta"
-        ]
+    def __init__(self, mcase_id=None):
         self.valid_types = ["Run"]  # use only these activity types for streak
-        self.athlete_id = athlete_id
-        self.cache = f"{os.getcwd()}/{self.athlete_id}_CACHE.json"
-        self.use_cache = True
+        self.mcase_id = mcase_id
+        self.class_bins = None
+        self.run_classes = []
 
-        if athlete_id:
-            tokens = self.get_tokens()
-            if tokens['expires_at'] < time.time():
-                tokens = Strava().refresh_tokens(tokens['refresh_token'])
-                self.update_user_tokens(self.athlete_id, tokens)
-
+        if mcase_id:
+            tokens = self.get_tokens(mcase_id)
             self.strava = Strava(access_token=tokens['access_token'])
         else:
             self.strava = Strava()
+
+    @staticmethod
+    def meters_to_miles(meters):
+        return int(meters * 0.000621371)
 
     def json_serial(self, obj):
         """JSON serializer for objects not serializable by default json code"""
@@ -43,52 +39,25 @@ class MedalCase:
             return obj.isoformat()
         return str(obj)
 
-    def save_cache(self, data, file=None):
-        cache_file = file or self.cache
-        with open(cache_file, 'w') as out:
-            out.write(json.dumps(data, sort_keys=True, indent=4, default=self.json_serial))
-
-    def get_cache(self):
-        with open(self.cache, 'r') as f:
-            return json.load(f)
-
-    def get_tokens(self):
+    def get_tokens(self, mcase_id):
         """
-        Get from ddb if exists
-        :return:
+        :param mcase_id: medalcase.id
+        :return" tokens dict
         """
+        athlete = Athlete[mcase_id]
+        if athlete:
+            if athlete.expires_at < time.time():
+                tokens = Strava().refresh_tokens(athlete.refresh_token)
+                self.update_user_tokens(mcase_id, tokens, athlete_model=athlete)
 
-        try:
-            aiter = Athlete.query(
-                Athlete.get_pk(self.athlete_id),
-                filter_condition=(Athlete.recordType == 'athlete'),
-                attributes_to_get=['tokens']
-            )
-            athelete = next(aiter, None)
-            if not athelete:
-                abort(404, description=f"Error: missing data")
-            athlete_data = athelete.to_dict()
-            return athlete_data['tokens']
+            return {
+                "access_token": athlete.access_token,
+                "refresh_token": athlete.refresh_token,
+                "expires_at": athlete.expires_at,
+            }
 
-        except Athlete.DoesNotExist as noex:
+        else:
             print('NO TOKENS')
-            return None
-
-    def get_user(self, athlete_id):
-        """
-        Get from ddb if exists
-        :param athlete_id:
-        :return:
-        """
-
-        try:
-            return Athlete.gsiAthlete.query(
-                    Athlete.get_pk(athlete_id),
-                    filter_condition=Athlete.recordType == 'athlete',
-                    attributes_to_get=self.athlete_attributes
-                )
-
-        except Athlete.DoesNotExist as noex:
             return None
 
     def user_login(self, code):
@@ -106,11 +75,9 @@ class MedalCase:
 
         # expect Strava Code
         user = self.strava.auth(code)
-        #print("ACCESS", user)
         return self.get_or_create_athlete(user)
 
-    @staticmethod
-    def update_user_tokens(strava_id, tokens, athlete_model=None):
+    def update_user_tokens(self, mcase_id, tokens, athlete_model=None):
         """
         tokens = {
             'access_token': user['access_creds']['access_token'],
@@ -118,17 +85,14 @@ class MedalCase:
             'expires_at': user['access_creds']['expires_at']
         }
 
-        :param strava_id: int for athlete id
+        :param mcase_id: int for medalcase.id
         :param tokens: dict of new tokens
         :param athlete_model: optional model
         :return:
         """
         with orm.db_session:
             if not athlete_model:
-                try:
-                    athlete_model = Athlete.get(strava_id=strava_id)
-                except orm.ObjectNotFound:
-                    abort(404, description=f"Error: Cannot locate athlete")
+                athlete_model = self.get_athlete(mcase_id)
 
             # update tokens from client side Strava login
             athlete_model.set(**tokens)
@@ -154,7 +118,7 @@ class MedalCase:
             athlete = Athlete.get(strava_id=strava_id)
             if athlete:
                 print('ATHLETE=', strava_id, athlete)
-                self.update_user_tokens(strava_id, tokens, athlete_model=athlete)
+                self.update_user_tokens(athlete.id, tokens, athlete_model=athlete)
 
             else:
                 # create if not exists
@@ -202,6 +166,29 @@ class MedalCase:
                 }
             }
 
+    def get_athlete_by_slug(self, slug):
+        """
+        Get from ddb if exists
+        :param slug:
+        :return:
+        """
+        with orm.db_session:
+            athlete = Athlete.get(slug=slug)
+            if athlete:
+                return athlete
+        abort(404, description=f"Error: Cannot locate athlete")
+
+    def get_athlete(self, mcase_id):
+        """
+        Get from ddb if exists
+        :param mcase_id:
+        :return:
+        """
+        try:
+            return Athlete[mcase_id]
+        except orm.ObjectNotFound:
+            abort(404, description=f"Error: Cannot locate athlete")
+
     def get_athletes(self):
         """
         Get all athletes summary
@@ -235,3 +222,145 @@ class MedalCase:
                 }
                     for a in Athlete.select().order_by(orm.desc(Athlete.total_runs))
             ]
+
+    def get_strava_activities(self, after=None):
+        """
+        Get list of activities
+        :param after:
+        :param before:
+        :return:
+        """
+
+        activities = self.strava.get_activities(after=after)
+        acts = []
+        drop_keys = [
+            "segment_efforts", "laps", "similar_activities", "splits_metric",
+            "splits_standard", "best_efforts", "stats_visibility", "athlete"
+        ]
+        for activity in activities:
+            act = activity.to_dict()
+            for key in drop_keys:
+                act.pop(key, None)
+            acts.append(act)
+        return acts
+
+    def update_athlete_totals(self, athlete):
+        """
+
+        """
+        counts = orm.select(
+            (r.run_class.key, orm.count(r.run_class))
+            for r in athlete.runs
+        )
+        print(counts[:])
+
+    def get_start_location(self, lat_lng):
+        """
+        Get country and city of start
+        """
+        geolocator = GoogleV3(api_key='AIzaSyBaRgbnzMy4cEMm5e2h7pyryfYav7ComTo')
+        location = geolocator.reverse(lat_lng)
+        data = {
+            'country': 'Unknown',
+            'city': 'Unknown'
+        }
+        if location:
+            #print(json.dumps(location.raw['address_components'], indent=4))
+            for field in location.raw['address_components']:
+                if 'postal_town' in field['types'] or 'locality' in field['types']:
+                    data['city'] = field['long_name']
+                if 'country' in field['types']:
+                    data['country'] = field['long_name']
+
+        return data
+
+    def get_run_class(self, dist_mi):
+        """
+            get the run class base on the distance
+        """
+        if not self.class_bins:
+            self.run_classes = list(RunClass.select().order_by(RunClass.min))
+            self.class_bins = [c.min for c in self.run_classes]
+
+        bin_idx = bisect_right(self.class_bins, dist_mi) - 1
+        return self.run_classes[bin_idx]
+
+    def update_athlete_medalcase(self, mcase_id):
+        """
+        Update an athlete's runs since their last run or build all for the first time
+        """
+
+        athlete = self.get_athlete(mcase_id)
+        self.update_athlete_totals(athlete)
+        last_run_date = athlete.last_run_date
+
+        with orm.db_session:
+            min_medal_dist = min(c.min for c in RunClass.select())
+            for activity in self.strava.get_activities(after=athlete.last_run_date):
+                act = activity.to_dict()
+                dist_mi = self.meters_to_miles(activity.distance)
+                if activity.type in self.valid_types and dist_mi >= min_medal_dist:
+                    run_class = self.get_run_class(dist_mi)
+                    activity.start_date = activity.start_date.replace(tzinfo=None)
+                    location = self.get_start_location(activity.start_latlng)
+                    print(location)
+                    run_params = {
+                        "strava_id":  activity.id,
+                        "name":  activity.name,
+                        "distance":  activity.distance,
+                        "moving_time":  act["moving_time"],
+                        "elapsed_time":  act["elapsed_time"],
+                        "total_elevation_gain":  activity.total_elevation_gain,
+                        "start_date":  activity.start_date,
+                        "start_date_local":  activity.start_date_local,
+                        "utc_offset":  activity.utc_offset,
+                        "timezone":  act["timezone"],
+                        "start_latlng":  act["start_latlng"] or '',
+                        "location_country":  location['country'],
+                        "location_city":  location['city'],
+                        "average_heartrate":  activity.average_heartrate,
+                        "average_cadence":  activity.average_cadence,
+                        "race": activity.workout_type == 1,
+                        "summary_polyline":  activity.map.summary_polyline,
+                        "athlete": athlete,
+                        "run_class": run_class
+                    }
+                    run = Run[activity.id]
+                    if run:
+                        # if we already have the run just update some meta to allow for local editing
+                        run.set(
+                            name=run_params["name"],
+                            location_country=location['country'],
+                            location_city=location['location_city'],
+                        )
+                    else:
+                        Run(**run_params)
+
+                    print(activity.name, run_class.name, dist_mi)
+                    # update athlete totals
+                    if not last_run_date or activity.start_date > last_run_date:
+                        last_run_date = activity.start_date
+
+            athlete.last_run_date = last_run_date
+
+            return {
+                "athlete": athlete.to_dict(),
+                "runs": [
+                    {
+                        "strava_id":  r.strava_id,
+                        "name":  r.name,
+                        "distance":  r.distance,
+                        "moving_time":  r.moving_time,
+                        "elapsed_time":  r.elapsed_time,
+                        "total_elevation_gain":  r.total_elevation_gain,
+                        "start_date":  r.start_date.strftime('%Y-%m-%dT%H:%M:%S'),
+                        "start_date_local":  r.start_date_local.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                        "location_country":  r.location_country,
+                        "race": r.race == 1,
+                        "summary_polyline": r.run_class.name,
+                        "class": r.run_class.name,
+                        "class_key": r.run_class.key,
+                        "class_parent": r.run_class.parent,
+                    } for r in athlete.runs
+                ]
+            }

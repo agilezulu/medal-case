@@ -1,8 +1,6 @@
 <script setup>
 import { onMounted, computed } from "vue";
-import { SCOPES } from "@/services/index.js";
-import { medalStore } from "@/store";
-import router from "@/router";
+import { SCOPES, medalStore } from "@/store";
 import LoginStrava from "@/components/LoginStrava.vue";
 const store = medalStore();
 

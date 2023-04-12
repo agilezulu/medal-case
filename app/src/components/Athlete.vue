@@ -1,55 +1,120 @@
 <script setup>
+import { ref, onMounted, computed } from "vue";
 import { medalStore } from "@/store";
-import { onMounted } from "vue";
 import { metersToDistanceUnits, getDate, secsToHMS } from "@/utils/helpers.js";
+import {storeToRefs} from "pinia";
+import { groupBy } from "@/utils/helpers.js";
 
-const store = medalStore();
+const { loading, medalcase } = storeToRefs(medalStore())
+
+const { getRuns, athleteRuns } = medalStore();
+
+const groupedRuns = computed(() => {
+  return groupBy(athleteRuns, "class_key", ["class", "class_key"], "start_date_local");
+})
 
 onMounted(() => {
-  store.getRuns();
+  getRuns();
 });
 </script>
 
 <template>
-  <div id="case-header">
-    Runs: {{store.runs.totals.runs}} - {{ metersToDistanceUnits(store.runs.totals.distance, 'mi')}}mi
-    <div>
-      <SelectButton v-model="store.selectedUnits" :options="store.units" aria-labelledby="basic" />
-    </div>
+  <div v-if="loading">
+    Loading...
   </div>
-  <div id="case-summary">
-    <div v-for="runclass in store.classes" :key="runclass.getter" class="run-type" :class="runclass.classname">
-      <div class="class-header">
-        <div class="run-class">{{runclass.name}}</div>
-        <div class="run-class-meta">
-          <div class="meta"><span class="meta-key">Total</span><span class="meta-val">{{store.runs.classes[runclass.classname].tot}}</span></div>
-          <template v-if="runclass.classname === 'ultra'">
-            <div v-for="(value, key) in store.runs.classes.ultra.subclass" class="meta">
-              <span class="meta-key">{{key}}</span><span class="meta-val">{{value}}</span>
+  <div v-else>
+
+    <div id="case-header">
+      <!--
+      Runs:
+      <div>
+        <SelectButton v-model="store.selectedUnits" :options="store.units" aria-labelledby="basic" />
+      </div>
+      -->
+      {{medalcase.athlete.firstname}}
+      {{medalcase.athlete.lastname}}
+    </div>
+    <div id="case-summary">
+
+        <div class="class-body">
+          <!--
+          <div v-for="runClass in athleteRuns" :key="runClass.gKey" class="r-category col-12">
+            <div class="run-class">
+              <div class="class-name">{{ runClass.class }}</div>
+              <div class="class-count">{{runClass.gCount}}</div>
             </div>
-          </template>
+            <div class="grid">
+              <div v-for="run in runClass.gVal" :key="run.strava_id" class="run-single col-12 md:col-6 lg:col-3">
+
+                <div class="run-title">
+                  <div class="run-title"><a :href="`https://www.strava.com/activities/${run.strava_id}/overview`" target="_new">{{run.name}}</a></div>
+                  <div class="run-date">{{getDate(run.start_date_local)}}</div>
+                </div>
+                <div class="run-stats">
+                <div class="run-time" :class="{ race: run.race }">{{ secsToHMS(run.elapsed_time)}}</div>
+                <div class="run-dist">{{ metersToDistanceUnits(run.distance, 'mi')}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          -->
+
+          <Accordion class="accordion-custom" :multiple="true" :activeIndex="[0]">
+            <template v-for="runClass in groupedRuns" :key="runClass.gKey">
+            <AccordionTab>
+              <template #header>
+                <div class="run-class">
+                  <div class="class-name">{{ runClass.class }}</div>
+                  <div class="class-count">{{runClass.gCount}}</div>
+                </div>
+              </template>
+              <div class="run-list">
+                <div v-for="(run, idx) in runClass.gVal" :key="run.strava_id" class="run-single col-12 md:col-6 lg:col-3">
+
+                  <div class="run-info">
+
+                    <div class="run-title">
+                      <span class="run-idx">{{idx+1}}</span>
+                      <a :href="`https://www.strava.com/activities/${run.strava_id}/overview`" target="_new" class="run-name" :class="runClass.class_key">{{run.name}} <i class="pi pi-external-link" style="font-size: 0.6rem; top: -7px;"></i></a>
+                    </div>
+                    <div class="run-date">{{getDate(run.start_date_local)}}</div>
+                  </div>
+                  <div class="run-stats">
+                    <div class="run-time" :class="run.race ? runClass.class_key : ''">{{ secsToHMS(run.elapsed_time)}}</div>
+                    <div class="run-dist">{{ metersToDistanceUnits(run.distance, 'mi')}}</div>
+                  </div>
+                </div>
+              </div>
+            </AccordionTab>
+            </template>
+          </Accordion>
+
+
+          <!--
+          <DataTable v-model:expandedRowGroups="expandedRowGroups" :value="athleteRuns" tableStyle="min-width: 50rem"
+                     expandableRowGroups rowGroupMode="subheader" groupRowsBy="class_key"
+                     sortMode="single" sortField="distance" :sortOrder="1">
+
+            <Column field="name" header="Name">
+              <template #body="slotProps">
+                <div class="run-title"><a :href="`https://www.strava.com/activities/${slotProps.data.strava_id}/overview`" target="_new">{{slotProps.data.name}}</a></div>
+                <div class="run-date">{{getDate(slotProps.data.start_date_local)}}</div>
+              </template>
+            </Column>
+            <Column field="elapsed_time" header="Time">
+              <template #body="slotProps">
+                <div class="run-time" :class="{ race: slotProps.data.race }">{{ secsToHMS(slotProps.data.elapsed_time)}}</div>
+                <div class="run-dist">{{ metersToDistanceUnits(slotProps.data.distance, 'mi')}}</div>
+              </template>
+            </Column>
+            <template #groupheader="slotProps">
+              <pre>{{slotProps}}</pre>
+              <span class="vertical-align-middle font-bold line-height-3">{{ slotProps.data.class }}</span>
+            </template>
+          </DataTable>
+          -->
         </div>
       </div>
-      <div class="class-body">
-
-        <table>
-          <tbody>
-          <tr v-for="(run, index) in store[runclass.getter]" :key="run.id">
-            <td class="idx">{{index+1}}</td>
-            <td>
-              <div class="run-title"><a :href="`https://www.strava.com/activities/${run.id}/overview`" target="_new">{{run.name}}</a></div>
-              <div class="run-date">{{getDate(run.start_date_local)}}</div>
-            </td>
-            <td>{{run.subclass}}</td>
-            <td>
-              <div class="run-time" :class="{ race :run.race }">{{ secsToHMS(run.elapsed_time)}}</div>
-              <div class="run-dist">{{ metersToDistanceUnits(run.distance, 'mi')}}</div>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
 
   </div>
 </template>
@@ -65,6 +130,44 @@ onMounted(() => {
   flex-direction: row;
   justify-content: space-around;
   flex-wrap: wrap;
+  .run-class {
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+  }
+  .run-single {
+    display: flex;
+    justify-content: space-between;
+    &:hover {
+     background-color: #eeeeee;
+    }
+  }
+  .class-body {
+    padding: 12px;
+    width: 600px;
+  }
+  .run-list {
+    .run-info {
+      .run-title {
+        display: flex;
+
+        .run-name {
+          font-weight: 700;
+        }
+        .run-idx {
+          min-width: 20px;
+          text-align: right;
+          padding-right: 8px;
+          font-weight: 200;
+          color: #555555;
+        }
+      }
+      .run-date {
+        padding-left: 22px;
+      }
+    }
+
+  }
   .run-type {
     margin: 12px;
     border: solid 1px #dddddd;
@@ -110,15 +213,9 @@ onMounted(() => {
         }
       }
     }
-    .class-body {
-      padding: 12px;
-      //max-height: 500px;
-      //overflow-y: scroll;
-    }
+
   }
-  .run-title {
-    font-weight: 600;
-  }
+
   .idx {
     vertical-align: top;
     text-align: right;

@@ -1,8 +1,17 @@
-from decimal import Decimal
-from pony.orm import Database, Required, Optional, PrimaryKey, Set
+from pony.orm import Database, Required, Optional, PrimaryKey, Set, LongUnicode
 from datetime import datetime
 
 db = Database()
+
+
+class GetMixin:
+    @classmethod
+    def update_and_get_or_create(cls, params):
+        o = cls.get(**params)
+        if o:
+            o.set(**params)
+            return o
+        return cls(**params)
 
 
 class Athlete(db.Entity):
@@ -10,7 +19,7 @@ class Athlete(db.Entity):
 
     id = PrimaryKey(int, auto=True)
     uuid = Required(str, unique=True)
-    strava_id = Required(int, unique=True)
+    strava_id = Required(int, size=64, sql_type='BIGINT', unique=True)
     slug = Required(str, unique=True)
     firstname = Optional(str)
     lastname = Optional(str)
@@ -25,6 +34,8 @@ class Athlete(db.Entity):
     refresh_token = Optional(str)
     expires_at = Optional(int)
     total_runs = Optional(int)
+    total_distance = Optional(int)
+    total_medals = Optional(int)
     c_marathon = Optional(int)
     c_marathon_race = Optional(int)
     c_50k = Optional(int)
@@ -45,23 +56,34 @@ class Athlete(db.Entity):
 
 class Run(db.Entity):
     _table_ = 'run'
-
-    id = PrimaryKey(int, auto=True)
-    user_id = Required(int)
-    strava_id = Required(int, unique=True)
-    name = Required(str)
-    distance = Required(Decimal)
+    strava_id = PrimaryKey(int, size=64, sql_type='BIGINT')
+    name = Required(LongUnicode)
+    distance = Required(float)
     moving_time = Required(int)
     elapsed_time = Required(int)
-    total_elevation_gain = Required(Decimal)
+    total_elevation_gain = Required(float)
     start_date = Required(datetime)
     start_date_local = Required(datetime)
-    utc_offset = Required(Decimal)
+    utc_offset = Required(float)
     timezone = Required(str)
+    start_latlng = Optional(str)
     location_country = Required(str)
-    average_heartrate = Optional(Decimal)
-    average_cadence = Optional(Decimal)
+    location_city = Required(str)
+    average_heartrate = Optional(float)
+    average_cadence = Optional(float)
     race = Required(int)
-    summary_polyline = Optional(str)
+    summary_polyline = Optional(LongUnicode, sql_type='TEXT')
 
-    athlete = Required('Athlete')
+    athlete = Required('Athlete', cascade_delete=False, column='user_id')
+    run_class = Required('RunClass', cascade_delete=False, column='run_class_id')
+
+
+class RunClass(db.Entity):
+    _table_ = 'run_class'
+    id = PrimaryKey(int, auto=True)
+    name = Required(str)
+    key = Required(str)
+    min = Required(int)
+    max = Required(int)
+    parent = Required(str)
+    run = Set('Run')

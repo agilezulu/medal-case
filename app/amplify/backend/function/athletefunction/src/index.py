@@ -32,7 +32,8 @@ app.config.update(dict(
         'port': 3307,
         'user': os.getenv('DBUSER'),
         'passwd': os.getenv('DBPWD'),
-        'db': 'medalcase'
+        'db': 'medalcase',
+        'charset': 'utf8mb4'
     }
 ))
 
@@ -80,7 +81,6 @@ def athlete_login():
     """
     mcase = MedalCase()
     code = request.json.get('code', None)
-    print('ACCESS CODE', code)
     data = mcase.user_login(code)
 
     # set JWT expires to
@@ -98,7 +98,7 @@ def athlete_login():
     })
 
 
-@app.route(f'{BASE_PATH}', methods=['GET'])
+@app.route(f'{BASE_PATH}/list', methods=['GET'])
 def get_athlete_list():
     """
     Primary streaks builder to create new or rebuild all
@@ -108,6 +108,34 @@ def get_athlete_list():
     athletes = mcase.get_athletes()
 
     return make_response(athletes)
+
+
+@app.route(f'{BASE_PATH}', methods=['GET'])
+@jwt_required()
+def update_athlete_runs():
+    """
+    Primary streaks builder to create new or rebuild all
+    :param uuid: mcase athlete uuid
+    :return: streaks
+    """
+    mcase_id = get_jwt_identity()
+    mcase = MedalCase(mcase_id=mcase_id)
+    runs = mcase.update_athlete_medalcase(mcase_id)
+
+    return make_response(runs)
+
+
+@app.route(f'{BASE_PATH}/<slug>', methods=['GET'])
+def get_athete_by_slug(slug):
+    """
+    Primary streaks builder to create new or rebuild all
+    :param uuid: mcase athlete uuid
+    :return: streaks
+    """
+    mcase = MedalCase()
+    athlete = mcase.get_athlete_by_slug(slug)
+
+    return make_response(athlete.to_dict())
 
 
 def handler(event, context):
