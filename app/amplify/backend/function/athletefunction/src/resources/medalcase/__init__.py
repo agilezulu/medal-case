@@ -258,7 +258,7 @@ class MedalCase:
         """
         Get country and city of start
         """
-        geolocator = GoogleV3(api_key='AIzaSyBaRgbnzMy4cEMm5e2h7pyryfYav7ComTo')
+        geolocator = GoogleV3(api_key=app.config["GOOGLE_API_KEY"])
         location = geolocator.reverse(lat_lng)
         data = {
             'country': 'Unknown',
@@ -336,7 +336,6 @@ class MedalCase:
                     else:
                         Run(**run_params)
 
-                    print(activity.name, run_class.name, dist_mi)
                     # update athlete totals
                     if not last_run_date or activity.start_date > last_run_date:
                         last_run_date = activity.start_date

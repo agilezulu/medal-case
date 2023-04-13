@@ -20,6 +20,7 @@ from resources.db.models import *
 app = Flask(__name__)
 app.config["STRAVA_VERIFY_TOKEN"] = os.getenv("STRAVA_VERIFY_TOKEN")
 app.config["JWT_SECRET_KEY"] = os.getenv("STRAVA_STREAKS_JWT_SECRET")
+app.config["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=31)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=62)
 
