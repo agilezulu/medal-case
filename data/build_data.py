@@ -310,5 +310,5 @@ if __name__ == '__main__':
 
     strava = StravaRuns(athlete_id=16055914)
 
-    #strava.get_activities()
+    strava.get_activities()
     strava.build_summary()

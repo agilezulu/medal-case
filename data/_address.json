@@ -1,0 +1,79 @@
+{
+  'address_components': [
+    {
+      'long_name': 'Epsom Race Course',
+      'short_name': 'Epsom Race Course',
+      'types': [
+        'establishment',
+        'point_of_interest',
+        'transit_station'
+      ]
+    },
+    {
+      'long_name': 'Epsom',
+      'short_name': 'Epsom',
+      'types': [
+        'postal_town'
+      ]
+    },
+    {
+      'long_name': 'Surrey',
+      'short_name': 'Surrey',
+      'types': [
+        'administrative_area_level_2',
+        'political'
+      ]
+    },
+    {
+      'long_name': 'England',
+      'short_name': 'England',
+      'types': [
+        'administrative_area_level_1',
+        'political'
+      ]
+    },
+    {
+      'long_name': 'United Kingdom',
+      'short_name': 'GB',
+      'types': [
+        'country',
+        'political'
+      ]
+    },
+    {
+      'long_name': 'KT18 5LE',
+      'short_name': 'KT18 5LE',
+      'types': [
+        'postal_code'
+      ]
+    }
+  ],
+  'formatted_address': 'Epsom Race Course, Epsom KT18 5LE, UK',
+  'geometry': {
+    'location': {
+      'lat': 51.314041,
+      'lng': -0.255083
+    },
+    'location_type': 'GEOMETRIC_CENTER',
+    'viewport': {
+      'northeast': {
+        'lat': 51.31538998029149,
+        'lng': -0.253734019708498
+      },
+      'southwest': {
+        'lat': 51.31269201970849,
+        'lng': -0.256431980291502
+      }
+    }
+  },
+  'place_id': 'ChIJ3UoYakjidUgRt6xua9Otk3U',
+  'plus_code': {
+    'compound_code': '8P7V+JX Epsom, UK',
+    'global_code': '9C3X8P7V+JX'
+  },
+  'types': [
+    'establishment',
+    'point_of_interest',
+    'transit_station'
+  ]
+}

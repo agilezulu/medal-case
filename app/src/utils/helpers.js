@@ -17,3 +17,62 @@ export const secsToHMS = (secs) => {
     .filter((v,i) => v !== "00" || i > 0)
     .join(":")
 };
+
+export const slugify = (text) => {
+  return text
+    .toString()                           // Cast to string (optional)
+    .normalize('NFKD')            // The normalize() using NFKD method returns the Unicode Normalization Form of a given string.
+    .toLowerCase()                  // Convert the string to lowercase letters
+    .trim()                                  // Remove whitespace from both sides of a string (optional)
+    .replace(/\s+/g, '-')            // Replace spaces with -
+    .replace(/[^\w-]+/g, '')     // Remove all non-word chars
+    .replace(/--+/g, '-');        // Replace multiple - with single -
+};
+
+const compare = (key) => ( a, b ) => {
+  if ( a[key] < b[key] ){
+    return -1;
+  }
+  if ( a[key] > b[key] ){
+    return 1;
+  }
+  return 0;
+};
+
+export const groupBy = (data, groupKey, keys, gsortKey) => {
+  return data.reduce(function (storage, item) {
+    var group = item[groupKey];
+    if (keys) {
+      // if passed additional keys -> define group attributes
+      let keyMap = keys.map((k) => [k, item[k]]);
+      let grp = Object.fromEntries(keyMap);
+      grp.gKey = group;
+      grp.gVal = [];
+      grp.gCount = 0;
+
+      // handle linked events
+      if (item.re_mode){
+        grp.liveCount = 0;
+      }
+
+      storage[group] = storage[group] || grp;
+      storage[group].gVal.push(item);
+      if (gsortKey) {
+        storage[group].gVal.sort(compare(gsortKey));
+      }
+      storage[group].gCount++;
+
+      if (item.re_mode){
+        grp.liveCount++;
+      }
+    } else {
+      // simple grouping using group name as key
+      storage[group] = storage[group] || [];
+      storage[group].push(item);
+      if (gsortKey) {
+        storage[group].sort(compare(gsortKey));
+      }
+    }
+    return storage;
+  }, {});
+};

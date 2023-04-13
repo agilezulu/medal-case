@@ -1,6 +1,5 @@
 <script setup>
-import { medalStore } from "@/store";
-import { STRAVA_OAUTH_URL } from "@/store";
+import { medalStore, STRAVA_OAUTH_URL } from "@/store";
 const store = medalStore();
 
 // eslint-disable-next-line no-undef
