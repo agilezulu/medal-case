@@ -49,22 +49,19 @@ export const groupBy = (data, groupKey, keys, gsortKey) => {
       grp.gKey = group;
       grp.gVal = [];
       grp.gCount = 0;
-
-      // handle linked events
-      if (item.re_mode){
-        grp.liveCount = 0;
-      }
+      grp.gRaceCount = 0
 
       storage[group] = storage[group] || grp;
       storage[group].gVal.push(item);
       if (gsortKey) {
         storage[group].gVal.sort(compare(gsortKey));
       }
+      if (groupKey === 'class_key' && item.race) {
+        storage[group].gRaceCount++;
+      }
       storage[group].gCount++;
 
-      if (item.re_mode){
-        grp.liveCount++;
-      }
+
     } else {
       // simple grouping using group name as key
       storage[group] = storage[group] || [];

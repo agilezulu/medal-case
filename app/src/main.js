@@ -4,7 +4,8 @@ import router from "@/router";
 import { createPinia } from "pinia";
 import { Amplify } from "aws-amplify";
 import awsExports from "./aws-exports";
-
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { library } from "@fortawesome/fontawesome-svg-core";
 
 import PrimeVue from "primevue/config";
 import SelectButton from "primevue/selectbutton";
@@ -20,6 +21,9 @@ import "./assets/main.scss";
 import "primevue/resources/themes/lara-light-indigo/theme.css";
 import "primevue/resources/primevue.min.css";
 import "primeicons/primeicons.css";
+
+import { faMedal } from "@fortawesome/pro-thin-svg-icons";
+library.add(faMedal);
 
 Amplify.configure(awsExports);
 
@@ -39,5 +43,6 @@ app.component("Row", Row);
 app.component("Accordion", Accordion);
 app.component("AccordionTab", AccordionTab);
 
+app.component('font-awesome-icon', FontAwesomeIcon)
 
 app.mount('#app');

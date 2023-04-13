@@ -65,7 +65,7 @@ onMounted(() => {
               <template #header>
                 <div class="run-class">
                   <div class="class-name">{{ runClass.class }}</div>
-                  <div class="class-count">{{runClass.gCount}}</div>
+                  <div class="class-count">{{runClass.gCount}} ({{runClass.gRaceCount}} <font-awesome-icon icon="fa-thin fa-medal" />)</div>
                 </div>
               </template>
               <div class="run-list">
@@ -125,11 +125,19 @@ onMounted(() => {
     padding: 0px 12px;
   }
 }
+
 #case-summary {
   display: flex;
   flex-direction: row;
   justify-content: space-around;
   flex-wrap: wrap;
+
+  .p-accordion .p-accordion-header:not(.p-disabled) .p-accordion-header-link:focus {
+    outline: 0 none;
+    outline-offset: 0;
+    box-shadow: none;
+  }
+
   .run-class {
     display: flex;
     flex: 1;
