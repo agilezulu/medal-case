@@ -1,0 +1,14 @@
+{
+  "prod": {
+    "awscloudformation": {
+      "AuthRoleArn": "arn:aws:iam::087685034478:role/amplify-medalcase-prod-140948-authRole",
+      "AuthRoleName": "amplify-medalcase-prod-140948-authRole",
+      "DeploymentBucketName": "amplify-medalcase-prod-140948-deployment",
+      "Region": "eu-west-1",
+      "StackId": "arn:aws:cloudformation:eu-west-1:087685034478:stack/amplify-medalcase-prod-140948/a50b2290-d60e-11ed-a83f-06ab91d8ba73",
+      "StackName": "amplify-medalcase-prod-140948",
+      "UnauthRoleArn": "arn:aws:iam::087685034478:role/amplify-medalcase-prod-140948-unauthRole",
+      "UnauthRoleName": "amplify-medalcase-prod-140948-unauthRole"
+    }
+  }
+}
