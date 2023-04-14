@@ -1,14 +1,20 @@
 <script setup>
-import { onMounted, computed } from "vue";
+import { onMounted, computed, ref, getCurrentInstance } from "vue";
 import { useRoute } from "vue-router";
 import { medalStore, CLASSES } from "@/store";
 import { metersToDistanceUnits, getDate, secsToHMS } from "@/utils/helpers.js";
 import {storeToRefs} from "pinia";
+import { useDialog } from "primevue/usedialog";
+import { useToast } from "primevue/usetoast";
 import { groupBy } from "@/utils/helpers.js";
+import RunEdit from "@/components/RunEdit.vue";
+import LoadingSpinner from "@/components/LoadingSpinner.vue";
 
 const { loading, athlete } = storeToRefs(medalStore())
 const store = medalStore();
 const route = useRoute();
+const dialog = useDialog();
+const toast = useToast();
 
 const classKeys = CLASSES.map(c => c.key);
 //.sort((a, b) => classKeys.indexOf(a.gKey) - classKeys.indexOf(b.gKey)
@@ -20,18 +26,48 @@ const groupedRuns = computed(() => {
 const buildRuns = () => {
   store.buildAthleteRuns();
 }
+
+const dynamicDialogRef = ref(null);
+
+const editRun = (run) => {
+
+  dynamicDialogRef.value = dialog.open(RunEdit, {
+    data: {
+      run: run
+    },
+    props: {
+      header: `Update ${run.name}`,
+      style: {
+        width: '50vw',
+      },
+      breakpoints:{
+        '960px': '75vw',
+        '640px': '90vw'
+      },
+      modal: true
+    },
+    onClose: (options) => {
+      const data = options.data;
+      console.log('CLOSED', data);
+      if (data) {
+        toast.add({ severity:'info', data, life: 3000 });
+      }
+    }
+  });
+
+}
+
 onMounted(() => {
   store.getAthlete(route.params.slug);
+
 });
 </script>
 
 <template>
   <div v-if="loading">
-    Loading...
+    <LoadingSpinner />
   </div>
   <div v-else>
-
-
     <div id="case-header">
       <!--
       Runs:
@@ -45,15 +81,10 @@ onMounted(() => {
       <Button
           @click="buildRuns()"
           class="p-button-outlined p-button-secondary p-button-sm"
-          label="Build Medalcase"
-          icon="pi pi-fw pi-sync"
-          iconPos="right"
           v-if="store.isLoggedIn"
-      />
+      >Build Medalcase <font-awesome-icon icon="fa-light fa-arrows-rotate" /></Button>
     </div>
     <div id="case-summary">
-
-
 
         <div class="class-body">
           <!--
@@ -61,42 +92,20 @@ onMounted(() => {
                     <div class="hex"></div>
                     <div class="hex-content"></div>
                   </div>
-
-          <div v-for="runClass in athleteRuns" :key="runClass.gKey" class="r-category col-12">
-            <div class="run-class">
-              <div class="class-name">{{ runClass.class }}</div>
-              <div class="class-count">{{runClass.gCount}}</div>
-            </div>
-            <div class="grid">
-              <div v-for="run in runClass.gVal" :key="run.strava_id" class="run-single col-12 md:col-6 lg:col-3">
-
-                <div class="run-title">
-                  <div class="run-title"><a :href="`https://www.strava.com/activities/${run.strava_id}/overview`" target="_new">{{run.name}}</a></div>
-                  <div class="run-date">{{getDate(run.start_date_local)}}</div>
-                </div>
-                <div class="run-stats">
-                <div class="run-time" :class="{ race: run.race }">{{ secsToHMS(run.elapsed_time)}}</div>
-                <div class="run-dist">{{ metersToDistanceUnits(run.distance, 'mi')}}</div>
-                </div>
-              </div>
-            </div>
-          </div>
           -->
 
           <Accordion class="accordion-custom" :multiple="true" :activeIndex="[0]">
-            <template v-for="runClass in groupedRuns" :key="runClass.gKey">
+            <template v-for="runClass in store.athleteRuns" :key="runClass.gKey">
             <AccordionTab>
               <template #header>
                 <div class="run-class">
                   <div class="class-name">{{ runClass.class }}</div>
                   <div class="class-count">{{runClass.gCount}}  <sup :class="runClass.class_key"><font-awesome-icon icon="fa-light fa-medal" /> {{runClass.gRaceCount}}</sup></div>
 
-
-
                 </div>
               </template>
               <div class="run-list">
-                <div v-for="(run, idx) in runClass.gVal" :key="run.strava_id" class="run-single col-12 md:col-6 lg:col-3">
+                <div v-for="(run, idx) in runClass.gVal" :key="run.strava_id" class="run-single">
 
                   <div class="run-info">
 
@@ -111,39 +120,20 @@ onMounted(() => {
                     <div class="run-time" :class="run.race ? runClass.class_key : ''">{{ secsToHMS(run.elapsed_time)}}</div>
                     <div class="run-dist">{{ metersToDistanceUnits(run.distance, 'mi')}}</div>
                   </div>
+                  <div class="run-tools">
+                    <a href="javascript:void(0);" class="action" @click="editRun(run)"><font-awesome-icon icon="fa-light fa-pencil" /></a>
+                  </div>
                 </div>
               </div>
             </AccordionTab>
             </template>
           </Accordion>
 
-
-          <!--
-          <DataTable v-model:expandedRowGroups="expandedRowGroups" :value="athleteRuns" tableStyle="min-width: 50rem"
-                     expandableRowGroups rowGroupMode="subheader" groupRowsBy="class_key"
-                     sortMode="single" sortField="distance" :sortOrder="1">
-
-            <Column field="name" header="Name">
-              <template #body="slotProps">
-                <div class="run-title"><a :href="`https://www.strava.com/activities/${slotProps.data.strava_id}/overview`" target="_new">{{slotProps.data.name}}</a></div>
-                <div class="run-date">{{getDate(slotProps.data.start_date_local)}}</div>
-              </template>
-            </Column>
-            <Column field="elapsed_time" header="Time">
-              <template #body="slotProps">
-                <div class="run-time" :class="{ race: slotProps.data.race }">{{ secsToHMS(slotProps.data.elapsed_time)}}</div>
-                <div class="run-dist">{{ metersToDistanceUnits(slotProps.data.distance, 'mi')}}</div>
-              </template>
-            </Column>
-            <template #groupheader="slotProps">
-              <pre>{{slotProps}}</pre>
-              <span class="vertical-align-middle font-bold line-height-3">{{ slotProps.data.class }}</span>
-            </template>
-          </DataTable>
-          -->
         </div>
       </div>
-
+    <DynamicDialog ref="dynamic-dialog">
+      <!-- content of the dialog goes here -->
+    </DynamicDialog>
   </div>
 </template>
 
@@ -202,9 +192,9 @@ $borderradius2: 4px;
   }
   .run-list {
     .run-info {
+      flex: 1;
       .run-title {
         display: flex;
-
         .run-name {
           font-weight: 700;
           &.c_training {
@@ -225,6 +215,11 @@ $borderradius2: 4px;
       .run-date {
         padding-left: 22px;
       }
+    }
+    .run-tools {
+      flex: 0 0 40px;
+      display: flex;
+      justify-content: flex-end;
     }
 
   }

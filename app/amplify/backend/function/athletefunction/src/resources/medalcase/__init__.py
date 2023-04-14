@@ -233,7 +233,7 @@ class MedalCase:
             "start_date_local":  run.start_date_local.strftime('%Y-%m-%dT%H:%M:%SZ'),
             "location_country":  run.location_country,
             "race": run.race == 1,
-            "summary_polyline": run.run_class.name,
+            "summary_polyline": run.summary_polyline,
             "class": run.run_class.name,
             "class_key": run.run_class.key,
             "class_parent": run.run_class.parent,

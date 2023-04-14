@@ -14,7 +14,8 @@ const items =[
   },
 ];
 const myProfile = () => {
-  router.push({ name: "athlete", params: { slug: store.loggedInAthlete.slug } })
+  router.push({ name: "me" });
+  //router.push({ name: "athlete", params: { slug: store.loggedInAthlete.slug } });
 }
 onMounted(() => {
   store.setAccess();
@@ -52,6 +53,7 @@ onMounted(() => {
     </template>
   </Menubar>
   <router-view></router-view>
+  <Toast />
 </template>
 
 <style lang="scss">

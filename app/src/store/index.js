@@ -25,6 +25,7 @@ export const CLASSES = [
   { name: "100mi", key: "c_100mi" },
   { name: "Xtreme", key: "c_extreme" },
 ];
+const classKeys = CLASSES.map(c => c.key);
 const redirectUrl = NODE_ENV === "production" ? URL_LIVE : URL_LOCAL;
 const streaksAPI = NODE_ENV === "production" ? STREAKS_LIVE : STREAKS_LOCAL;
 const API = (key, param) => {
@@ -68,7 +69,10 @@ export const medalStore = defineStore('todos', {
       return !!state.accessToken;
     },
     athleteRuns(state) {
-      return state.athlete.runs.sort((a,b) => a.start_date - b.start_date);
+      let grouped = groupBy(state.athlete.runs, "class_key", ["class", "class_key"], "start_date_local");
+      let groupedSorted = Object.entries(grouped).sort((a, b) => classKeys.indexOf(a.gKey) - classKeys.indexOf(b.gKey));
+      return groupedSorted.map(gs => gs[1]);
+
     },
     isLoading(state) {
       return state.loading;

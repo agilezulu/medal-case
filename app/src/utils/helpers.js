@@ -4,7 +4,9 @@ export const round = (value, precision) => {
 }
 
 export const getDate = (datetime) => datetime.split('T')[0];
-export const metersToDistanceUnits = (meters, units) => round(meters * 0.000621371, 1);
+export const metersToDistanceUnits = (meters, selectedUnits) => {
+  return round(meters * (selectedUnits === 'km' ? 0.001 : 0.000621371), 1) + ` ${selectedUnits}`;
+}
 
 export const secsToHMS = (secs) => {
   const sec_num = parseInt(secs, 10);
