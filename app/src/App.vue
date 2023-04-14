@@ -4,7 +4,7 @@ import { RouterLink, RouterView } from "vue-router";
 import { medalStore } from "@/store";
 import LoginStrava from "@/components/LoginStrava.vue";
 const store = medalStore();
-
+console.log(store.medalcase.athlete);
 const items = [
   {
     label: "Athletes",
@@ -14,7 +14,7 @@ const items = [
   {
     label: "Me",
     icon: "pi pi-fw pi-user",
-    to: "/me",
+    to: `/athlete/${store.medalcase.athlete.slug}`,
     visible: () => store.isLoggedIn,
   },
 ];

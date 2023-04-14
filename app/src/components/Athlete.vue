@@ -1,20 +1,19 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { onMounted, computed } from "vue";
 import { medalStore } from "@/store";
 import { metersToDistanceUnits, getDate, secsToHMS } from "@/utils/helpers.js";
 import {storeToRefs} from "pinia";
 import { groupBy } from "@/utils/helpers.js";
 
 const { loading, medalcase } = storeToRefs(medalStore())
-
-const { getRuns, athleteRuns } = medalStore();
+const store = medalStore();
 
 const groupedRuns = computed(() => {
-  return groupBy(athleteRuns, "class_key", ["class", "class_key"], "start_date_local");
+  return groupBy(store.athleteRuns, "class_key", ["class", "class_key"], "start_date_local");
 })
 
 onMounted(() => {
-  getRuns();
+  store.getRuns();
 });
 </script>
 
@@ -23,6 +22,9 @@ onMounted(() => {
     Loading...
   </div>
   <div v-else>
+
+
+
 
     <div id="case-header">
       <!--
@@ -36,8 +38,15 @@ onMounted(() => {
     </div>
     <div id="case-summary">
 
+
+
         <div class="class-body">
           <!--
+          <div class="hex-holder">
+                    <div class="hex"></div>
+                    <div class="hex-content"></div>
+                  </div>
+
           <div v-for="runClass in athleteRuns" :key="runClass.gKey" class="r-category col-12">
             <div class="run-class">
               <div class="class-name">{{ runClass.class }}</div>
@@ -65,7 +74,10 @@ onMounted(() => {
               <template #header>
                 <div class="run-class">
                   <div class="class-name">{{ runClass.class }}</div>
-                  <div class="class-count">{{runClass.gCount}} ({{runClass.gRaceCount}} <font-awesome-icon icon="fa-thin fa-medal" />)</div>
+                  <div class="class-count">{{runClass.gCount}}  <sup :class="runClass.class_key"><font-awesome-icon icon="fa-light fa-medal" /> {{runClass.gRaceCount}}</sup></div>
+
+
+
                 </div>
               </template>
               <div class="run-list">
@@ -75,7 +87,8 @@ onMounted(() => {
 
                     <div class="run-title">
                       <span class="run-idx">{{idx+1}}</span>
-                      <a :href="`https://www.strava.com/activities/${run.strava_id}/overview`" target="_new" class="run-name" :class="runClass.class_key">{{run.name}} <i class="pi pi-external-link" style="font-size: 0.6rem; top: -7px;"></i></a>
+                      <span class="run-ico" :class="run.race ? runClass.class_key : 'c_training'"><font-awesome-icon :icon="`fa-fw fa-light ${run.race? 'fa-medal' : 'fa-person-running'}`" /></span>
+                      <a :href="`https://www.strava.com/activities/${run.strava_id}/overview`" target="_new" class="run-name" :class="run.race ? runClass.class_key : 'c_training'">{{run.name}} <i class="pi pi-external-link" style="font-size: 0.6rem; top: -7px;"></i></a>
                     </div>
                     <div class="run-date">{{getDate(run.start_date_local)}}</div>
                   </div>
@@ -120,6 +133,23 @@ onMounted(() => {
 </template>
 
 <style lang="scss">
+@import "@/assets/mixins.scss";
+$bordercolor1: #bbbbbb;
+$backgroundcolor1: #dddddd;
+$width1: 60px;
+$borderwidth1: 4px;
+$borderradius1: 0;
+
+$bordercolor2: #ffbbbb;
+$backgroundcolor2: #ffdddd;
+$width2: 80px;
+$borderwidth2: 4px;
+$borderradius2: 4px;
+
+.hex-holder {
+  position: relative;
+  @include hexagon(60px, #eeeeee, 2px, #aaaaaa);
+}
 #case-header {
   .p-button {
     padding: 0px 12px;
@@ -137,6 +167,7 @@ onMounted(() => {
     outline-offset: 0;
     box-shadow: none;
   }
+
 
   .run-class {
     display: flex;
@@ -161,6 +192,9 @@ onMounted(() => {
 
         .run-name {
           font-weight: 700;
+          &.c_training {
+            font-weight: 400;
+          }
         }
         .run-idx {
           min-width: 20px;
@@ -168,6 +202,9 @@ onMounted(() => {
           padding-right: 8px;
           font-weight: 200;
           color: #555555;
+        }
+        .run-ico {
+          padding-right: 6px;
         }
       }
       .run-date {

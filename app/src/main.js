@@ -22,8 +22,9 @@ import "primevue/resources/themes/lara-light-indigo/theme.css";
 import "primevue/resources/primevue.min.css";
 import "primeicons/primeicons.css";
 
-import { faMedal } from "@fortawesome/pro-thin-svg-icons";
-library.add(faMedal);
+import { faMedal } from "@fortawesome/pro-light-svg-icons";
+import { faPersonRunning } from "@fortawesome/pro-light-svg-icons";
+library.add(faMedal, faPersonRunning);
 
 Amplify.configure(awsExports);
 

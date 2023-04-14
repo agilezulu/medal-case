@@ -6,6 +6,8 @@ $color-c_100kplus: #72B133;
 $color-c_100mi: #D0AB37;
 $color-c_xtreme: #C94D41;
 
+$color-c_training: #444444;
+/*
 *,
 *::before,
 *::after {
@@ -14,6 +16,8 @@ $color-c_xtreme: #C94D41;
   position: relative;
   font-weight: normal;
 }
+
+ */
 
 body {
   min-height: 100vh;
@@ -59,3 +63,9 @@ a {
 .c_xtreme {
   color: $color-c_xtreme;
 }
+
+.c_training {
+  color: $color-c_training;
+}
+
+
