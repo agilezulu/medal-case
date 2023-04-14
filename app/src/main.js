@@ -20,11 +20,9 @@ import "./assets/main.scss";
 
 import "primevue/resources/themes/lara-light-indigo/theme.css";
 import "primevue/resources/primevue.min.css";
-import "primeicons/primeicons.css";
 
-import { faMedal } from "@fortawesome/pro-light-svg-icons";
-import { faPersonRunning } from "@fortawesome/pro-light-svg-icons";
-library.add(faMedal, faPersonRunning);
+import { faMedal, faPersonRunning, faArrowUpRightFromSquare, faArrowRightFromBracket, faUser } from "@fortawesome/pro-light-svg-icons";
+library.add(faMedal, faPersonRunning, faArrowUpRightFromSquare, faArrowRightFromBracket, faUser);
 
 Amplify.configure(awsExports);
 

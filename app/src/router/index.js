@@ -15,7 +15,7 @@ const router = createRouter({
     },
     {
       path: '/athlete/:slug',
-      name: 'me',
+      name: 'athlete',
       component: AthleteView
     },
     {

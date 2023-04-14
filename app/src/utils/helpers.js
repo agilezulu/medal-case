@@ -29,12 +29,23 @@ export const slugify = (text) => {
     .replace(/--+/g, '-');        // Replace multiple - with single -
 };
 
-const compare = (key) => ( a, b ) => {
-  if ( a[key] < b[key] ){
-    return -1;
+const compare = (key, dir) => ( a, b ) => {
+  const usedir = dir || 'asc';
+  if (usedir === 'asc') {
+    if (a[key] < b[key]) {
+      return -1;
+    }
+    if (a[key] > b[key]) {
+      return 1;
+    }
   }
-  if ( a[key] > b[key] ){
-    return 1;
+  else {
+    if ( a[key] > b[key] ){
+      return -1;
+    }
+    if ( a[key] < b[key] ){
+      return 1;
+    }
   }
   return 0;
 };
@@ -54,7 +65,7 @@ export const groupBy = (data, groupKey, keys, gsortKey) => {
       storage[group] = storage[group] || grp;
       storage[group].gVal.push(item);
       if (gsortKey) {
-        storage[group].gVal.sort(compare(gsortKey));
+        storage[group].gVal.sort(compare(gsortKey, 'desc'));
       }
       if (groupKey === 'class_key' && item.race) {
         storage[group].gRaceCount++;

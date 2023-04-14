@@ -1,19 +1,27 @@
 <script setup>
 import { onMounted, computed } from "vue";
-import { medalStore } from "@/store";
+import { useRoute } from "vue-router";
+import { medalStore, CLASSES } from "@/store";
 import { metersToDistanceUnits, getDate, secsToHMS } from "@/utils/helpers.js";
 import {storeToRefs} from "pinia";
 import { groupBy } from "@/utils/helpers.js";
 
-const { loading, medalcase } = storeToRefs(medalStore())
+const { loading, athlete } = storeToRefs(medalStore())
 const store = medalStore();
+const route = useRoute();
 
+const classKeys = CLASSES.map(c => c.key);
+//.sort((a, b) => classKeys.indexOf(a.gKey) - classKeys.indexOf(b.gKey)
 const groupedRuns = computed(() => {
-  return groupBy(store.athleteRuns, "class_key", ["class", "class_key"], "start_date_local");
-})
-
+  let grouped = groupBy(store.athleteRuns, "class_key", ["class", "class_key"], "start_date_local");
+  let groupedSorted = Object.entries(grouped).sort((a, b) => classKeys.indexOf(a.gKey) - classKeys.indexOf(b.gKey));
+  return groupedSorted.map(gs => gs[1]);
+});
+const buildRuns = () => {
+  store.buildAthleteRuns();
+}
 onMounted(() => {
-  store.getRuns();
+  store.getAthlete(route.params.slug);
 });
 </script>
 
@@ -24,8 +32,6 @@ onMounted(() => {
   <div v-else>
 
 
-
-
     <div id="case-header">
       <!--
       Runs:
@@ -33,8 +39,17 @@ onMounted(() => {
         <SelectButton v-model="store.selectedUnits" :options="store.units" aria-labelledby="basic" />
       </div>
       -->
-      {{medalcase.athlete.firstname}}
-      {{medalcase.athlete.lastname}}
+      {{athlete.firstname}}
+      {{athlete.lastname}}
+
+      <Button
+          @click="buildRuns()"
+          class="p-button-outlined p-button-secondary p-button-sm"
+          label="Build Medalcase"
+          icon="pi pi-fw pi-sync"
+          iconPos="right"
+          v-if="store.isLoggedIn"
+      />
     </div>
     <div id="case-summary">
 
@@ -88,7 +103,7 @@ onMounted(() => {
                     <div class="run-title">
                       <span class="run-idx">{{idx+1}}</span>
                       <span class="run-ico" :class="run.race ? runClass.class_key : 'c_training'"><font-awesome-icon :icon="`fa-fw fa-light ${run.race? 'fa-medal' : 'fa-person-running'}`" /></span>
-                      <a :href="`https://www.strava.com/activities/${run.strava_id}/overview`" target="_new" class="run-name" :class="run.race ? runClass.class_key : 'c_training'">{{run.name}} <i class="pi pi-external-link" style="font-size: 0.6rem; top: -7px;"></i></a>
+                      <a :href="`https://www.strava.com/activities/${run.strava_id}/overview`" target="_new" class="run-name" :class="run.race ? runClass.class_key : 'c_training'">{{run.name}} <font-awesome-icon icon="fa-light fa-arrow-up-right-from-square" transform="shrink-4 up-6" /></a>
                     </div>
                     <div class="run-date">{{getDate(run.start_date_local)}}</div>
                   </div>

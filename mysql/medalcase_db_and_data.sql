@@ -1,6 +1,4 @@
-CREATE DATABASE  IF NOT EXISTS `medalcase` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `medalcase`;
--- MySQL dump 10.13  Distrib 8.0.28, for macos11 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.26, for macos11 (x86_64)
 --
 -- Host: 127.0.0.1    Database: medalcase
 -- ------------------------------------------------------
@@ -52,6 +50,8 @@ CREATE TABLE `athlete` (
   `c_50mi_race` int unsigned DEFAULT '0',
   `c_100k` int unsigned DEFAULT '0',
   `c_100k_race` int unsigned DEFAULT '0',
+  `c_100k_plus` int DEFAULT '0',
+  `c_100k_plus_race` int DEFAULT '0',
   `c_100mi` int unsigned DEFAULT '0',
   `c_100mi_race` int unsigned DEFAULT '0',
   `c_extreme` int unsigned DEFAULT '0',
@@ -72,7 +72,7 @@ CREATE TABLE `athlete` (
 
 LOCK TABLES `athlete` WRITE;
 /*!40000 ALTER TABLE `athlete` DISABLE KEYS */;
-INSERT INTO `athlete` VALUES (2,'d47e06ac-e3bb-4e84-b568-f7c3dbc9e658',16055914,'s-16055914','Paul','Schnell','mi','United Kingdom','London','M','%m/%d/%Y','https://dgalywyr863hv.cloudfront.net/pictures/athletes/16055914/4493638/3/medium.jpg','https://dgalywyr863hv.cloudfront.net/pictures/athletes/16055914/4493638/3/large.jpg','cdef60b116c1bd0a4aae5689d325c57789ee1df0','496d575ef8d03da3b44aac679daeaf502e007b51',1681450739,NULL,0,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2023-04-10 11:09:59','2023-04-02 08:04:28');
+INSERT INTO `athlete` VALUES (2,'d47e06ac-e3bb-4e84-b568-f7c3dbc9e658',16055914,'s-16055914','Paul','Schnell','mi','United Kingdom','London','M','%m/%d/%Y','https://dgalywyr863hv.cloudfront.net/pictures/athletes/16055914/4493638/3/medium.jpg','https://dgalywyr863hv.cloudfront.net/pictures/athletes/16055914/4493638/3/large.jpg','b8b7eaf913906ce9b059e69c684d9fe67a13cab0','496d575ef8d03da3b44aac679daeaf502e007b51',1681473246,NULL,0,0,21,17,10,5,1,1,3,3,0,0,1,1,NULL,NULL,'2023-04-10 11:09:59','2023-04-02 08:04:28');
 /*!40000 ALTER TABLE `athlete` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -87,7 +87,7 @@ CREATE TABLE `run` (
   `strava_id` bigint unsigned NOT NULL,
   `run_class_id` int unsigned NOT NULL,
   `user_id` int unsigned NOT NULL,
-  `name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `distance` decimal(10,1) NOT NULL,
   `moving_time` int unsigned NOT NULL,
   `elapsed_time` int unsigned NOT NULL,
@@ -95,14 +95,14 @@ CREATE TABLE `run` (
   `start_date` datetime NOT NULL,
   `start_date_local` datetime NOT NULL,
   `utc_offset` decimal(9,1) DEFAULT NULL,
-  `timezone` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `start_latlng` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `location_country` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `location_city` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `timezone` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `start_latlng` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `location_country` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `location_city` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `average_heartrate` decimal(5,1) DEFAULT NULL,
   `average_cadence` decimal(4,1) DEFAULT NULL,
   `race` tinyint unsigned NOT NULL,
-  `summary_polyline` text COLLATE utf8mb4_general_ci,
+  `summary_polyline` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`strava_id`),
   UNIQUE KEY `strava_id_UNIQUE` (`strava_id`),
   KEY `run_class_fk_idx` (`run_class_id`),
@@ -159,4 +159,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-04-14  6:41:00
+-- Dump completed on 2023-04-14 11:11:33

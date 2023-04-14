@@ -15,8 +15,7 @@ getAthletes();
     <div>Welcome</div>
     <div v-show="loading">Loading...</div>
     <div v-for="athlete in athleteList" :key="athlete.uuid">
-      {{athlete.firstname}}
-      {{athlete.lastname}}
+      <router-link :to="{ name: 'athlete', params: { slug: athlete.slug } }">{{athlete.firstname}} {{athlete.lastname}}</router-link>
     </div>
 
   </div>

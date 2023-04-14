@@ -3,21 +3,19 @@ import {onMounted} from "vue";
 import { RouterLink, RouterView } from "vue-router";
 import { medalStore } from "@/store";
 import LoginStrava from "@/components/LoginStrava.vue";
+import router from "@/router";
 const store = medalStore();
-console.log(store.medalcase.athlete);
-const items = [
+
+const items =[
   {
     label: "Athletes",
     icon: "pi pi-fw pi-bolt",
     to: "/",
   },
-  {
-    label: "Me",
-    icon: "pi pi-fw pi-user",
-    to: `/athlete/${store.medalcase.athlete.slug}`,
-    visible: () => store.isLoggedIn,
-  },
 ];
+const myProfile = () => {
+  router.push({ name: "athlete", params: { slug: store.loggedInAthlete.slug } })
+}
 onMounted(() => {
   store.setAccess();
 });
@@ -44,6 +42,12 @@ onMounted(() => {
       </router-link>
     </template>
     <template #end>
+      <Button
+          @click="myProfile()"
+          class="p-button-outlined p-button-secondary p-button-sm"
+          iconPos="right"
+          v-if="store.isLoggedIn"
+      >Me &nbsp;<font-awesome-icon icon="fa-light fa-fw fa-user" /></Button>
       <LoginStrava />
     </template>
   </Menubar>

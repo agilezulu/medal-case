@@ -149,16 +149,10 @@ class MedalCase:
                 athlete.flush()
 
             return {
-                "user": {
-                    "id": athlete.id,
-                    "firstname": athlete.firstname,
-                    "lastname": athlete.lastname,
-                    "country": athlete.country,
-                    "city": athlete.city,
-                    "units": athlete.units,
-                    "date_fmt": athlete.date_fmt,
-                    "sex": athlete.sex,
-                },
+                "slug": athlete.slug,
+                "firstname": athlete.firstname,
+                "lastname": athlete.lastname,
+                "id": athlete.id,
                 "tokens": {
                     'access_token': user['access_creds']['access_token'],
                     'refresh_token': user['access_creds']['refresh_token'],
@@ -166,7 +160,7 @@ class MedalCase:
                 }
             }
 
-    def get_athlete_by_slug(self, slug):
+    def _get_athlete_by_slug(self, slug):
         """
         Get from ddb if exists
         :param slug:
@@ -178,16 +172,72 @@ class MedalCase:
                 return athlete
         abort(404, description=f"Error: Cannot locate athlete")
 
-    def get_athlete(self, mcase_id):
+    def _get_athlete_by_id(self, mcase_id):
         """
         Get from ddb if exists
         :param mcase_id:
         :return:
         """
         try:
-            return Athlete[mcase_id]
+            with orm.db_session:
+                return Athlete[mcase_id]
         except orm.ObjectNotFound:
             abort(404, description=f"Error: Cannot locate athlete")
+
+    @staticmethod
+    def template_athlete(athlete):
+        """
+        Build athlete return structure
+        :param athlete: 
+        :return: 
+        """
+        return {
+            "c_100k": athlete.c_100k,
+            "c_100k_race": athlete.c_100k_race,
+            "c_100mi": athlete.c_100mi,
+            "c_100mi_race": athlete.c_100mi_race,
+            "c_50k": athlete.c_50k,
+            "c_50k_race": athlete.c_50k_race,
+            "c_50mi": athlete.c_50mi,
+            "c_50mi_race": athlete.c_50mi_race,
+            "c_extreme": athlete.c_extreme,
+            "c_extreme_race": athlete.c_extreme_race,
+            "c_marathon": athlete.c_marathon,
+            "c_marathon_race": athlete.c_marathon_race,
+            "city": athlete.city,
+            "country": athlete.country,
+            "firstname": athlete.firstname,
+            "last_run_date": athlete.last_run_date.strftime('%Y-%m-%dT%H:%M:%S'),
+            "lastname": athlete.lastname,
+            "photo_m": athlete.photo_m,
+            "sex": athlete.sex,
+            "slug": athlete.slug,
+            "uuid": athlete.uuid
+        }
+
+    @staticmethod
+    def template_run(run):
+        """
+        Run dict template
+        :param run: 
+        :return: 
+        """
+        return {
+            "strava_id":  run.strava_id,
+            "name":  run.name,
+            "distance":  run.distance,
+            "moving_time":  run.moving_time,
+            "elapsed_time":  run.elapsed_time,
+            "total_elevation_gain":  run.total_elevation_gain,
+            "start_date":  run.start_date.strftime('%Y-%m-%dT%H:%M:%S'),
+            "start_date_local":  run.start_date_local.strftime('%Y-%m-%dT%H:%M:%SZ'),
+            "location_country":  run.location_country,
+            "race": run.race == 1,
+            "summary_polyline": run.run_class.name,
+            "class": run.run_class.name,
+            "class_key": run.run_class.key,
+            "class_parent": run.run_class.parent,
+        }
 
     def get_athletes(self):
         """
@@ -196,30 +246,7 @@ class MedalCase:
         """
         with orm.db_session:
             return [
-                {
-
-                    "c_100k": a.c_100k,
-                    "c_100k_race": a.c_100k_race,
-                    "c_100mi": a.c_100mi,
-                    "c_100mi_race": a.c_100mi_race,
-                    "c_50k": a.c_50k,
-                    "c_50k_race": a.c_50k_race,
-                    "c_50mi": a.c_50mi,
-                    "c_50mi_race": a.c_50mi_race,
-                    "c_extreme": a.c_extreme,
-                    "c_extreme_race": a.c_extreme_race,
-                    "c_marathon": a.c_marathon,
-                    "c_marathon_race": a.c_marathon_race,
-                    "city": a.city,
-                    "country": a.country,
-                    "firstname": a.firstname,
-                    "last_run_date": a.c_100k,
-                    "lastname": a.lastname,
-                    "photo_m": a.photo_m,
-                    "sex": a.sex,
-                    "slug": a.slug,
-                    "uuid": a.uuid
-                }
+                self.template_athlete(a)
                     for a in Athlete.select().order_by(orm.desc(Athlete.total_runs))
             ]
 
@@ -248,11 +275,17 @@ class MedalCase:
         """
 
         """
-        counts = orm.select(
-            (r.run_class.key, orm.count(r.run_class))
-            for r in athlete.runs
-        )
-        print(counts[:])
+        with orm.db_session:
+            counts = orm.select(
+                (r.run_class.key, orm.count(r.strava_id), orm.count(r.race == 1))
+                for r in athlete.runs
+            )
+            for class_key, run_count, race_count in counts:
+                athlete.set(**{
+                    f"{class_key}": run_count,
+                    f"{class_key}_race": race_count,
+                })
+            print(counts[:])
 
     def get_start_location(self, lat_lng):
         """
@@ -276,7 +309,9 @@ class MedalCase:
 
     def get_run_class(self, dist_mi):
         """
-            get the run class base on the distance
+        get the run class base on the distance
+        :param dist_mi: distance in miles
+        :return:
         """
         if not self.class_bins:
             self.run_classes = list(RunClass.select().order_by(RunClass.min))
@@ -290,8 +325,7 @@ class MedalCase:
         Update an athlete's runs since their last run or build all for the first time
         """
 
-        athlete = self.get_athlete(mcase_id)
-        self.update_athlete_totals(athlete)
+        athlete = self._get_athlete_by_id(mcase_id)
         last_run_date = athlete.last_run_date
 
         with orm.db_session:
@@ -303,7 +337,6 @@ class MedalCase:
                     run_class = self.get_run_class(dist_mi)
                     activity.start_date = activity.start_date.replace(tzinfo=None)
                     location = self.get_start_location(activity.start_latlng)
-                    print(location)
                     run_params = {
                         "strava_id":  activity.id,
                         "name":  activity.name,
@@ -341,25 +374,22 @@ class MedalCase:
                         last_run_date = activity.start_date
 
             athlete.last_run_date = last_run_date
+            self.update_athlete_totals(athlete)
+            return self.get_athlete(athlete_model=athlete)
+    
+    def get_athlete(self, mcase_id=None, slug=None, athlete_model=None):
+        
+        athlete = None
+        if slug:
+            athlete = self._get_athlete_by_slug(slug)
+        elif mcase_id:
+            athlete = self._get_athlete_by_id(mcase_id)
+        elif athlete_model:
+            athlete = athlete_model
+        else:
+            abort(404, description=f"Error: Cannot locate athlete")
 
-            return {
-                "athlete": athlete.to_dict(),
-                "runs": [
-                    {
-                        "strava_id":  r.strava_id,
-                        "name":  r.name,
-                        "distance":  r.distance,
-                        "moving_time":  r.moving_time,
-                        "elapsed_time":  r.elapsed_time,
-                        "total_elevation_gain":  r.total_elevation_gain,
-                        "start_date":  r.start_date.strftime('%Y-%m-%dT%H:%M:%S'),
-                        "start_date_local":  r.start_date_local.strftime('%Y-%m-%dT%H:%M:%SZ'),
-                        "location_country":  r.location_country,
-                        "race": r.race == 1,
-                        "summary_polyline": r.run_class.name,
-                        "class": r.run_class.name,
-                        "class_key": r.run_class.key,
-                        "class_parent": r.run_class.parent,
-                    } for r in athlete.runs
-                ]
-            }
+        return {
+            **self.template_athlete(athlete),
+            "runs": [self.template_run(run) for run in athlete.runs]
+        }

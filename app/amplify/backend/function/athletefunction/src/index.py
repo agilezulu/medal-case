@@ -86,16 +86,13 @@ def athlete_login():
 
     # set JWT expires to
     access_token = create_access_token(
-        identity=data['user']['id'],
-        additional_claims={
-            'firstname': data['user']['firstname'],
-            'lastname': data['user']['lastname']
-        }
+        identity=data["id"]
     )
-    data['user'].pop('id')
     return make_response({
         "access_token": access_token,
-        "user": data['user']
+        "slug": data["slug"],
+        "firstname": data["firstname"],
+        "lastname": data["lastname"],
     })
 
 
@@ -121,9 +118,9 @@ def update_athlete_runs():
     """
     mcase_id = get_jwt_identity()
     mcase = MedalCase(mcase_id=mcase_id)
-    runs = mcase.update_athlete_medalcase(mcase_id)
+    athlete = mcase.update_athlete_medalcase(mcase_id)
 
-    return make_response(runs)
+    return make_response(athlete)
 
 
 @app.route(f'{BASE_PATH}/<slug>', methods=['GET'])
@@ -134,9 +131,8 @@ def get_athete_by_slug(slug):
     :return: streaks
     """
     mcase = MedalCase()
-    athlete = mcase.get_athlete_by_slug(slug)
-
-    return make_response(athlete.to_dict())
+    athlete = mcase.get_athlete(slug=slug)
+    return make_response(athlete)
 
 
 def handler(event, context):

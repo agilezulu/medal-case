@@ -25,15 +25,13 @@ const login = () => {
       <img src="@/assets/connect_with_strava.svg" />
     </Button>
   </div>
-  <div v-else>
+  <div class="strava-auth" v-else>
     <Button
         @click="store.doLogout()"
         class="p-button-outlined p-button-secondary p-button-sm"
-        label="Log out"
-        icon="pi pi-power-off"
         iconPos="right"
         v-if="store.isLoggedIn"
-    />
+    >Log out &nbsp;<font-awesome-icon icon="fa-light fa-fw fa-arrow-right-from-bracket" /></Button>
   </div>
 </template>
 <style lang="scss">

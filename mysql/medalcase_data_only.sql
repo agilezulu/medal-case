@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.28, for macos11 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.26, for macos11 (x86_64)
 --
 -- Host: 127.0.0.1    Database: medalcase
 -- ------------------------------------------------------
@@ -21,7 +21,7 @@
 
 LOCK TABLES `athlete` WRITE;
 /*!40000 ALTER TABLE `athlete` DISABLE KEYS */;
-INSERT INTO `athlete` VALUES (2,'d47e06ac-e3bb-4e84-b568-f7c3dbc9e658',16055914,'s-16055914','Paul','Schnell','mi','United Kingdom','London','M','%m/%d/%Y','https://dgalywyr863hv.cloudfront.net/pictures/athletes/16055914/4493638/3/medium.jpg','https://dgalywyr863hv.cloudfront.net/pictures/athletes/16055914/4493638/3/large.jpg','cdef60b116c1bd0a4aae5689d325c57789ee1df0','496d575ef8d03da3b44aac679daeaf502e007b51',1681450739,NULL,0,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2023-04-10 11:09:59','2023-04-02 08:04:28');
+INSERT INTO `athlete` VALUES (2,'d47e06ac-e3bb-4e84-b568-f7c3dbc9e658',16055914,'s-16055914','Paul','Schnell','mi','United Kingdom','London','M','%m/%d/%Y','https://dgalywyr863hv.cloudfront.net/pictures/athletes/16055914/4493638/3/medium.jpg','https://dgalywyr863hv.cloudfront.net/pictures/athletes/16055914/4493638/3/large.jpg','b8b7eaf913906ce9b059e69c684d9fe67a13cab0','496d575ef8d03da3b44aac679daeaf502e007b51',1681473246,NULL,0,0,21,17,10,5,1,1,3,3,0,0,1,1,NULL,NULL,'2023-04-10 11:09:59','2023-04-02 08:04:28');
 /*!40000 ALTER TABLE `athlete` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -54,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-04-14  6:40:18
+-- Dump completed on 2023-04-14 11:12:20
