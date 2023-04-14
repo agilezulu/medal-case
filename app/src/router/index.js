@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "@/views/HomeView.vue"
-import MeView from "@/views/MeView.vue";
+import AthleteView from "@/views/AthleteView.vue";
 import PageNotFound from "@/views/PageNotFound.vue";
 import AuthStrava from "@/views/AuthStrava.vue";
 
@@ -14,9 +14,9 @@ const router = createRouter({
       meta: { requiresAuth: false },
     },
     {
-      path: '/me',
+      path: '/athlete/:slug',
       name: 'me',
-      component: MeView
+      component: AthleteView
     },
     {
       path: "/exchange_token",
