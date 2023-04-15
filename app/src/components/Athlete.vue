@@ -1,14 +1,19 @@
 <script setup>
 import { onMounted, computed, ref, getCurrentInstance } from "vue";
 import { useRoute } from "vue-router";
-import { medalStore, CLASSES } from "@/store";
+import { medalStore, CLASSES, classRows } from "@/store";
 import { metersToDistanceUnits, getDate, secsToHMS } from "@/utils/helpers.js";
 import {storeToRefs} from "pinia";
 import { useDialog } from "primevue/usedialog";
 import { useToast } from "primevue/usetoast";
 import { groupBy } from "@/utils/helpers.js";
 import RunEdit from "@/components/RunEdit.vue";
+import AthleteMedalcase from "@/components/AthleteMedalcase.vue";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
+
+const props =  defineProps({
+  currentUser: Boolean,
+});
 
 const { loading, athlete } = storeToRefs(medalStore())
 const store = medalStore();
@@ -30,7 +35,6 @@ const buildRuns = () => {
 const dynamicDialogRef = ref(null);
 
 const editRun = (run) => {
-
   dynamicDialogRef.value = dialog.open(RunEdit, {
     data: {
       run: run
@@ -46,11 +50,10 @@ const editRun = (run) => {
       },
       modal: true
     },
-    onClose: (options) => {
-      const data = options.data;
-      console.log('CLOSED', data);
-      if (data) {
-        toast.add({ severity:'info', data, life: 3000 });
+    onClose: (response) => {
+      if (response.data) {
+        toast.add({ severity: 'success', detail: "Run successfully updated", life: 3000 });
+        store.refreshAthleteData(response.data);
       }
     }
   });
@@ -58,8 +61,13 @@ const editRun = (run) => {
 }
 
 onMounted(() => {
-  store.getAthlete(route.params.slug);
-
+  const athleteSlug = props.currentUser ? store.getSessionSlug : route.params.slug;
+  if (athleteSlug) {
+    store.getAthlete(athleteSlug);
+  }
+  else {
+    toast.add({ severity: 'error', summary: "Error", detail: "Cannot find identifier for athlete", life: 5000 });
+  }
 });
 </script>
 
@@ -69,14 +77,8 @@ onMounted(() => {
   </div>
   <div v-else>
     <div id="case-header">
-      <!--
-      Runs:
-      <div>
-        <SelectButton v-model="store.selectedUnits" :options="store.units" aria-labelledby="basic" />
-      </div>
-      -->
-      {{athlete.firstname}}
-      {{athlete.lastname}}
+
+      <AthleteMedalcase :athlete="athlete" />
 
       <Button
           @click="buildRuns()"
@@ -87,12 +89,6 @@ onMounted(() => {
     <div id="case-summary">
 
         <div class="class-body">
-          <!--
-          <div class="hex-holder">
-                    <div class="hex"></div>
-                    <div class="hex-content"></div>
-                  </div>
-          -->
 
           <Accordion class="accordion-custom" :multiple="true" :activeIndex="[0]">
             <template v-for="runClass in store.athleteRuns" :key="runClass.gKey">
@@ -100,8 +96,9 @@ onMounted(() => {
               <template #header>
                 <div class="run-class">
                   <div class="class-name">{{ runClass.class }}</div>
-                  <div class="class-count">{{runClass.gCount}}  <sup :class="runClass.class_key"><font-awesome-icon icon="fa-light fa-medal" /> {{runClass.gRaceCount}}</sup></div>
-
+                  <div class="class-count">
+                    {{athlete[runClass.gKey]}} <sup :class="runClass.class_key"><font-awesome-icon icon="fa-light fa-medal" /> {{athlete[`${runClass.gKey}_race`]}}</sup>
+                  </div>
                 </div>
               </template>
               <div class="run-list">
@@ -120,7 +117,7 @@ onMounted(() => {
                     <div class="run-time" :class="run.race ? runClass.class_key : ''">{{ secsToHMS(run.elapsed_time)}}</div>
                     <div class="run-dist">{{ metersToDistanceUnits(run.distance, 'mi')}}</div>
                   </div>
-                  <div class="run-tools">
+                  <div v-if="props.currentUser" class="run-tools">
                     <a href="javascript:void(0);" class="action" @click="editRun(run)"><font-awesome-icon icon="fa-light fa-pencil" /></a>
                   </div>
                 </div>
@@ -188,7 +185,7 @@ $borderradius2: 4px;
   }
   .class-body {
     padding: 12px;
-    width: 600px;
+    width: 100%;
   }
   .run-list {
     .run-info {

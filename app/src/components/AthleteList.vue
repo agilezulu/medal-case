@@ -1,7 +1,6 @@
 <script setup>
 import { medalStore, CLASSES } from "@/store";
 import { storeToRefs } from "pinia";
-import { metersToDistanceUnits, getDate, secsToHMS } from "@/utils/helpers.js";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
 
 const { athleteList, loading } = storeToRefs(medalStore())
@@ -13,6 +12,9 @@ getAthletes();
 <template>
   <div id="athlete-list">
     <h2 class="green">Medalcase Athletes</h2>
+
+     <img src="/medalcase_logo.svg" width="100" />
+
     <div v-if="loading"><LoadingSpinner /></div>
     <div v-else>
       <DataTable :value="athleteList" stripedRows tableStyle="min-width: 50rem" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"

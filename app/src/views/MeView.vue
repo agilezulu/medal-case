@@ -4,7 +4,7 @@ import Athlete from "@/components/Athlete.vue";
 
 <template>
   <div class="about">
-    <Athlete />
+    <Athlete :current-user="true" />
   </div>
 </template>
 

@@ -62,15 +62,11 @@ export const groupBy = (data, groupKey, keys, gsortKey) => {
       grp.gKey = group;
       grp.gVal = [];
       grp.gCount = 0;
-      grp.gRaceCount = 0
 
       storage[group] = storage[group] || grp;
       storage[group].gVal.push(item);
       if (gsortKey) {
         storage[group].gVal.sort(compare(gsortKey, 'desc'));
-      }
-      if (groupKey === 'class_key' && item.race) {
-        storage[group].gRaceCount++;
       }
       storage[group].gCount++;
 

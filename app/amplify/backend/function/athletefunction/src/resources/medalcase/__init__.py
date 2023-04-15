@@ -212,7 +212,10 @@ class MedalCase:
             "photo_m": athlete.photo_m,
             "sex": athlete.sex,
             "slug": athlete.slug,
-            "uuid": athlete.uuid
+            "uuid": athlete.uuid,
+            "total_distance": athlete.total_distance,
+            "total_runs": athlete.total_runs,
+            "total_medals": athlete.total_medals,
         }
 
     @staticmethod
@@ -378,7 +381,13 @@ class MedalCase:
             return self.get_athlete(athlete_model=athlete)
     
     def get_athlete(self, mcase_id=None, slug=None, athlete_model=None):
-        
+        """
+        Get an athele from DB
+        :param mcase_id:
+        :param slug:
+        :param athlete_model:
+        :return:
+        """
         athlete = None
         if slug:
             athlete = self._get_athlete_by_slug(slug)
@@ -393,3 +402,24 @@ class MedalCase:
             **self.template_athlete(athlete),
             "runs": [self.template_run(run) for run in athlete.runs]
         }
+
+    def update_run(self, mcase_id, data):
+        """
+        Update an athlete run
+        :param mcase_id:
+        :param data:
+        :return:
+        """
+        run_id = data.get('strava_id')
+        run = Run[run_id]
+
+        if run and run.athlete.id == mcase_id:
+            run_class = RunClass.get(key=data.get("class_key"))
+            with orm.db_session:
+                run.set(
+                    name=data.get("name"),
+                    race=data.get("race"),
+                    run_class=run_class
+                )
+            return self.get_athlete(mcase_id=mcase_id)
+        abort(404, description=f"Error: Invalid access to update a run")

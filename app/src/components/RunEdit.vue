@@ -1,20 +1,32 @@
 <script setup>
 import { ref, onMounted, inject } from "vue";
 import { medalStore, CLASSES } from "@/store";
-import { metersToDistanceUnits, getDate, secsToHMS } from "@/utils/helpers.js";
-import {storeToRefs} from "pinia";
+import { metersToDistanceUnits } from "@/utils/helpers.js";
+import { useToast } from "primevue/usetoast";
+
 const runToEdit = ref(0);
 const dialogRef = inject("dialogRef");
-const { selectedUnits } = storeToRefs(medalStore())
+const store = medalStore();
+const toast = useToast();
 
 onMounted(() => {
-  runToEdit.value = dialogRef.value.data.run;
+  runToEdit.value = JSON.parse(JSON.stringify(dialogRef.value.data.run));
   console.log('runToEdit', runToEdit.value);
 });
 
 const closeDialog = () => {
-  dialogRef.value.close(runToEdit.value);
+  dialogRef.value.close();
 };
+const saveRun = () => {
+    store.updateRun(runToEdit.value).then((response) => {
+      dialogRef.value.close(response.data);
+    }, error => {
+      toast.add({
+        severity:'error',
+        summary: error.response.data.name,
+        detail: error.response.data.description, life: 3000 });
+    });
+}
 </script>
 <template>
   <div id="edit-run" class="card">
@@ -44,8 +56,8 @@ const closeDialog = () => {
     <div class="field grid">
       <div class="col-12 mb-2 md:col-2 md:mb-0"></div>
       <div class="col-12 md:col-10 set-distance">
-        <Button label="Cancel" severity="secondary" outlined />
-        <Button label="Submit" />
+        <Button label="Cancel" severity="secondary" outlined @click="closeDialog()"/>
+        <Button label="Save" @click="saveRun() "/>
       </div>
     </div>
   </div>

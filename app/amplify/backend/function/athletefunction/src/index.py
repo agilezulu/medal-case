@@ -3,6 +3,7 @@ Main API interface for events
 """
 import awsgi
 import os
+import json
 from datetime import timedelta, datetime
 from flask_cors import CORS
 from pony.flask import Pony
@@ -14,6 +15,7 @@ from flask_jwt_extended import get_jwt
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
+from werkzeug.exceptions import HTTPException
 
 from resources.db.models import *
 
@@ -64,6 +66,21 @@ def make_response(data, tojson=True):
     response.headers.add('Access-Control-Allow-Headers', '*')
     response.headers.add('Access-Control-Allow-Credentials', 'true')
     response.headers.add('Access-Control-Allow-Methods', 'OPTIONS,POST,GET')
+    return response
+
+
+@app.errorhandler(HTTPException)
+def handle_exception(e):
+    """Return JSON instead of HTML for HTTP errors."""
+    # start with the correct headers and status code from the error
+    response = e.get_response()
+    # replace the body with JSON
+    response.data = json.dumps({
+        "code": e.code,
+        "name": e.name,
+        "description": e.description,
+    })
+    response.content_type = "application/json"
     return response
 
 
@@ -132,6 +149,22 @@ def get_athete_by_slug(slug):
     """
     mcase = MedalCase()
     athlete = mcase.get_athlete(slug=slug)
+    return make_response(athlete)
+
+
+@app.route(f'{BASE_PATH}/run', methods=['PUT'])
+@jwt_required()
+def update_athlete_run():
+    """
+    Primary streaks builder to create new or rebuild all
+    :param uuid: mcase athlete uuid
+    :return: streaks
+    """
+    data = request.json
+
+    mcase_id = get_jwt_identity()
+    mcase = MedalCase()
+    athlete = mcase.update_run(mcase_id, data)
     return make_response(athlete)
 
 

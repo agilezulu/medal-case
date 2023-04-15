@@ -17,15 +17,25 @@ export const SCOPES = [
   "activity:read_all"
 ];
 export const CLASSES = [
-  { name: "Marathon", key: "c_marathon" },
-  { name: "50k", key: "c_50k" },
-  { name: "50mi", key: "c_50mi" },
-  { name: "100k", key: "c_100k" },
-  { name: "100k+", key: "c_100k_plus" },
-  { name: "100mi", key: "c_100mi" },
-  { name: "Xtreme", key: "c_extreme" },
+  { name: "Marathon", key: "c_marathon", row: 1 },
+  { name: "50k", key: "c_50k", row: 1  },
+  { name: "50mi", key: "c_50mi", row: 2  },
+  { name: "100k", key: "c_100k", row: 2  },
+  { name: "100k+", key: "c_100kplus", row: 2  },
+  { name: "100mi", key: "c_100mi", row: 3  },
+  { name: "Xtreme", key: "c_xtreme", row: 3  },
 ];
 const classKeys = CLASSES.map(c => c.key);
+export const classRows = Object.values(CLASSES.reduce((acc, obj) => {
+    let key = obj.row;
+    if (key in acc) {
+      acc[key].push(obj);
+    } else {
+      acc[key] = [obj];
+    }
+  return acc;
+}, {}));
+
 const redirectUrl = NODE_ENV === "production" ? URL_LIVE : URL_LOCAL;
 const streaksAPI = NODE_ENV === "production" ? STREAKS_LIVE : STREAKS_LOCAL;
 const API = (key, param) => {
@@ -33,7 +43,8 @@ const API = (key, param) => {
     login: `${streaksAPI}/athlete/login`,
     list: `${streaksAPI}/athlete/list`,
     athlete: `${streaksAPI}/athlete/${param}`,
-    build: `${streaksAPI}/athlete`
+    build: `${streaksAPI}/athlete`,
+    run: `${streaksAPI}/athlete/run`,
     }[key];
 };
 
@@ -70,12 +81,16 @@ export const medalStore = defineStore('todos', {
     },
     athleteRuns(state) {
       let grouped = groupBy(state.athlete.runs, "class_key", ["class", "class_key"], "start_date_local");
+
       let groupedSorted = Object.entries(grouped).sort((a, b) => classKeys.indexOf(a.gKey) - classKeys.indexOf(b.gKey));
       return groupedSorted.map(gs => gs[1]);
 
     },
     isLoading(state) {
       return state.loading;
+    },
+    getSessionSlug(state) {
+      return state.loggedInAthlete.slug;
     }
   },
   actions: {
@@ -121,7 +136,7 @@ export const medalStore = defineStore('todos', {
           };
           setUser(userData);
           this.loggedInAthlete = userData;
-          router.push(`/athlete/${responseData.slug}`);
+          router.push('/me');
         });
 
       } catch (response) {
@@ -168,5 +183,17 @@ export const medalStore = defineStore('todos', {
         this.loading = false;
       }
     },
+    async updateRun(data) {
+        const sendData = {
+          class_key: data.class_key,
+          name: data.name,
+          race: data.race,
+          strava_id: data.strava_id
+        }
+        return axios.put(API('run'), sendData);
+    },
+    refreshAthleteData(data) {
+      this.athlete = data;
+    }
   },
 })
