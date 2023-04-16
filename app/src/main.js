@@ -4,8 +4,8 @@ import router from "@/router";
 import { createPinia } from "pinia";
 import { Amplify } from "aws-amplify";
 import awsExports from "./aws-exports";
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon, FontAwesomeLayers, FontAwesomeLayersText } from "@fortawesome/vue-fontawesome";
 
 import PrimeVue from "primevue/config";
 import SelectButton from "primevue/selectbutton";
@@ -32,8 +32,38 @@ import "primeflex/primeflex.css";
 import "primevue/resources/primevue.min.css";
 import "primeicons/primeicons.css";
 
-import { faMedal, faPersonRunning, faArrowUpRightFromSquare, faArrowRightFromBracket, faUser, faArrowsRotate, faPencil } from "@fortawesome/pro-light-svg-icons";
-library.add(faMedal, faPersonRunning, faArrowUpRightFromSquare, faArrowRightFromBracket, faUser, faArrowsRotate, faPencil);
+import {
+  faMedal,
+  faPersonRunning,
+  faArrowUpRightFromSquare,
+  faArrowRightFromBracket,
+  faUser,
+  faArrowsRotate,
+  faPencil,
+  faCircleStar
+} from "@fortawesome/pro-light-svg-icons";
+
+import {
+  faHexagon
+} from "@fortawesome/sharp-light-svg-icons";
+
+import {
+  faStarOfLife
+} from "@fortawesome/sharp-solid-svg-icons";
+
+
+library.add(
+  faMedal,
+  faPersonRunning,
+  faArrowUpRightFromSquare,
+  faArrowRightFromBracket,
+  faUser,
+  faArrowsRotate,
+  faPencil,
+  faCircleStar,
+  faHexagon,
+  faStarOfLife
+);
 
 Amplify.configure(awsExports);
 
@@ -61,6 +91,8 @@ app.component("InputText", InputText);
 app.component("Dropdown", Dropdown);
 app.component("InputSwitch", InputSwitch);
 
-app.component("font-awesome-icon", FontAwesomeIcon)
+app.component("font-awesome-icon", FontAwesomeIcon);
+app.component("font-awesome-layers", FontAwesomeLayers);
+app.component("font-awesome-layers-text", FontAwesomeLayersText);
 
 app.mount("#app");

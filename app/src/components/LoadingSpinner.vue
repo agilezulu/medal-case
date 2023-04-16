@@ -15,6 +15,7 @@ import { OrbitSpinner } from "epic-spinners";
 <style scoped>
 .spinner-canvas {
   position: fixed;
+  top: 0;
   background-color: #ffffff;
   width: 100%;
   height: 100vh;

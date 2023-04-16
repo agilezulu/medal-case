@@ -17,7 +17,7 @@ export const SCOPES = [
   "activity:read_all"
 ];
 export const CLASSES = [
-  { name: "Marathon", key: "c_marathon", row: 1 },
+  { name: "26.2", key: "c_marathon", row: 1 },
   { name: "50k", key: "c_50k", row: 1  },
   { name: "50mi", key: "c_50mi", row: 2  },
   { name: "100k", key: "c_100k", row: 2  },
@@ -71,7 +71,8 @@ export const medalStore = defineStore('todos', {
     selectedUnits: "mi",
     athleteList: [],
     athlete: {
-      runs: []
+      runs: [],
+      new_runs: {}
     },
   }),
   getters: {
@@ -170,13 +171,12 @@ export const medalStore = defineStore('todos', {
       }
     },
     async buildAthleteRuns() {
-      if (this.athleteList.length){ return; }
-
       try {
         this.loading = true;
         console.log("buildAthlete");
-        const response = await axios.get(API('build'));
+        const response = await axios.post(API('build'), null);
         this.athlete = response.data;
+        return this.athlete.new_runs;
       } catch (response) {
         console.log("error", response.errors);
       } finally {

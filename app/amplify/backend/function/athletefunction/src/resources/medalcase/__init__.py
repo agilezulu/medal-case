@@ -6,7 +6,7 @@ import time
 import json
 from bisect import bisect_right
 from pony import orm
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from geopy.geocoders import GoogleV3
 from flask import current_app as app, abort
 from resources.strava import Strava
@@ -283,12 +283,15 @@ class MedalCase:
                 (r.run_class.key, orm.count(r.strava_id), orm.count(r.race == 1))
                 for r in athlete.runs
             )
+            total_medals = 0
             for class_key, run_count, race_count in counts:
                 athlete.set(**{
                     f"{class_key}": run_count,
                     f"{class_key}_race": race_count,
                 })
-            print(counts[:])
+                total_medals += run_count
+            athlete.set(total_medals=total_medals)
+            #print(counts[:])
 
     def get_start_location(self, lat_lng):
         """
@@ -326,11 +329,13 @@ class MedalCase:
     def update_athlete_medalcase(self, mcase_id):
         """
         Update an athlete's runs since their last run or build all for the first time
+        :param mcase_id:
+        :return:
         """
 
         athlete = self._get_athlete_by_id(mcase_id)
-        last_run_date = athlete.last_run_date
-
+        last_run_date = athlete.last_run_date.replace(tzinfo=timezone.utc)
+        new_medals = {}
         with orm.db_session:
             min_medal_dist = min(c.min for c in RunClass.select())
             for activity in self.strava.get_activities(after=athlete.last_run_date):
@@ -338,7 +343,7 @@ class MedalCase:
                 dist_mi = self.meters_to_miles(activity.distance)
                 if activity.type in self.valid_types and dist_mi >= min_medal_dist:
                     run_class = self.get_run_class(dist_mi)
-                    activity.start_date = activity.start_date.replace(tzinfo=None)
+                    activity.start_date = activity.start_date.replace(tzinfo=timezone.utc)
                     location = self.get_start_location(activity.start_latlng)
                     run_params = {
                         "strava_id":  activity.id,
@@ -370,15 +375,20 @@ class MedalCase:
                             location_city=location['location_city'],
                         )
                     else:
+                        if run_class.key not in new_medals:
+                            new_medals[run_class.key] = 0
+                        new_medals[run_class.key] += 1
                         Run(**run_params)
 
-                    # update athlete totals
-                    if not last_run_date or activity.start_date > last_run_date:
-                        last_run_date = activity.start_date
+                # update last checked run
+                if not last_run_date or activity.start_date > last_run_date:
+                    last_run_date = activity.start_date
 
             athlete.last_run_date = last_run_date
             self.update_athlete_totals(athlete)
-            return self.get_athlete(athlete_model=athlete)
+            athlete_data = self.get_athlete(athlete_model=athlete)
+            athlete_data['new_runs'] = new_medals
+            return athlete_data
     
     def get_athlete(self, mcase_id=None, slug=None, athlete_model=None):
         """

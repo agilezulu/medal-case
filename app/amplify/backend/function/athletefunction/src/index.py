@@ -125,7 +125,7 @@ def get_athlete_list():
     return make_response(athletes)
 
 
-@app.route(f'{BASE_PATH}', methods=['GET'])
+@app.route(f'{BASE_PATH}', methods=['POST'])
 @jwt_required()
 def update_athlete_runs():
     """

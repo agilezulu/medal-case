@@ -1,3 +1,9 @@
+import moment from "moment";
+
+export const formatDate = (dateStr, formatStr) => {
+  let format = formatStr || 'ddd Do MMMM YYYY';
+  return moment(dateStr).format(format);
+}
 export const round = (value, precision) => {
   const multiplier = Math.pow(10, precision || 0);
   return Math.round(value * multiplier) / multiplier;

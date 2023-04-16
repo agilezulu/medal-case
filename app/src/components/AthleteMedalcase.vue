@@ -48,12 +48,12 @@ const totalMedals = computed(() => {
       <div v-for="(row, idx) in classRows" class="mcase-row" :key="idx">
         <div v-for="c in row" class="mcase-class" :class="c.key" :key="c.key">
           <div class="medal-bg">
-            <MedalcaseLogo :border="athlete[c.key] ? 'currentColor' : '#999999'" :center="athlete[c.key] ? '#ffffff' : '#dddddd'" />
+            <img v-if="c.key === 'c_marathon'" src="/c_marathon.svg" />
+            <MedalcaseLogo v-else :border="athlete[c.key] ? 'currentColor' : '#999999'" :center="athlete[c.key] ? '#ffffff' : '#dddddd'" />
           </div>
           <div class="medal-stats">
-            <span class="medal-name">{{c.name}}</span>
-            <span class="medal-count">{{athlete[c.key]}}</span>
-            <span class="medal-count-race">({{athlete[`${c.key}_race`]}})</span>
+            <div class="medal-count">{{athlete[c.key]}}</div>
+            <div class="medal-name">{{c.name}}</div>
           </div>
 
         </div>
@@ -101,13 +101,14 @@ $stack-margin-lr: calc($medal-width / 16);
     .mcase-row {
       display: flex;
       justify-content: center;
+      flex-wrap: wrap;
       .mcase-class {
         display: flex;
         width: $medal-width;
         height: $medal-width;
         position: relative;
         justify-content: center;
-        align-items: center;
+
         margin-top: -$stack-margin-top;
         margin-left: -$stack-margin-lr;
         margin-right: -$stack-margin-lr;
@@ -117,8 +118,20 @@ $stack-margin-lr: calc($medal-width / 16);
           position: relative;
           display: flex;
           flex-direction: column;
-          justify-content: center;
+          justify-content: flex-end;
           align-items: center;
+          width: 100%;
+          bottom: 34px;
+          .medal-count {
+            border: solid 3px #666666;
+            background-color: rgba(255,255,255,0.5);
+            height: 34px;
+            width: 105px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+          }
           .medal-name {
             font-size: 1.2rem;
             font-weight: 800;

@@ -14,15 +14,19 @@ getAthletes();
     <h2 class="green">Medalcase Athletes</h2>
 
      <img src="/medalcase_logo.svg" width="100" />
-
-    <div v-if="loading"><LoadingSpinner /></div>
-    <div v-else>
-      <DataTable :value="athleteList" stripedRows tableStyle="min-width: 50rem" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"
+      <!--
                  paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-                 currentPageReportTemplate="{first} to {last} of {totalRecords}">
+                 currentPageReportTemplate="{first} to {last} of {totalRecords}"  paginator :rows="45" :rowsPerPageOptions="[45, 90, 150]" -->
+      <DataTable :value="athleteList">
+
         <Column field="firstname" header="Name" headerStyle="text-align: left;" :sortable="true">
           <template #body="slotProps">
             <router-link :to="{ name: 'athlete', params: { slug: slotProps.data.slug } }">{{slotProps.data.firstname}} {{slotProps.data.lastname}}</router-link>
+          </template>
+        </Column>
+        <Column field="total_medals" header="Total" :sortable="true">
+          <template #body="slotProps">
+            {{slotProps.data.total_medals}}
           </template>
         </Column>
         <template v-for="runClass in CLASSES" :key="runClass.key">
@@ -35,7 +39,7 @@ getAthletes();
           </Column>
         </template>
       </DataTable>
-    </div>
+
   </div>
 </template>
 

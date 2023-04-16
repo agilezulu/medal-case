@@ -4,15 +4,11 @@ import {RouterLink, RouterView} from "vue-router";
 import router from "@/router";
 import {medalStore} from "@/store";
 import LoginStrava from "@/components/LoginStrava.vue";
+import LoadingSpinner from "@/components/LoadingSpinner.vue";
+import {storeToRefs} from "pinia";
 
 const store = medalStore();
-
-const items = [
-  {
-    label: "About",
-    to: "/about",
-  },
-];
+const { loading } = storeToRefs(medalStore());
 const myProfile = () => {
   router.push({name: "me"});
   //router.push({ name: "athlete", params: { slug: store.loggedInAthlete.slug } });
@@ -23,27 +19,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <Menubar :model="items">
+  <Menubar>
     <template #start>
       <router-link to="/" class="p-menuitem-link"><img src="/medalcase_logo.svg"> Medalcase</router-link>
-    </template>
-    <template #item="{ item }">
-      <router-link
-          :to="item.to"
-          custom
-          v-slot="{ href, navigate, isActive, isExactActive }"
-      >
-              <a
-                  :href="href"
-                  @click="navigate"
-                  class="p-menuitem-link"
-                  :class="{
-                    'active-link': isActive,
-                    'active-link-exact': isExactActive,
-                  }"
-              ><template v-if="item.image"><img :src="item.image" class="menu-image"></template>
-                {{ item.label }}</a>
-            </router-link>
     </template>
     <template #end>
       <ul role="menubar" tabindex="0" class="menu-end">
@@ -65,23 +43,42 @@ onMounted(() => {
       </ul>
     </template>
   </Menubar>
+  <div v-if="loading">
+    <LoadingSpinner />
+  </div>
   <div class="container">
     <div class="left-column"></div>
     <div class="center-column"><router-view></router-view></div>
     <div class="right-column"></div>
   </div>
+  <div class="footer">
+    <router-link to="/about" class="p-menuitem-link">About</router-link>
+    <Toast/>
+  </div>
 
-  <Toast/>
 </template>
 
 <style lang="scss">
 $page-width: 720px;
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  justify-content: space-between;
+}
 .container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
 }
-
+.footer {
+  min-height: 80px;
+  background-color: #eeeeee;
+  padding: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .left-column,
 .right-column {
   flex-basis: calc((100% - $page-width)/2);

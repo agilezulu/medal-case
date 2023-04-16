@@ -1,35 +1,33 @@
 <script setup>
-import { onMounted, computed, ref, getCurrentInstance } from "vue";
+import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import { medalStore, CLASSES, classRows } from "@/store";
+import { medalStore } from "@/store";
 import { metersToDistanceUnits, getDate, secsToHMS } from "@/utils/helpers.js";
 import {storeToRefs} from "pinia";
 import { useDialog } from "primevue/usedialog";
 import { useToast } from "primevue/usetoast";
-import { groupBy } from "@/utils/helpers.js";
+import { formatDate } from "@/utils/helpers.js";
 import RunEdit from "@/components/RunEdit.vue";
 import AthleteMedalcase from "@/components/AthleteMedalcase.vue";
-import LoadingSpinner from "@/components/LoadingSpinner.vue";
+
+import MedalcaseLogo from "@/components/icons/MedalcaseLogo.vue";
+import BadgeRace from "@/components/icons/BadgeRace.vue";
+import BadgeRun from "@/components/icons/BadgeRun.vue";
 
 const props =  defineProps({
   currentUser: Boolean,
 });
 
-const { loading, athlete } = storeToRefs(medalStore())
+const { athlete } = storeToRefs(medalStore());
 const store = medalStore();
 const route = useRoute();
 const dialog = useDialog();
 const toast = useToast();
 
-const classKeys = CLASSES.map(c => c.key);
-//.sort((a, b) => classKeys.indexOf(a.gKey) - classKeys.indexOf(b.gKey)
-const groupedRuns = computed(() => {
-  let grouped = groupBy(store.athleteRuns, "class_key", ["class", "class_key"], "start_date_local");
-  let groupedSorted = Object.entries(grouped).sort((a, b) => classKeys.indexOf(a.gKey) - classKeys.indexOf(b.gKey));
-  return groupedSorted.map(gs => gs[1]);
-});
 const buildRuns = () => {
-  store.buildAthleteRuns();
+  let newRuns = store.buildAthleteRuns();
+  //console.log('UPDATED', newRuns);
+
 }
 
 const dynamicDialogRef = ref(null);
@@ -72,19 +70,20 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="loading">
-    <LoadingSpinner />
-  </div>
-  <div v-else>
+  <div>
     <div id="case-header">
 
       <AthleteMedalcase :athlete="athlete" />
 
-      <Button
-          @click="buildRuns()"
-          class="p-button-outlined p-button-secondary p-button-sm"
-          v-if="store.isLoggedIn"
-      >Build Medalcase <font-awesome-icon icon="fa-light fa-arrows-rotate" /></Button>
+      <div class="update-tools">
+        <a href="javascript:void(0);"
+            @click="buildRuns()"
+            class="p-button p-component p-button-secondary p-button-outlined p-button-sm"
+            v-if="store.isLoggedIn"
+        >Update Medalcase <font-awesome-icon icon="fa-light fa-arrows-rotate" fixed-width /></a>
+        <div class="last-run-date">{{formatDate(athlete.last_run_date)}}</div>
+      </div>
+
     </div>
     <div id="case-summary">
 
@@ -96,8 +95,23 @@ onMounted(() => {
               <template #header>
                 <div class="run-class">
                   <div class="class-name">{{ runClass.class }}</div>
-                  <div class="class-count">
-                    {{athlete[runClass.gKey]}} <sup :class="runClass.class_key"><font-awesome-icon icon="fa-light fa-medal" /> {{athlete[`${runClass.gKey}_race`]}}</sup>
+                  <div class="counts">
+                    <div class="class-count">
+                      <div class="medal-bg">
+                        <MedalcaseLogo border="currentColor" center="#ffffff" />
+                      </div>
+                      <div class="count">
+                        <span>{{athlete[runClass.gKey]}}</span>
+                      </div>
+                    </div>
+                    <div class="class-count">
+                      <div class="medal-bg">
+                        <MedalcaseLogo border="currentColor" center="#ffffff" />
+                      </div>
+                      <div class="count">
+                        <span :class="runClass.class_key"> {{athlete[`${runClass.gKey}_race`]}}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </template>
@@ -108,7 +122,11 @@ onMounted(() => {
 
                     <div class="run-title">
                       <span class="run-idx">{{idx+1}}</span>
-                      <span class="run-ico" :class="run.race ? runClass.class_key : 'c_training'"><font-awesome-icon :icon="`fa-fw fa-light ${run.race? 'fa-medal' : 'fa-person-running'}`" /></span>
+                      <span class="run-ico" :class="run.race ? runClass.class_key : 'c_training'">
+                        <template v-if="run.race"><BadgeRace /></template>
+                        <template v-else><BadgeRun /></template>
+                      </span>
+
                       <a :href="`https://www.strava.com/activities/${run.strava_id}/overview`" target="_new" class="run-name" :class="run.race ? runClass.class_key : 'c_training'">{{run.name}} <font-awesome-icon icon="fa-light fa-arrow-up-right-from-square" transform="shrink-4 up-6" /></a>
                     </div>
                     <div class="run-date">{{getDate(run.start_date_local)}}</div>
@@ -153,8 +171,20 @@ $borderradius2: 4px;
   @include hexagon(60px, #eeeeee, 2px, #aaaaaa);
 }
 #case-header {
-  .p-button {
-    padding: 0px 12px;
+  .update-tools {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: solid 1px #dddddd;
+    background-color: #eeeeee;
+    padding: 4px;
+    border-radius: 6px;
+
+    .p-button {
+      padding: 2px 12px;
+      background-color: #ffffff;
+    }
   }
 }
 
@@ -169,12 +199,38 @@ $borderradius2: 4px;
     outline-offset: 0;
     box-shadow: none;
   }
-
-
+  .p-accordion {
+    .p-accordion-header {
+      .p-accordion-header-link {
+        padding-right: 4px;
+      }
+    }
+  }
   .run-class {
     display: flex;
     flex: 1;
     justify-content: space-between;
+    .counts {
+      flex-wrap: nowrap;
+      display: flex;
+      .class-count {
+        position: relative;
+        display: flex;
+        width: 60px;
+        justify-content: center;
+
+        .medal-bg {
+          position: absolute;
+          width: 60px;
+          top: -16px;
+        }
+
+        .count {
+          position: relative;
+          z-index: 12;
+        }
+      }
+    }
   }
   .run-single {
     display: flex;
@@ -206,7 +262,12 @@ $borderradius2: 4px;
           color: #555555;
         }
         .run-ico {
-          padding-right: 6px;
+          margin-right: 6px;
+          margin-top: 2px;
+          width: 22px;
+          svg {
+            width: 100%;
+          }
         }
       }
       .run-date {
@@ -220,53 +281,7 @@ $borderradius2: 4px;
     }
 
   }
-  .run-type {
-    margin: 12px;
-    border: solid 1px #dddddd;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    flex: 1 1 0px;
-    min-width: 360px;
-    .class-header {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      .run-class {
-        width: 100%;
-        text-align: center;
-        line-height: 2;
-        font-size: 1.2rem;
-        font-weight: 800;
-        background-color: #eeeeee;
-      }
-      .run-class-meta {
-        display: flex;
-        padding: 6px;
-        flex-wrap: wrap;
-        .meta {
-          border: solid 1px #dddddd;
-          border-radius: 12px;
-          line-height: 1.5;
-          margin-right: 12px;
-          margin-bottom: 6px;
-          .meta-key {
-            background-color: #eeeeee;
-            border-radius: 12px;
-            border-right: solid 1px #dddddd;
-            padding: 0 10px;
-            font-weight: 800;
-          }
-          .meta-val {
-            padding: 0 10px;
-          }
 
-        }
-      }
-    }
-
-  }
 
   .idx {
     vertical-align: top;
