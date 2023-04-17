@@ -153,5 +153,14 @@ $stack-margin-lr: calc($medal-width / 16);
       }
     }
   }
+  @media (max-width: 549px) {
+    .athlete-medals {
+      .mcase-row {
+        .mcase-class {
+          margin-top: 0;
+        }
+      }
+    }
+  }
 }
 </style>
