@@ -65,6 +65,7 @@ const removeUSER = () => window.localStorage.removeItem(userKey);
 export const medalStore = defineStore('todos', {
   state: () => ({
     loading: false,
+    loadingLocal: false,
     accessToken: null,
     loggedInAthlete: {},
     units: ['mi', 'km'],
@@ -172,7 +173,7 @@ export const medalStore = defineStore('todos', {
     },
     async buildAthleteRuns() {
       try {
-        this.loading = true;
+        this.loadingLocal = true;
         console.log("buildAthlete");
         const response = await axios.post(API('build'), null);
         this.athlete = response.data;
@@ -180,7 +181,7 @@ export const medalStore = defineStore('todos', {
       } catch (response) {
         console.log("error", response.errors);
       } finally {
-        this.loading = false;
+        this.loadingLocal = false;
       }
     },
     async updateRun(data) {

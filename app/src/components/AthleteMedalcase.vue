@@ -41,18 +41,18 @@ const totalMedals = computed(() => {
           <div class="medal-stats">
             <span class="medal-name">Total</span>
             <span class="medal-count">{{totalMedals.runs}}</span>
-            <span class="medal-count-race">({{totalMedals.races}})</span>
+            <span class="medal-count-race">&nbsp;</span>
           </div>
         </div>
       </div>
       <div v-for="(row, idx) in classRows" class="mcase-row" :key="idx">
-        <div v-for="c in row" class="mcase-class" :class="c.key" :key="c.key">
+        <div v-for="c in row" class="mcase-class" :class="[ athlete[c.key] > 0 ? c.key : 'disabled' ]" :key="c.key">
           <div class="medal-bg">
-            <img v-if="c.key === 'c_marathon'" src="/c_marathon.svg" />
-            <MedalcaseLogo v-else :border="athlete[c.key] ? 'currentColor' : '#999999'" :center="athlete[c.key] ? '#ffffff' : '#dddddd'" />
+            <!-- <img v-if="c.key === 'c_marathon'" src="/c_marathon.svg" /> -->
+            <MedalcaseLogo :border="athlete[c.key] ? 'currentColor' : '#999999'" :center="athlete[c.key] ? '#ffffff' : '#dddddd'" />
           </div>
           <div class="medal-stats">
-            <div class="medal-count">{{athlete[c.key]}}</div>
+            <div class="medal-count" :class="`${c.key}_border`">{{athlete[c.key]}}</div>
             <div class="medal-name">{{c.name}}</div>
           </div>
 
@@ -123,18 +123,31 @@ $stack-margin-lr: calc($medal-width / 16);
           width: 100%;
           bottom: 34px;
           .medal-count {
-            border: solid 3px #666666;
+            border-width: 5px;
+            border-style: solid;
             background-color: rgba(255,255,255,0.5);
-            height: 34px;
+            height: 44px;
             width: 105px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
+            font-size: 1.5rem;
+            color: #333333;
           }
           .medal-name {
             font-size: 1.2rem;
             font-weight: 800;
+          }
+        }
+        &.disabled {
+          .medal-stats {
+            color: #777777;
+            justify-content: center;
+            margin-top: 67px;
+            .medal-count {
+              display: none;
+            }
           }
         }
       }

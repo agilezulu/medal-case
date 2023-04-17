@@ -18,7 +18,7 @@ const props =  defineProps({
   currentUser: Boolean,
 });
 
-const { athlete } = storeToRefs(medalStore());
+const { athlete, loadingLocal } = storeToRefs(medalStore());
 const store = medalStore();
 const route = useRoute();
 const dialog = useDialog();
@@ -75,15 +75,17 @@ onMounted(() => {
 
       <AthleteMedalcase :athlete="athlete" />
 
-      <div class="update-tools">
-        <a href="javascript:void(0);"
-            @click="buildRuns()"
-            class="p-button p-component p-button-secondary p-button-outlined p-button-sm"
-            v-if="store.isLoggedIn"
-        >Update Medalcase <font-awesome-icon icon="fa-light fa-arrows-rotate" fixed-width /></a>
-        <div class="last-run-date">{{formatDate(athlete.last_run_date)}}</div>
+      <div v-if="currentUser" class="tools-cont">
+        <div class="update-tools">
+          <a href="javascript:void(0);"
+              @click="buildRuns()"
+              class="p-button p-component p-button-secondary p-button-outlined p-button-sm"
+              :disabled="loadingLocal"
+              v-if="store.isLoggedIn"
+          >Update Medalcase <font-awesome-icon icon="fa-light fa-arrows-rotate" fixed-width :spin="loadingLocal" /></a>
+          <div class="last-run-date">{{formatDate(athlete.last_run_date)}}</div>
+        </div>
       </div>
-
     </div>
     <div id="case-summary">
 
@@ -96,20 +98,18 @@ onMounted(() => {
                 <div class="run-class">
                   <div class="class-name">{{ runClass.class }}</div>
                   <div class="counts">
-                    <div class="class-count">
+                    <div class="class-count race">
+                      <div class="count race" :class="runClass.class_key">
+                        <BadgeRace />
+                        <span> {{athlete[`${runClass.gKey}_race`]}}</span>
+                      </div>
+                    </div>
+                    <div class="class-count" :class="runClass.class_key">
                       <div class="medal-bg">
                         <MedalcaseLogo border="currentColor" center="#ffffff" />
                       </div>
                       <div class="count">
                         <span>{{athlete[runClass.gKey]}}</span>
-                      </div>
-                    </div>
-                    <div class="class-count">
-                      <div class="medal-bg">
-                        <MedalcaseLogo border="currentColor" center="#ffffff" />
-                      </div>
-                      <div class="count">
-                        <span :class="runClass.class_key"> {{athlete[`${runClass.gKey}_race`]}}</span>
                       </div>
                     </div>
                   </div>
@@ -153,24 +153,11 @@ onMounted(() => {
 </template>
 
 <style lang="scss">
-@import "@/assets/mixins.scss";
-$bordercolor1: #bbbbbb;
-$backgroundcolor1: #dddddd;
-$width1: 60px;
-$borderwidth1: 4px;
-$borderradius1: 0;
-
-$bordercolor2: #ffbbbb;
-$backgroundcolor2: #ffdddd;
-$width2: 80px;
-$borderwidth2: 4px;
-$borderradius2: 4px;
-
-.hex-holder {
-  position: relative;
-  @include hexagon(60px, #eeeeee, 2px, #aaaaaa);
-}
 #case-header {
+  .tools-cont {
+    display: flex;
+    justify-content: right;
+  }
   .update-tools {
     display: inline-flex;
     flex-direction: column;
@@ -218,7 +205,9 @@ $borderradius2: 4px;
         display: flex;
         width: 60px;
         justify-content: center;
-
+        &.race {
+          justify-content: flex-start;
+        }
         .medal-bg {
           position: absolute;
           width: 60px;
@@ -228,6 +217,19 @@ $borderradius2: 4px;
         .count {
           position: relative;
           z-index: 12;
+          &.race {
+            display: flex;
+            .badge {
+              display: inline-block;
+              width: 25px;
+              height: 25px;
+              margin-right: 4px;
+              svg {
+                width: 100%;
+                height: 100%;
+              }
+            }
+          }
         }
       }
     }

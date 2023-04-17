@@ -1,9 +1,7 @@
 <script setup>
 import { medalStore, CLASSES } from "@/store";
 import { storeToRefs } from "pinia";
-import LoadingSpinner from "@/components/LoadingSpinner.vue";
-
-const { athleteList, loading } = storeToRefs(medalStore())
+const { athleteList } = storeToRefs(medalStore())
 const { getAthletes } = medalStore();
 
 getAthletes();
@@ -13,7 +11,6 @@ getAthletes();
   <div id="athlete-list">
     <h2 class="green">Medalcase Athletes</h2>
 
-     <img src="/medalcase_logo.svg" width="100" />
       <!--
                  paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                  currentPageReportTemplate="{first} to {last} of {totalRecords}"  paginator :rows="45" :rowsPerPageOptions="[45, 90, 150]" -->
@@ -26,7 +23,11 @@ getAthletes();
         </Column>
         <Column field="total_medals" header="Total" :sortable="true">
           <template #body="slotProps">
-            {{slotProps.data.total_medals}}
+            <div class="athelete-total">
+              <div class="total-bg"><img src="/medalcase_logo.svg" /></div>
+              <div class="total-count">{{slotProps.data.total_medals}}</div>
+            </div>
+
           </template>
         </Column>
         <template v-for="runClass in CLASSES" :key="runClass.key">
@@ -44,7 +45,32 @@ getAthletes();
 </template>
 
 <style lang="scss">
+$total-size: 50px;
 #athlete-list {
+  .athelete-total {
+    display: flex;
+    position: relative;
+    width: $total-size;
+    height: $total-size;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-weight: 800;
+    .total-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      img {
+        width: 100%;
+      }
+    }
+    .total-count {
+      z-index: 5;
+    }
+
+  }
   .p-datatable {
     .p-column-header-content {
       align-items: center;

@@ -105,6 +105,9 @@ $page-width: 720px;
 .p-menubar-start {
   display: flex;
   align-items: center;
+  a {
+    color: #495057;
+  }
   img {
     width: 40px;
     height: 40px;

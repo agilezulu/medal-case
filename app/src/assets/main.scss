@@ -33,34 +33,16 @@ a {
   }
 }
 
+$class-keys: c_marathon, c_50k, c_50mi, c_100k, c_100kplus, c_100mi, c_xtreme, c_training;
+$class-colors: $color-c_marathon, $color-c_50k, $color-c_50mi, $color-c_100k, $color-c_100kplus, $color-c_100mi, $color-c_xtreme, $color-c_training;
 
-.c_marathon {
-  color: $color-c_marathon;
-}
-
-.c_50k {
-  color: $color-c_50k;
-}
-
-.c_50mi {
-  color: $color-c_50mi;
-}
-
-.c_100k,
-.c_100kplus {
-  color: $color-c_100k;
-}
-
-.c_100mi {
-  color: $color-c_100mi;
-}
-
-.c_xtreme {
-  color: $color-c_xtreme;
-}
-
-.c_training {
-  color: $color-c_training;
+@for $i from 1 through length($class-keys) {
+  .#{nth($class-keys, $i)} {
+    color: #{nth($class-colors, $i)};
+  }
+  .#{nth($class-keys, $i)}_border {
+    border-color: #{nth($class-colors, $i)};
+  }
 }
 
 
