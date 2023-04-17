@@ -1,1 +1,81 @@
-{}
+{
+  "api": {
+    "medalcaseapi": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "medalcaseathlete"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    }
+  },
+  "function": {
+    "medalcaseathlete": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "medalcasemedalcaselambdalayer": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "LambdaLayer"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_medalcaseathlete_googleApiKey": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "medalcaseathlete"
+        }
+      ]
+    },
+    "AMPLIFY_function_medalcaseathlete_medalcaseClientId": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "medalcaseathlete"
+        }
+      ]
+    },
+    "AMPLIFY_function_medalcaseathlete_medalcaseClientSecret": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "medalcaseathlete"
+        }
+      ]
+    },
+    "AMPLIFY_function_medalcaseathlete_medalcaseDb": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "medalcaseathlete"
+        }
+      ]
+    },
+    "AMPLIFY_function_medalcaseathlete_medalcaseJwtSecret": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "medalcaseathlete"
+        }
+      ]
+    },
+    "AMPLIFY_function_medalcaseathlete_secretsPathAmplifyAppId": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "medalcaseathlete"
+        }
+      ]
+    }
+  }
+}

@@ -11,5 +11,30 @@
       "StackId": "arn:aws:cloudformation:eu-west-1:087685034478:stack/amplify-medalcase-prod-140948/a50b2290-d60e-11ed-a83f-06ab91d8ba73",
       "AmplifyAppId": "do1gkvje3yk6e"
     }
+  },
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-medalcase-dev-82539-authRole",
+      "UnauthRoleArn": "arn:aws:iam::087685034478:role/amplify-medalcase-dev-82539-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::087685034478:role/amplify-medalcase-dev-82539-authRole",
+      "Region": "eu-west-1",
+      "DeploymentBucketName": "amplify-medalcase-dev-82539-deployment",
+      "UnauthRoleName": "amplify-medalcase-dev-82539-unauthRole",
+      "StackName": "amplify-medalcase-dev-82539",
+      "StackId": "arn:aws:cloudformation:eu-west-1:087685034478:stack/amplify-medalcase-dev-82539/0e33ac90-dcf1-11ed-8c1b-06350beb3baf",
+      "AmplifyAppId": "do1gkvje3yk6e"
+    },
+    "categories": {
+      "function": {
+        "medalcaseathlete": {
+          "secretsPathAmplifyAppId": "do1gkvje3yk6e",
+          "googleApiKey": "AIzaSyBaRgbnzMy4cEMm5e2h7pyryfYav7ComTo",
+          "medalcaseClientId": "39073",
+          "medalcaseClientSecret": "2030883d7ee2525d1f9ea4f5d800c7a0200798a0",
+          "medalcaseDb": "https://db.medalcase.com",
+          "medalcaseJwtSecret": "nz9kX1Sj9kEmRl9jUYYHHjXn3XxnG1SqilrBtwR8"
+        }
+      }
+    }
   }
 }

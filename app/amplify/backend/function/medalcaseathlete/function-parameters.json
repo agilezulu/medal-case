@@ -1,0 +1,29 @@
+{
+  "permissions": {},
+  "lambdaLayers": [],
+  "environmentVariableList": [
+    {
+      "cloudFormationParameterName": "googleApiKey",
+      "environmentVariableName": "GOOGLE_API_KEY"
+    },
+    {
+      "cloudFormationParameterName": "medalcaseClientId",
+      "environmentVariableName": "MEDALCASE_CLIENT_ID"
+    },
+    {
+      "cloudFormationParameterName": "medalcaseClientSecret",
+      "environmentVariableName": "MEDALCASE_CLIENT_SECRET"
+    },
+    {
+      "cloudFormationParameterName": "medalcaseDb",
+      "environmentVariableName": "MEDALCASE_DB"
+    },
+    {
+      "cloudFormationParameterName": "medalcaseJwtSecret",
+      "environmentVariableName": "MEDALCASE_JWT_SECRET"
+    }
+  ],
+  "secretNames": [
+    "medalcase_client_id"
+  ]
+}

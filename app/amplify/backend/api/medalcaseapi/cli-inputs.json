@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": {
+    "/athlete": {
+      "name": "/athlete",
+      "lambdaFunction": "medalcaseathlete",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}
