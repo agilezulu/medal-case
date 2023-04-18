@@ -26,6 +26,11 @@ export const CLASSES = [
   { name: "Xtreme", key: "c_xtreme", row: 3  },
 ];
 const classKeys = CLASSES.map(c => c.key);
+export const classLookup = CLASSES.reduce((obj, item) => {
+  obj[item.key] = item;
+  return obj;
+}, {});
+
 export const classRows = Object.values(CLASSES.reduce((acc, obj) => {
     let key = obj.row;
     if (key in acc) {
@@ -177,7 +182,7 @@ export const medalStore = defineStore('todos', {
         console.log("buildAthlete");
         const response = await axios.post(API('build'), null);
         this.athlete = response.data;
-        return this.athlete.new_runs;
+        return this.athlete.meta;
       } catch (response) {
         console.log("error", response.errors);
       } finally {

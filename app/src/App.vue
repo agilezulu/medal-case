@@ -53,13 +53,21 @@ onMounted(() => {
   </div>
   <div class="footer">
     <router-link to="/about" class="p-menuitem-link">About</router-link>
-    <Toast/>
+
+    <Toast position="top-right">
+      <template #message="slotProps">
+        <div class="p-toast-message-text">
+          <span class="p-toast-summary">{{slotProps.message.summary}}</span>
+          <div class="p-toast-detail" v-html="slotProps.message.detail" />
+        </div>
+      </template>
+    </Toast>
   </div>
 
 </template>
 
 <style lang="scss">
-$page-width: 720px;
+$page-width: 820px;
 #app {
   display: flex;
   flex-direction: column;
@@ -71,53 +79,65 @@ $page-width: 720px;
   flex-wrap: wrap;
   justify-content: center;
 }
-.footer {
-  min-height: 80px;
-  background-color: #eeeeee;
-  padding: 15px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.left-column,
-.right-column {
-  flex-basis: calc((100% - $page-width)/2);
-  max-width: calc((100% - $page-width)/2);
-}
+.p-toast {
+  .p-toast-message {
+    .p-toast-message-content {
+      .p-toast-summary {
+        font-weight: 700;
+        font-size: 1.2rem;
+      }
 
-.center-column {
-  flex-basis: $page-width;
-  max-width: $page-width;
-}
+      .p-toast-detail {
 
-@media (max-width: 1024px) {
+      }
+    }
+  }
+}
+  .footer {
+    min-height: 80px;
+    background-color: #eeeeee;
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
   .left-column,
   .right-column {
-    flex-basis: 50%;
-    max-width: 50%;
+    flex-basis: calc((100% - $page-width)/2);
+    max-width: calc((100% - $page-width)/2);
   }
+
   .center-column {
-    flex-basis: 100%;
-    max-width: 100%;
-    padding: 0 12px;
+    flex-basis: $page-width;
+    max-width: $page-width;
   }
-}
-.p-menubar-start {
-  display: flex;
-  align-items: center;
-  a {
-    color: #495057;
+
+  @media (max-width: 1024px) {
+    .left-column,
+    .right-column {
+      flex-basis: 50%;
+      max-width: 50%;
+    }
+    .center-column {
+      flex-basis: 100%;
+      max-width: 100%;
+      padding: 0 12px;
+    }
   }
-  img {
-    width: 40px;
-    height: 40px;
-  }
-}
-.p-menubar-end {
-  .menu-end {
+  .p-menubar-start {
     display: flex;
+    align-items: center;
+    a {
+      color: #495057;
+    }
+    img {
+      width: 40px;
+      height: 40px;
+    }
   }
-}
-
-
+  .p-menubar-end {
+    .menu-end {
+      display: flex;
+    }
+  }
 </style>

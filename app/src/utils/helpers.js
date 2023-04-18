@@ -11,6 +11,7 @@ export const round = (value, precision) => {
 
 export const getDate = (datetime) => datetime.split('T')[0];
 export const metersToDistanceUnits = (meters, selectedUnits) => {
+  if (!meters) { return 0; }
   return round(meters * (selectedUnits === 'km' ? 0.001 : 0.000621371), 1) + ` ${selectedUnits}`;
 }
 

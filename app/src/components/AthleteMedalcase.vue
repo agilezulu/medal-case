@@ -1,7 +1,13 @@
 <script setup>
-import { classRows, CLASSES } from "@/store";
+import {classRows, CLASSES, medalStore} from "@/store";
 import MedalcaseLogo from "@/components/icons/MedalcaseLogo.vue";
 import {computed} from "vue";
+import {secsToHMS, metersToDistanceUnits} from "@/utils/helpers.js";
+import {storeToRefs} from "pinia";
+
+const { selectedUnits } = storeToRefs(medalStore());
+//const store = medalStore();
+
 const props = defineProps({
   athlete: Object,
   required: true
@@ -22,7 +28,15 @@ const totalMedals = computed(() => {
     runs: 0,
     races: 0
   });
-
+});
+const pbMarathon = computed(() => {
+  let pb = 100000;
+  props.athlete.runs.forEach((run) => {
+    if (run.class_key === "c_marathon" && run.elapsed_time < pb) {
+      pb = run.elapsed_time;
+    }
+  });
+  return secsToHMS(pb);
 });
 
 </script>
@@ -30,8 +44,21 @@ const totalMedals = computed(() => {
 <template>
   <div class="athlete-medalcase">
     <div class="athlete-info">
-      {{athlete.firstname}}
-      {{athlete.lastname}}
+      <div class="a-name">{{athlete.firstname}} {{athlete.lastname}}</div>
+      <div class="stats">
+        <div class="a-stat">
+          <div class="stat-name">Total runs</div>
+          <div class="stat-value">{{athlete.total_runs}}</div>
+        </div>
+        <div class="a-stat">
+          <div class="stat-name">Total distance</div>
+          <div class="stat-value">{{metersToDistanceUnits(athlete.total_distance, selectedUnits)}}</div>
+        </div>
+        <div class="a-stat">
+          <div class="stat-name">26.2 PB</div>
+          <div class="stat-value">{{pbMarathon}}</div>
+        </div>
+      </div>
     </div>
     <div  class="athlete-medals">
 
@@ -68,6 +95,28 @@ $stack-margin-top: calc($medal-width / 4)-2;
 $stack-margin-lr: calc($medal-width / 16);
 .athlete-medalcase {
   margin-top: $stack-margin-top;
+  .athlete-info {
+    .a-name {
+      font-size: 1.3rem;
+      font-weight: 800;
+    }
+    .stats {
+      margin-left: 12px;
+      .a-stat {
+        display: flex;
+        align-items: center;
+
+        .stat-name {
+          font-weight: 800;
+        }
+
+        .stat-value {
+          text-align: right;
+          padding: 3px 8px;
+        }
+      }
+    }
+  }
   .athlete-medals {
     display: flex;
     flex-direction: column;

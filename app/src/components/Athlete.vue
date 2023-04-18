@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import { medalStore } from "@/store";
+import { medalStore, classLookup } from "@/store";
 import { metersToDistanceUnits, getDate, secsToHMS } from "@/utils/helpers.js";
 import {storeToRefs} from "pinia";
 import { useDialog } from "primevue/usedialog";
@@ -24,9 +24,33 @@ const route = useRoute();
 const dialog = useDialog();
 const toast = useToast();
 
+const formatMessages = (meta) => {
+  const gotNew = Object.keys(meta.new_runs).length;
+  let detail = `<div class="m-detail"><div>${meta.scanned_runs} runs since: ${formatDate(meta.last_scan_date)}</div>`;
+  if (gotNew) {
+    Object.keys(meta.new_runs).forEach((key) => {
+      detail += `<div class="m-info"><div class="m-name">${classLookup[key].name}:</div><div class="m-count">${meta.new_runs[key]}</div></div>`;
+    });
+  }
+  detail += '</div>';
+  let summary =  !gotNew ? "No new medals" : "Congrats! New medals found";
+  return { 
+    detail: detail,
+    summary: summary,
+    severity: gotNew ? "success": "info",
+  };
+}
 const buildRuns = () => {
-  let newRuns = store.buildAthleteRuns();
-  //console.log('UPDATED', newRuns);
+  store.buildAthleteRuns().then((meta) => {
+    const messages = formatMessages(meta);
+    toast.add({
+      severity: messages.severity,
+      summary: messages.summary,
+      detail: messages.detail,
+      life: 5000
+    });
+  });
+
 
 }
 
@@ -83,7 +107,7 @@ onMounted(() => {
               :disabled="loadingLocal"
               v-if="store.isLoggedIn"
           >Update Medalcase <font-awesome-icon icon="fa-light fa-arrows-rotate" fixed-width :spin="loadingLocal" /></a>
-          <div class="last-run-date">{{formatDate(athlete.last_run_date)}}</div>
+          <div class="last-run-date">Last run: {{formatDate(athlete.last_run_date)}}</div>
         </div>
       </div>
     </div>
@@ -153,10 +177,30 @@ onMounted(() => {
 </template>
 
 <style lang="scss">
+.p-toast-message-content {
+  .m-detail {
+    .m-info {
+      display: flex;
+      width: 150px;
+      .m-name {
+        flex: 1;
+        font-weight: bold;
+        text-align: right;
+      }
+      .m-count {
+        text-align: right;
+        min-width: 30px
+      }
+    }
+  }
+}
 #case-header {
   .tools-cont {
     display: flex;
     justify-content: right;
+    .last-run-date {
+      font-size: 0.8rem;
+    }
   }
   .update-tools {
     display: inline-flex;
