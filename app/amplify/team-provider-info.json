@@ -32,8 +32,17 @@
           "medalcaseClientId": "39073",
           "medalcaseClientSecret": "2030883d7ee2525d1f9ea4f5d800c7a0200798a0",
           "medalcaseDb": "https://db.medalcase.com",
-          "medalcaseJwtSecret": "nz9kX1Sj9kEmRl9jUYYHHjXn3XxnG1SqilrBtwR8"
+          "medalcaseJwtSecret": "nz9kX1Sj9kEmRl9jUYYHHjXn3XxnG1SqilrBtwR8",
+          "deploymentBucketName": "amplify-medalcase-dev-82539-deployment",
+          "s3Key": "amplify-builds/medalcaseathlete-6c7361582f5853576368-build.zip"
+        },
+        "medalcasemedalcaselambdalayer": {
+          "deploymentBucketName": "amplify-medalcase-dev-82539-deployment",
+          "s3Key": "amplify-builds/medalcasemedalcaselambdalayer-LambdaLayerVersion4793671f-build.zip"
         }
+      },
+      "api": {
+        "medalcaseapi": {}
       }
     }
   }

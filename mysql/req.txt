@@ -1,0 +1,1 @@
+-e git+https://github.com/agilezulu/medal-case.git@353407a2af62714f7627ea9702734819f1a60f8e#egg=src&subdirectory=app/amplify/backend/function/medalcaseathlete/src

@@ -21,7 +21,7 @@ onMounted(() => {
 <template>
   <Menubar>
     <template #start>
-      <router-link to="/" class="p-menuitem-link"><img src="/medalcase_logo.svg"> Medalcase</router-link>
+      <router-link to="/" class="p-menuitem-link"><img src="/medalcase_logo.svg"><span class="mcase-face" style="letter-spacing: 0.5px;">Medalcase</span></router-link>
     </template>
     <template #end>
       <ul role="menubar" tabindex="0" class="menu-end">
@@ -43,12 +43,14 @@ onMounted(() => {
       </ul>
     </template>
   </Menubar>
-  <div v-if="loading">
-    <LoadingSpinner />
-  </div>
   <div class="container">
     <div class="left-column"></div>
-    <div class="center-column"><router-view></router-view></div>
+    <div class="center-column">
+      <div v-if="loading" class="spinner-canvas">
+        <LoadingSpinner />
+      </div>
+      <router-view></router-view>
+    </div>
     <div class="right-column"></div>
   </div>
   <div class="footer">
@@ -67,17 +69,39 @@ onMounted(() => {
 </template>
 
 <style lang="scss">
-$page-width: 820px;
+@import "@/assets/variables.scss";
+
 #app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   justify-content: space-between;
 }
+.p-menubar {
+  box-shadow: 0 5px 5px rgba(0,0,0,0.3);
+  z-index: 12;
+}
+.p-inputswitch.p-inputswitch-checked.btn-action .p-inputswitch-slider,
+.p-inputswitch.p-inputswitch-checked.btn-action:not(.p-disabled):hover .p-inputswitch-slider {
+  background: $color-action;
+}
+
+.p-button.btn-action,
+.p-button.btn-action:enabled:hover {
+  background: $color-action;
+  border: 1px solid $color-action;
+}
+
 .container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  flex: 1;
+  box-shadow: 0 5px 5px rgba(0,0,0,0.3);
+  z-index: 10;
+}
+.footer {
+  z-index: 9;
 }
 .p-toast {
   .p-toast-message {
@@ -93,51 +117,64 @@ $page-width: 820px;
     }
   }
 }
-  .footer {
-    min-height: 80px;
-    background-color: #eeeeee;
-    padding: 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+.spinner-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #ffffff;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.footer {
+  min-height: 80px;
+  background-color: #eeeeee;
+  padding: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.left-column,
+.right-column {
+  flex-basis: calc((100% - $page-width)/2);
+  max-width: calc((100% - $page-width)/2);
+  //background-color: #f5f5f5;
+}
+
+.center-column {
+  flex-basis: $page-width;
+  max-width: $page-width;
+}
+
+@media (max-width: 1024px) {
   .left-column,
   .right-column {
-    flex-basis: calc((100% - $page-width)/2);
-    max-width: calc((100% - $page-width)/2);
+    flex-basis: 50%;
+    max-width: 50%;
   }
-
   .center-column {
-    flex-basis: $page-width;
-    max-width: $page-width;
+    flex-basis: 100%;
+    max-width: 100%;
+    padding: 0 12px;
   }
-
-  @media (max-width: 1024px) {
-    .left-column,
-    .right-column {
-      flex-basis: 50%;
-      max-width: 50%;
-    }
-    .center-column {
-      flex-basis: 100%;
-      max-width: 100%;
-      padding: 0 12px;
-    }
+}
+.p-menubar-start {
+  display: flex;
+  align-items: center;
+  a {
+    color: #495057;
   }
-  .p-menubar-start {
+  img {
+    width: 40px;
+    height: 40px;
+  }
+}
+.p-menubar-end {
+  .menu-end {
     display: flex;
-    align-items: center;
-    a {
-      color: #495057;
-    }
-    img {
-      width: 40px;
-      height: 40px;
-    }
   }
-  .p-menubar-end {
-    .menu-end {
-      display: flex;
-    }
-  }
+}
 </style>

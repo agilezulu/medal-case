@@ -4,13 +4,13 @@ import MedalcaseLogo from "@/components/icons/MedalcaseLogo.vue";
 import {computed} from "vue";
 import {secsToHMS, metersToDistanceUnits} from "@/utils/helpers.js";
 import {storeToRefs} from "pinia";
+import AthletePhoto from "@/components/AthletePhoto.vue";
 
 const { selectedUnits } = storeToRefs(medalStore());
 //const store = medalStore();
 
 const props = defineProps({
-  athlete: Object,
-  required: true
+  athlete: Object
 })
 
 const totalMedals = computed(() => {
@@ -44,31 +44,35 @@ const pbMarathon = computed(() => {
 <template>
   <div class="athlete-medalcase">
     <div class="athlete-info">
-      <div class="a-name">{{athlete.firstname}} {{athlete.lastname}}</div>
-      <div class="stats">
-        <div class="a-stat">
-          <div class="stat-name">Total runs</div>
-          <div class="stat-value">{{athlete.total_runs}}</div>
-        </div>
-        <div class="a-stat">
-          <div class="stat-name">Total distance</div>
-          <div class="stat-value">{{metersToDistanceUnits(athlete.total_distance, selectedUnits)}}</div>
-        </div>
-        <div class="a-stat">
-          <div class="stat-name">26.2 PB</div>
-          <div class="stat-value">{{pbMarathon}}</div>
+      <div class="photo-logo">
+        <div class="pl-bg"><img src="/medalcase_logo.svg" /></div>
+        <div class="pl-img"><AthletePhoto :photo="athlete.photo" :size="100" /></div>
+      </div>
+      <div class="info">
+        <div class="a-name">{{athlete.firstname}} {{athlete.lastname}}</div>
+        <div class="stats">
+          <div class="a-stat">
+            <div class="stat-name">Total runs</div>
+            <div class="stat-value">{{athlete.total_runs}}</div>
+          </div>
+          <div class="a-stat">
+            <div class="stat-name">Total distance</div>
+            <div class="stat-value">{{metersToDistanceUnits(athlete.total_distance, selectedUnits)}}</div>
+          </div>
+          <div class="a-stat">
+            <div class="stat-name">26.2 PB</div>
+            <div class="stat-value">{{pbMarathon}}</div>
+          </div>
         </div>
       </div>
     </div>
-    <div  class="athlete-medals">
 
+    <div  class="athlete-medals">
       <div class="mcase-row">
         <div class="mcase-class">
           <div class="medal-bg"><img src="/medalcase_logo.svg" class="class-medal" /></div>
-          <div class="medal-stats">
-            <span class="medal-name">Total</span>
-            <span class="medal-count">{{totalMedals.runs}}</span>
-            <span class="medal-count-race">&nbsp;</span>
+          <div class="medal-stats total">
+            <span class="medal-name">{{totalMedals.runs}}</span>
           </div>
         </div>
       </div>
@@ -94,14 +98,23 @@ $medal-width: 200px;
 $stack-margin-top: calc($medal-width / 4)-2;
 $stack-margin-lr: calc($medal-width / 16);
 .athlete-medalcase {
-  margin-top: $stack-margin-top;
+  position: relative;
   .athlete-info {
+    display: flex;
+    position: absolute;
+    top: 12px;
+    .photo-logo {
+
+    }
+    .info {
+      margin-left: 8px;
+    }
     .a-name {
       font-size: 1.3rem;
       font-weight: 800;
     }
     .stats {
-      margin-left: 12px;
+
       .a-stat {
         display: flex;
         align-items: center;
@@ -120,6 +133,7 @@ $stack-margin-lr: calc($medal-width / 16);
   .athlete-medals {
     display: flex;
     flex-direction: column;
+    padding-top: 55px;
     .bg-container {
       position: relative;
       flex: 1;
@@ -187,6 +201,16 @@ $stack-margin-lr: calc($medal-width / 16);
           .medal-name {
             font-size: 1.2rem;
             font-weight: 800;
+          }
+          &.total {
+            justify-content: center;
+            .medal-name {
+              position: relative;
+              font-size: 42px;
+              font-weight: 800;
+              top: 34px;
+              color: #ffffff;
+            }
           }
         }
         &.disabled {

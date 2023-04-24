@@ -27,7 +27,7 @@ import DialogService from "primevue/dialogservice";
 import ToastService from "primevue/toastservice";
 import "./assets/main.scss";
 
-import "primevue/resources/themes/lara-light-indigo/theme.css";
+import "@/assets//theme.css";
 import "primeflex/primeflex.css";
 import "primevue/resources/primevue.min.css";
 import "primeicons/primeicons.css";
@@ -40,7 +40,8 @@ import {
   faUser,
   faArrowsRotate,
   faPencil,
-  faCircleStar
+  faCircleStar,
+  faChevronLeft
 } from "@fortawesome/pro-light-svg-icons";
 
 import {
@@ -62,7 +63,8 @@ library.add(
   faPencil,
   faCircleStar,
   faHexagon,
-  faStarOfLife
+  faStarOfLife,
+  faChevronLeft
 );
 
 Amplify.configure(awsExports);

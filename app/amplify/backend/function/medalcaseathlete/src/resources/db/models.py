@@ -62,7 +62,7 @@ class Run(db.Entity):
     moving_time = Required(int)
     elapsed_time = Required(int)
     total_elevation_gain = Required(float)
-    start_date = Required(datetime)
+    start_date = Required(datetime, optimistic=False)
     start_date_local = Required(datetime)
     utc_offset = Required(float)
     timezone = Required(str)

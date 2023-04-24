@@ -1,14 +1,4 @@
-$color-c_marathon: #334EAF;
-$color-c_50k: #3390B1;
-$color-c_50mi: #33B185;
-$color-c_100k: #72B133;
-$color-c_100kplus: #72B133;
-$color-c_100mi: #D0AB37;
-$color-c_xtreme: #C94D41;
-
-$color-action: #FD4B01;
-
-$color-c_training: #444444;
+@import "variables.scss";
 
 body {
   min-height: 100vh;
@@ -20,14 +10,24 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
+  /*
+  background: url("/mcbg.svg");
+  background-repeat: repeat;
+  background-size: 600px;
+   */
+}
+.mcase-face {
+  font-family: 'Shrikhand', cursive;
 }
 
 #app {
   font-weight: normal;
+
 }
 
 a {
   text-decoration: none;
+  color: $color-action;
   &.action {
     color: $color-action;
   }
@@ -42,6 +42,21 @@ $class-colors: $color-c_marathon, $color-c_50k, $color-c_50mi, $color-c_100k, $c
   }
   .#{nth($class-keys, $i)}_border {
     border-color: #{nth($class-colors, $i)};
+  }
+}
+.add-spin {
+  animation-name: spin;
+  animation-duration: 11000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+@keyframes spin {
+  from {
+    transform:rotate(0deg);
+  }
+  to {
+    transform:rotate(360deg);
   }
 }
 

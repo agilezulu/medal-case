@@ -11,7 +11,7 @@ const toast = useToast();
 
 onMounted(() => {
   runToEdit.value = JSON.parse(JSON.stringify(dialogRef.value.data.run));
-  console.log('runToEdit', runToEdit.value);
+  //console.log('runToEdit', runToEdit.value);
 });
 
 const closeDialog = () => {
@@ -49,15 +49,15 @@ const saveRun = () => {
 
     <div class="field grid">
       <label for="run_class" class="col-12 mb-2 md:col-2 md:mb-0">Type</label>
-      <div class="col-12 md:col-10 set-distance">
-        Training <InputSwitch v-model="runToEdit.race" /> Race
+      <div class="col-12 md:col-10 set-type">
+        <span>Training</span> <InputSwitch v-model="runToEdit.race" class="btn-action" /> <span>Race</span>
       </div>
     </div>
     <div class="field grid">
       <div class="col-12 mb-2 md:col-2 md:mb-0"></div>
-      <div class="col-12 md:col-10 set-distance">
-        <Button label="Cancel" severity="secondary" outlined @click="closeDialog()"/>
-        <Button label="Save" @click="saveRun() "/>
+      <div class="col-12 md:col-10 flex">
+        <Button label="Cancel" severity="secondary" class="btn"  outlined @click="closeDialog()"/>
+        <Button label="Save" class="btn btn-action"  @click="saveRun() "/>
       </div>
     </div>
   </div>
@@ -66,16 +66,27 @@ const saveRun = () => {
 
 
 <style lang="scss">
+@import "@/assets/variables.scss";
 #edit-run {
   .p-inputtext {
     width: 100%;
   }
+  .btn {
+    margin-right: 12px;
+  }
   label {
     font-weight: 700;
+  }
+  .set-type {
+    display: flex;
+    justify-content: space-between;
+    width: 182px;
+    align-items: center;
   }
   .set-distance {
     display: flex;
     align-items: center;
+
     .distance {
       padding-left: 8px;
       display: flex;

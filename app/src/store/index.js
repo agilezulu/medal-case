@@ -78,26 +78,25 @@ export const medalStore = defineStore('todos', {
     athleteList: [],
     athlete: {
       runs: [],
-      new_runs: {}
+      new_runs: {},
+      meta: {}
     },
   }),
   getters: {
     isLoggedIn(state) {
-      console.log('isLoggedIn', !!state.accessToken);
       return !!state.accessToken;
     },
     athleteRuns(state) {
-      let grouped = groupBy(state.athlete.runs, "class_key", ["class", "class_key"], "start_date_local");
-
-      let groupedSorted = Object.entries(grouped).sort((a, b) => classKeys.indexOf(a.gKey) - classKeys.indexOf(b.gKey));
-      return groupedSorted.map(gs => gs[1]);
-
+      return groupBy(state.athlete.runs, "class_key", ["class", "class_key"], "start_date_local");
     },
     isLoading(state) {
       return state.loading;
     },
     getSessionSlug(state) {
       return state.loggedInAthlete.slug;
+    },
+    isOnboarding(state) {
+      return state.athlete && !state.athlete.last_run_date && state.loggedInAthlete.slug ===  state.athlete.slug && !state.athlete.total_runs;
     }
   },
   actions: {
@@ -122,7 +121,6 @@ export const medalStore = defineStore('todos', {
     async getAccessTokenFromCode(code) {
       const state = this;
       try {
-        console.log("getAccessToken", code);
         axios.post(
           API('login'),
           {
@@ -151,23 +149,25 @@ export const medalStore = defineStore('todos', {
       }
     },
     async getAthlete(slug) {
-      try {
-        this.loading = true;
-        const response = await axios.get(API('athlete', slug));
-        this.athlete = response.data;
 
-        this.loading = false;
-      } catch (response) {
-        console.log("error", response.errors);
-      } finally {
-        this.loading = false;
-      }
+      this.loading = true;
+      return axios.get(API('athlete', slug))
+        .then( (response) => {
+          this.athlete = response.data;
+          this.loading = false;
+          return { data: this.athlete, error: null };
+        })
+        .catch((error) => {
+          this.athlete = null;
+          this.loading = false;
+          return { data: null, error: error.response.data };
+        });
+
     },
     async getAthletes(fetch) {
       if (!fetch && this.athleteList.length){ return; }
       try {
         this.loading = true;
-        console.log("getAthletes");
         const response = await axios.get(API('list'));
         this.athleteList = response.data;
       } catch (response) {
@@ -177,17 +177,18 @@ export const medalStore = defineStore('todos', {
       }
     },
     async buildAthleteRuns() {
-      try {
-        this.loadingLocal = true;
-        console.log("buildAthlete");
-        const response = await axios.post(API('build'), null);
-        this.athlete = response.data;
-        return this.athlete.meta;
-      } catch (response) {
-        console.log("error", response.errors);
-      } finally {
-        this.loadingLocal = false;
-      }
+      this.loadingLocal = true;
+
+      return axios.post(API('build'), null)
+        .then((response) => {
+          this.athlete = response.data;
+          this.loadingLocal = false;
+          return { data: this.athlete.meta, error: null };
+        })
+        .catch((error) => {
+          this.loadingLocal = false;
+          return { data: null, error: error.response.data };
+        });
     },
     async updateRun(data) {
         const sendData = {

@@ -211,7 +211,7 @@ class MedalCase:
             "firstname": athlete.firstname,
             "last_run_date": last_run_date,
             "lastname": athlete.lastname,
-            "photo_m": athlete.photo_m,
+            "photo": athlete.photo_l,
             "sex": athlete.sex,
             "slug": athlete.slug,
             "uuid": athlete.uuid,
@@ -252,7 +252,7 @@ class MedalCase:
         with orm.db_session:
             return [
                 self.template_athlete(a)
-                    for a in Athlete.select().order_by(orm.desc(Athlete.total_runs))
+                    for a in Athlete.select(lambda p: p.last_run_date is not None and p.total_medals > 0).order_by(orm.desc(Athlete.total_runs))
             ]
 
     def get_strava_activities(self, after=None):
@@ -278,22 +278,20 @@ class MedalCase:
 
     def update_athlete_totals(self, athlete):
         """
-
+        Update medal count totals
         """
-        with orm.db_session:
-            counts = orm.select(
-                (r.run_class.key, orm.count(r.strava_id), orm.count(r.race == 1))
-                for r in athlete.runs
-            )
-            total_medals = 0
-            for class_key, run_count, race_count in counts:
-                athlete.set(**{
-                    f"{class_key}": run_count,
-                    f"{class_key}_race": race_count,
-                })
-                total_medals += run_count
-            athlete.set(total_medals=total_medals)
-            #print(counts[:])
+        counts = orm.select(
+            (r.run_class.key, orm.count(r.strava_id), orm.count(r.race == 1))
+            for r in athlete.runs
+        )
+        total_medals = 0
+        for class_key, run_count, race_count in counts:
+            athlete.set(**{
+                f"{class_key}": run_count,
+                f"{class_key}_race": race_count,
+            })
+            total_medals += run_count
+        athlete.set(total_medals=total_medals)
 
     def get_start_location(self, lat_lng):
         """
@@ -334,22 +332,32 @@ class MedalCase:
         :param mcase_id:
         :return:
         """
-
         athlete = self._get_athlete_by_id(mcase_id)
-        last_run_date = athlete.last_run_date.replace(tzinfo=timezone.utc) if athlete.last_run_date else None
-        last_scan_date = last_run_date
+        last_scanned_utc = athlete.last_run_date if athlete.last_run_date else None
+        last_run_date_epoch = last_scanned_utc.timestamp() if last_scanned_utc else None
+        last_run_date = None
         new_medals = {}
         scanned_runs = 0
+        new_distance = 0
+        after = last_scanned_utc if last_scanned_utc else datetime.strptime('2009-01-01T00:00:00', '%Y-%m-%dT%H:%M:%S')
+        before = datetime.utcnow()
         with orm.db_session:
             min_medal_dist = min(c.min for c in RunClass.select())
-            for activity in self.strava.get_activities(after=athlete.last_run_date):
+            for activity in self.strava.get_activities(after=after, before=before):
+                dist_mi = self.meters_to_miles(activity.distance)
+                athlete.total_runs += 1
+                if last_scanned_utc is None or last_scanned_utc < activity.start_date.replace(tzinfo=None):
+                    last_scanned_utc = activity.start_date.replace(tzinfo=None)
+
                 if activity.type in self.valid_types and dist_mi >= min_medal_dist:
                     act = activity.to_dict()
-                    dist_mi = self.meters_to_miles(activity.distance)
                     scanned_runs += 1
+                    new_distance += int(unithelper.meters(activity.distance))
                     run_class = self.get_run_class(dist_mi)
-                    activity.start_date = activity.start_date.replace(tzinfo=timezone.utc)
+                    #activity.start_date = activity.start_date.replace(tzinfo=timezone.utc)
+                    activity_start_date_epoch = activity.start_date.timestamp()
                     location = self.get_start_location(activity.start_latlng)
+                    print(activity.id, str(activity.start_date))
                     run_params = {
                         "strava_id":  activity.id,
                         "name":  activity.name,
@@ -357,7 +365,7 @@ class MedalCase:
                         "moving_time":  act["moving_time"],
                         "elapsed_time":  act["elapsed_time"],
                         "total_elevation_gain":  activity.total_elevation_gain,
-                        "start_date":  activity.start_date,
+                        "start_date":  activity.start_date.replace(tzinfo=None),
                         "start_date_local":  activity.start_date_local,
                         "utc_offset":  activity.utc_offset,
                         "timezone":  act["timezone"],
@@ -383,23 +391,28 @@ class MedalCase:
                         if run_class.key not in new_medals:
                             new_medals[run_class.key] = 0
                         new_medals[run_class.key] += 1
-                        if athlete.total_runs is None:
-                            athlete.total_runs = 0
-                        athlete.total_runs += 1
-                        athlete.total_distance += int(unithelper.meters(activity.distance))
                         Run(**run_params)
 
-                # update last checked run
-                if not last_run_date or activity.start_date > last_run_date:
-                    last_run_date = activity.start_date
+                    # update last checked run
+                    if not last_run_date_epoch or activity_start_date_epoch > last_run_date_epoch:
+                        last_run_date_epoch = activity_start_date_epoch
+                        last_run_date = activity.start_date
 
-            athlete.last_run_date = last_run_date
+            # update athlete totals
+            existing_total = athlete.total_runs
+            if athlete.total_runs is None:
+                existing_total = 0
+            athlete.set(
+                last_run_date=last_run_date,
+                total_runs=(existing_total + scanned_runs),
+                total_distance=(athlete.total_distance + new_distance)
+            )
             self.update_athlete_totals(athlete)
             athlete_data = self.get_athlete(athlete_model=athlete)
             athlete_data['meta'] = {
                 'new_runs': new_medals,
                 'scanned_runs': scanned_runs,
-                'last_scan_date': last_scan_date.strftime('%Y-%m-%dT%H:%M:%S')
+                'last_scan_date': last_scanned_utc.strftime('%Y-%m-%dT%H:%M:%S')
             }
             return athlete_data
     

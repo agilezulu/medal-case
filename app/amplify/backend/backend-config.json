@@ -29,6 +29,14 @@
     }
   },
   "parameters": {
+    "AMPLIFY_function_medalcaseathlete_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "medalcaseathlete"
+        }
+      ]
+    },
     "AMPLIFY_function_medalcaseathlete_googleApiKey": {
       "usedBy": [
         {
@@ -69,11 +77,35 @@
         }
       ]
     },
+    "AMPLIFY_function_medalcaseathlete_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "medalcaseathlete"
+        }
+      ]
+    },
     "AMPLIFY_function_medalcaseathlete_secretsPathAmplifyAppId": {
       "usedBy": [
         {
           "category": "function",
           "resourceName": "medalcaseathlete"
+        }
+      ]
+    },
+    "AMPLIFY_function_medalcasemedalcaselambdalayer_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "medalcasemedalcaselambdalayer"
+        }
+      ]
+    },
+    "AMPLIFY_function_medalcasemedalcaselambdalayer_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "medalcasemedalcaselambdalayer"
         }
       ]
     }
