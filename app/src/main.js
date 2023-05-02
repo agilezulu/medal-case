@@ -67,7 +67,23 @@ library.add(
   faChevronLeft
 );
 
-Amplify.configure(awsExports);
+//Amplify.configure(awsExports);
+Amplify.configure({
+  API: {
+    endpoints: [
+      {
+        name: 'medalcaseapi',
+        endpoint: 'https://api.medalcase.com',
+        custom_header: async () => {
+          return {
+            'X-Api-Key': 'YkxgqM5IVEae9AViOs7Jqa3ad98Jsgmn2TACafs5',
+            'Authorization': `Bearer ${localStorage.getItem('medalcase_jwt')}`
+          };
+        }
+      }
+    ]
+  }
+});
 
 const app = createApp(App);
 const pinia = createPinia();

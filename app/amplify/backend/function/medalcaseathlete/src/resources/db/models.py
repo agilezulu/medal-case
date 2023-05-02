@@ -25,6 +25,7 @@ class Athlete(db.Entity):
     lastname = Optional(str)
     units = Optional(str)
     country = Optional(str)
+    country_code = Optional(str)
     city = Optional(str)
     sex = Optional(str)
     date_fmt = Optional(str)
@@ -51,6 +52,7 @@ class Athlete(db.Entity):
 
     created_at = Optional(datetime)
     last_run_date = Optional(datetime)
+    processing = Optional(int, sql_default=0)
     runs = Set('Run')
 
 

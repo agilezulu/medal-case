@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed } from "vue";
+import { onUnmounted, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { medalStore, classLookup, CLASSES } from "@/store";
 import { metersToDistanceUnits, getDate, secsToHMS } from "@/utils/helpers.js";
@@ -26,6 +26,8 @@ const dialog = useDialog();
 const toast = useToast();
 
 const activeClasses = ref([]);
+const polling = ref(null);
+const dynamicDialogRef = ref(null);
 
 const formatMessages = (meta) => {
   const gotNew = Object.keys(meta.new_runs).length;
@@ -43,6 +45,36 @@ const formatMessages = (meta) => {
     severity: gotNew ? "success": "info",
   };
 }
+
+const checkStatus = () => {
+
+  polling.value = setInterval(() => {
+    store.checkAthleteProcessing().then((response) => {
+      console.log('Processing state:', response);
+      if (response.error){
+        toast.add({
+          severity: 'error',
+          summary: response.error.name,
+          detail: response.error.description,
+          life: 5000
+        });
+      }
+      else if (response.is_processing){
+        console.log('is processing');
+      }
+      else {
+        const messages = formatMessages(response.data);
+        toast.add({
+          severity: messages.severity,
+          summary: messages.summary,
+          detail: messages.detail,
+          life: 12000
+        });
+      }
+    });
+  }, 5000);
+}
+
 const buildRuns = () => {
   store.buildAthleteRuns().then((response) => {
     console.log('build response', response)
@@ -50,18 +82,10 @@ const buildRuns = () => {
       toast.add({ severity: 'error', summary: response.error.name, detail: response.error.description, life: 5000 });
     }
     else {
-      const messages = formatMessages(response.data);
-      toast.add({
-        severity: messages.severity,
-        summary: messages.summary,
-        detail: messages.detail,
-        life: 12000
-      });
+      checkStatus();
     }
   });
 }
-
-const dynamicDialogRef = ref(null);
 
 const editRun = (run) => {
   dynamicDialogRef.value = dialog.open(RunEdit, {
@@ -99,15 +123,17 @@ onMounted(() => {
         if (store.isOnboarding){
           buildRuns();
         }
-        activeClasses.value = CLASSES.filter((mclass) => store.athleteRuns[mclass.key]);
+        activeClasses.value = store.athleteRuns ? CLASSES.filter((mclass) => store.athleteRuns[mclass.key]) : [];
       }
     });
   }
   else {
     toast.add({ severity: 'error', summary: "Error", detail: "Cannot find identifier for athlete", life: 5000 });
   }
-
 });
+onUnmounted(() => {
+  clearInterval(polling.value);
+})
 </script>
 
 <template>
@@ -160,8 +186,14 @@ onMounted(() => {
 
               <AccordionTab v-for="runClass in activeClasses" :key="runClass.key">
                 <template #header>
-                  <div class="run-class">
-                    <div class="class-name">{{ runClass.name }}</div>
+                  <div class="run-class" :class="runClass.key">
+                    <div class="class-name">
+                        <div class="name-label">{{ runClass.name }}</div>
+                        <div class="class-pb">
+                            <div class="pb-title">PB</div>
+                            <div class="pb-val face-mono" :class="runClass.key">{{ secsToHMS(store.athleteRuns[runClass.key].pb)}}</div>
+                        </div>
+                    </div>
                     <div class="counts">
                       <div class="class-count race">
                         <div class="count race" :class="runClass.key">
@@ -199,7 +231,7 @@ onMounted(() => {
                       <div class="run-date">{{getDate(run.start_date_local)}}</div>
                     </div>
                     <div class="run-stats">
-                      <div class="run-time" :class="run.race ? runClass.key : ''">{{ secsToHMS(run.elapsed_time)}}</div>
+                      <div class="run-time face-mono" :class="[run.race ? runClass.key : '', store.athleteRuns[runClass.key].pb === run.elapsed_time ? 'class-pb' : '']">{{ secsToHMS(run.elapsed_time)}}</div>
                       <div class="run-dist">{{ metersToDistanceUnits(run.distance, 'mi')}}</div>
                     </div>
                     <div v-if="props.currentUser" class="run-tools">
@@ -317,21 +349,54 @@ onMounted(() => {
     display: flex;
     flex: 1;
     justify-content: space-between;
+    .class-name {
+      display: flex;
+      .name-label {
+        width: 63px;
+      }
+    }
+    .class-pb {
+      display: flex;
+      border: solid 1px #dddddd;
+      border-radius: 12px;
+      padding-right: 12px;
+      align-items: center;
+      background-color: #ffffff;
+      overflow: hidden;
+      .pb-title {
+        background-color: #f5f5f5;
+        padding-left: 9px;
+        padding-right: 6px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        height: 100%;
+        font-weight: 400;
+        color: #aaaaaa;
+      }
+      .pb-val {
+        padding-left: 6px;
+        font-weight: 300;
+        min-width: 77px;
+        text-align: right;
+        font-size: 14px;
+      }
+    }
     .counts {
       flex-wrap: nowrap;
       display: flex;
       .class-count {
         position: relative;
         display: flex;
-        width: 60px;
+        width: 50px;
         justify-content: center;
         &.race {
-          justify-content: flex-start;
+          min-width: 56px;
         }
         .medal-bg {
           position: absolute;
-          width: 60px;
-          top: -16px;
+          width: 50px;
+          top: -13px;
         }
 
         .count {
@@ -339,6 +404,9 @@ onMounted(() => {
           z-index: 12;
           &.race {
             display: flex;
+            justify-content: space-between;
+            flex: 1;
+            margin-right: 10px;
             .badge {
               display: inline-block;
               width: 25px;
@@ -400,6 +468,18 @@ onMounted(() => {
       }
       .run-date {
         padding-left: 22px;
+      }
+    }
+    .run-stats {
+      .run-time {
+        padding: 0 12px;
+        &.class-pb {
+          border: solid 1px #dddddd;
+          border-radius: 18px;
+        }
+      }
+      .run-dist {
+        padding-left: 12px;
       }
     }
     .run-tools {

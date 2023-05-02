@@ -69,11 +69,16 @@ export const groupBy = (data, groupKey, keys, gsortKey) => {
       grp.gKey = group;
       grp.gVal = [];
       grp.gCount = 0;
+      grp.pb = 999999999999;
 
       storage[group] = storage[group] || grp;
       storage[group].gVal.push(item);
       if (gsortKey) {
         storage[group].gVal.sort(compare(gsortKey, 'desc'));
+      }
+      // store pb
+      if (parseInt(item.elapsed_time, 10) < storage[group].pb){
+        storage[group].pb = item.elapsed_time;
       }
       storage[group].gCount++;
 

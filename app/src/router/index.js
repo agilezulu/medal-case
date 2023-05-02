@@ -7,7 +7,7 @@ import PageNotFound from "@/views/PageNotFound.vue";
 import AuthStrava from "@/views/AuthStrava.vue";
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes: [
     {
       path: '/',
