@@ -50,7 +50,7 @@ if (DEVMODE) {
   axios.interceptors.response.use((response) => {
     return response.data;
   }, (error) => {
-    return Promise.reject(error.message);
+    return Promise.reject(error.response ? error.response.data : error);
   });
 }
 
@@ -139,8 +139,8 @@ export const medalStore = defineStore('todos', {
       const api = DEVMODE
         ? axios.post(apiPath('login'), postBody, {})
         : API.post(apiName, apiPath('login'), {body: postBody});
-      try {
-        api.then(authReponse => {
+
+        return api.then(authReponse => {
           const responseData = authReponse;
           if (DEVMODE) {
             axios.defaults.headers.common[
@@ -157,11 +157,9 @@ export const medalStore = defineStore('todos', {
           setUser(userData);
           this.loggedInAthlete = userData;
           router.push('/me');
+        }).catch((error) => {
+          return { data: null, error: error };
         });
-
-      } catch (response) {
-        console.log("Authorisation error", response.errors);
-      }
     },
     async getAthlete(slug) {
       this.loading = true;

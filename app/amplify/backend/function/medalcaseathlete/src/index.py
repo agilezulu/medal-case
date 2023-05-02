@@ -11,7 +11,7 @@ from datetime import timedelta
 from flask_cors import CORS
 from pony.flask import Pony
 from pony import orm
-from flask import Flask, jsonify, request, Response
+from flask import Flask, jsonify, request, Response, abort
 from resources.medalcase import MedalCase
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
@@ -54,6 +54,7 @@ app.config.update(dict(
 
 db.bind(**app.config['PONY'])
 db.generate_mapping(create_tables=False)
+
 
 Pony(app)
 jwt = JWTManager(app)
@@ -112,19 +113,22 @@ def athlete_login():
     mcase = MedalCase()
     code = request.json.get('code', None)
     print('LOGIN - code', code)
-    data = mcase.user_login(code)
+    try:
+        data = mcase.user_login(code)
 
-    print('LOGIN - data', data)
-    # set JWT expires to
-    access_token = create_access_token(
-        identity=data["id"]
-    )
-    return make_response({
-        "access_token": access_token,
-        "slug": data["slug"],
-        "firstname": data["firstname"],
-        "lastname": data["lastname"],
-    })
+        print('LOGIN - data', data)
+        # set JWT expires to
+        access_token = create_access_token(
+            identity=data["id"]
+        )
+        return make_response({
+            "access_token": access_token,
+            "slug": data["slug"],
+            "firstname": data["firstname"],
+            "lastname": data["lastname"],
+        })
+    except Exception as exp:
+        abort(500, description=str(exp))
 
 
 @app.route(f'{BASE_PATH}/list', methods=['GET'])
@@ -156,6 +160,7 @@ def update_athlete_runs():
         })
 
     # send message to SQS
+    '''
     client = boto3.client('sqs', region_name=AWS_REGION)
     #queue_url = client.get_queue_url(QueueName='medalcase.fifo')
     response = client.send_message(
@@ -165,12 +170,12 @@ def update_athlete_runs():
         MessageGroupId='MedalcaseAthleteProcess'
     )
     print('RESPONSE', response)
+    message_id = response.get('MessageId')
+    '''
 
     # set athlete to processing
     mcase.set_athlete_processing(mcase_id, True)
 
-    # return message id
-    message_id = response.get('MessageId')
     return make_response({
         "is_processing": True,
         "message_id": message_id

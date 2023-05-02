@@ -67,6 +67,25 @@ const pbMarathon = computed(() => {
       </div>
     </div>
 
+      <div class="hexgrid">
+          <div class="main">
+              <div class="container-hex">
+                  <template v-for="(row, idx) in classRows" :key="idx">
+                      <div v-for="c in row" class="mcase-class" :class="[ athlete[c.key] > 0 ? c.key : 'disabled' ]" :key="c.key">
+                          <div class="medal-bg">
+                              <!-- <img v-if="c.key === 'c_marathon'" src="/c_marathon.svg" /> -->
+                              <MedalcaseLogo :border="athlete[c.key] ? 'currentColor' : '#999999'" :center="athlete[c.key] ? '#ffffff' : '#dddddd'" />
+                          </div>
+                          <div class="medal-stats">
+                              <div class="medal-count" :class="`${c.key}_border`">{{athlete[c.key]}}</div>
+                              <div class="medal-name">{{c.name}}</div>
+                          </div>
+                      </div>
+                  </template>
+              </div>
+          </div>
+      </div>
+  <!--
     <div  class="athlete-medals">
       <div class="mcase-row">
         <div class="mcase-class">
@@ -79,7 +98,6 @@ const pbMarathon = computed(() => {
       <div v-for="(row, idx) in classRows" class="mcase-row" :key="idx">
         <div v-for="c in row" class="mcase-class" :class="[ athlete[c.key] > 0 ? c.key : 'disabled' ]" :key="c.key">
           <div class="medal-bg">
-            <!-- <img v-if="c.key === 'c_marathon'" src="/c_marathon.svg" /> -->
             <MedalcaseLogo :border="athlete[c.key] ? 'currentColor' : '#999999'" :center="athlete[c.key] ? '#ffffff' : '#dddddd'" />
           </div>
           <div class="medal-stats">
@@ -90,6 +108,7 @@ const pbMarathon = computed(() => {
         </div>
       </div>
     </div>
+    -->
   </div>
 </template>
 
@@ -97,6 +116,37 @@ const pbMarathon = computed(() => {
 $medal-width: 200px;
 $stack-margin-top: calc($medal-width / 4)-2;
 $stack-margin-lr: calc($medal-width / 16);
+
+
+.main {
+  display:flex;
+  $s: 200px;  /* size  */
+  $m: 8px;    /* margin */
+  $f: calc($s * 1.732 + 4 * $m - 1px);
+  .container-hex {
+    font-size: 0; /* disable white space between inline block element */
+    div.mcase-class {
+      position: relative;
+      width: $s;
+      margin: $m;
+      height: calc($s * 1.1547);
+      display: inline-block;
+      font-size:initial;
+      clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
+      margin-bottom: calc($m - $s * 0.2885);
+      background: #ff0000;
+    }
+    &::before {
+      content: "";
+      width: calc($s / 2 + $m);
+      float: left;
+      height: 120%;
+      shape-outside: repeating-linear-gradient(#0000 0 calc($f - 3px), #000 0 $f);
+    }
+  }
+}
+
+
 .athlete-medalcase {
   position: relative;
   .athlete-info {
@@ -161,67 +211,74 @@ $stack-margin-lr: calc($medal-width / 16);
         }
       }
     }
+
     .mcase-row {
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
-      .mcase-class {
+
+    }
+
+
+  }
+  .mcase-class {
+    display: flex;
+    /*
+    width: $medal-width;
+    height: $medal-width;
+    position: relative;
+    justify-content: center;
+
+    margin-top: -$stack-margin-top;
+    margin-left: -$stack-margin-lr;
+    margin-right: -$stack-margin-lr;
+
+     */
+
+
+    .medal-stats {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      //width: 100%;
+      //bottom: 34px;
+      .medal-count {
+        border-width: 5px;
+        border-style: solid;
+        background-color: rgba(255,255,255,0.5);
+        height: 44px;
+        width: 105px;
         display: flex;
-        width: $medal-width;
-        height: $medal-width;
-        position: relative;
+        align-items: center;
         justify-content: center;
-
-        margin-top: -$stack-margin-top;
-        margin-left: -$stack-margin-lr;
-        margin-right: -$stack-margin-lr;
-
-
-        .medal-stats {
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: #333333;
+      }
+      .medal-name {
+        font-size: 1.2rem;
+        font-weight: 800;
+      }
+      &.total {
+        justify-content: center;
+        .medal-name {
           position: relative;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          align-items: center;
-          width: 100%;
-          bottom: 34px;
-          .medal-count {
-            border-width: 5px;
-            border-style: solid;
-            background-color: rgba(255,255,255,0.5);
-            height: 44px;
-            width: 105px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: #333333;
-          }
-          .medal-name {
-            font-size: 1.2rem;
-            font-weight: 800;
-          }
-          &.total {
-            justify-content: center;
-            .medal-name {
-              position: relative;
-              font-size: 42px;
-              font-weight: 800;
-              top: 34px;
-              color: #ffffff;
-            }
-          }
+          font-size: 42px;
+          font-weight: 800;
+          top: 34px;
+          color: #ffffff;
         }
-        &.disabled {
-          .medal-stats {
-            color: #777777;
-            justify-content: center;
-            margin-top: 67px;
-            .medal-count {
-              display: none;
-            }
-          }
+      }
+    }
+    &.disabled {
+      .medal-stats {
+        color: #777777;
+        justify-content: center;
+        margin-top: 67px;
+        .medal-count {
+          display: none;
         }
       }
     }

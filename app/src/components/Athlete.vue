@@ -39,7 +39,7 @@ const formatMessages = (meta) => {
   }
   detail += '</div>';
   let summary =  !gotNew ? "No new medals" : "Congrats! New medals found";
-  return { 
+  return {
     detail: detail,
     summary: summary,
     severity: gotNew ? "success": "info",

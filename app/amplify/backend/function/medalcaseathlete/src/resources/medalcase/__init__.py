@@ -325,7 +325,7 @@ class MedalCase:
             "c_marathon_race": athlete.c_marathon_race,
             "city": athlete.city,
             "country": athlete.country,
-            "country_code": athlete.country_code.lower(),
+            "country_code": athlete.country_code.lower() if athlete.country_code else "__",
             "firstname": athlete.firstname,
             "last_run_date": last_run_date,
             "lastname": athlete.lastname,

@@ -2,12 +2,13 @@
 import { onMounted, computed } from "vue";
 import { SCOPES, medalStore } from "@/store";
 import LoginStrava from "@/components/LoginStrava.vue";
+import {useToast} from "primevue/usetoast";
 const store = medalStore();
-
+const toast = useToast();
 const scopesDesc = {
   read: "general access access to read public data (segments, routes, profile, posts, events, feeds, leaderboards)",
   "profile:read_all":
-    "read profile information to be able to create your Streaks account",
+    "read profile information to be able to create your Medalcase account",
   read_all: "access to prive data (routes, posts, etc)",
   "activity:read":
     "read activity data for activities that are visible to Everyone and Followers, excluding privacy zone data",
@@ -35,8 +36,24 @@ const allValid = computed(() => {
 onMounted(() => {
   if (allValid.value) {
     console.log(`SCOPES OK -> ${code}`);
-    store.getAccessTokenFromCode(code);
+    store.getAccessTokenFromCode(code).then((response) => {
+      console.log('getAccessTokenFromCode', response);
+      if (response && response.error){
+        toast.add({
+          severity: 'error',
+          summary: response.error.name,
+          detail: response.error.description,
+          life: 5000
+        });
+      }
+    });
   } else {
+    toast.add({
+      severity: 'error',
+      summary: "Missing authorisations",
+      detail: "Some required Strava authorsations are missing",
+      life: 5000
+    });
     console.log("ERROR -> Missing scope(s)");
   }
 });
