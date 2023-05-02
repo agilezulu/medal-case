@@ -1,25 +1,4 @@
-$color-c_marathon: #334EAF;
-$color-c_50k: #3390B1;
-$color-c_50mi: #33B185;
-$color-c_100k: #72B133;
-$color-c_100kplus: #72B133;
-$color-c_100mi: #D0AB37;
-$color-c_xtreme: #C94D41;
-
-$color-action: #FD4B01;
-
-$color-c_training: #444444;
-/*
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  position: relative;
-  font-weight: normal;
-}
-
- */
+@import "variables.scss";
 
 body {
   min-height: 100vh;
@@ -30,47 +9,55 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  /*
+  background: url("/mcbg.svg");
+  background-repeat: repeat;
+  background-size: 600px;
+   */
+}
+.mcase-face {
+  font-family: 'Shrikhand', cursive;
 }
 
 #app {
   font-weight: normal;
+
 }
 
 a {
   text-decoration: none;
+  color: $color-action;
   &.action {
     color: $color-action;
   }
 }
 
+$class-keys: c_marathon, c_50k, c_50mi, c_100k, c_100kplus, c_100mi, c_xtreme, c_training;
+$class-colors: $color-c_marathon, $color-c_50k, $color-c_50mi, $color-c_100k, $color-c_100kplus, $color-c_100mi, $color-c_xtreme, $color-c_training;
 
-.c_marathon {
-  color: $color-c_marathon;
+@for $i from 1 through length($class-keys) {
+  .#{nth($class-keys, $i)} {
+    color: #{nth($class-colors, $i)};
+  }
+  .#{nth($class-keys, $i)}_border {
+    border-color: #{nth($class-colors, $i)};
+  }
+}
+.add-spin {
+  animation-name: spin;
+  animation-duration: 11000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
 }
 
-.c_50k {
-  color: $color-c_50k;
-}
-
-.c_50mi {
-  color: $color-c_50mi;
-}
-
-.c_100k,
-.c_100kplus {
-  color: $color-c_100k;
-}
-
-.c_100mi {
-  color: $color-c_100mi;
-}
-
-.c_xtreme {
-  color: $color-c_xtreme;
-}
-
-.c_training {
-  color: $color-c_training;
+@keyframes spin {
+  from {
+    transform:rotate(0deg);
+  }
+  to {
+    transform:rotate(360deg);
+  }
 }
 
 

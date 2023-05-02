@@ -17,15 +17,30 @@ export const SCOPES = [
   "activity:read_all"
 ];
 export const CLASSES = [
-  { name: "Marathon", key: "c_marathon" },
-  { name: "50k", key: "c_50k" },
-  { name: "50mi", key: "c_50mi" },
-  { name: "100k", key: "c_100k" },
-  { name: "100k+", key: "c_100k_plus" },
-  { name: "100mi", key: "c_100mi" },
-  { name: "Xtreme", key: "c_extreme" },
+  { name: "26.2", key: "c_marathon", row: 1 },
+  { name: "50k", key: "c_50k", row: 1  },
+  { name: "50mi", key: "c_50mi", row: 2  },
+  { name: "100k", key: "c_100k", row: 2  },
+  { name: "100k+", key: "c_100kplus", row: 2  },
+  { name: "100mi", key: "c_100mi", row: 3  },
+  { name: "Xtreme", key: "c_xtreme", row: 3  },
 ];
 const classKeys = CLASSES.map(c => c.key);
+export const classLookup = CLASSES.reduce((obj, item) => {
+  obj[item.key] = item;
+  return obj;
+}, {});
+
+export const classRows = Object.values(CLASSES.reduce((acc, obj) => {
+    let key = obj.row;
+    if (key in acc) {
+      acc[key].push(obj);
+    } else {
+      acc[key] = [obj];
+    }
+  return acc;
+}, {}));
+
 const redirectUrl = NODE_ENV === "production" ? URL_LIVE : URL_LOCAL;
 const streaksAPI = NODE_ENV === "production" ? STREAKS_LIVE : STREAKS_LOCAL;
 const API = (key, param) => {
@@ -33,7 +48,8 @@ const API = (key, param) => {
     login: `${streaksAPI}/athlete/login`,
     list: `${streaksAPI}/athlete/list`,
     athlete: `${streaksAPI}/athlete/${param}`,
-    build: `${streaksAPI}/athlete`
+    build: `${streaksAPI}/athlete`,
+    run: `${streaksAPI}/athlete/run`,
     }[key];
 };
 
@@ -54,28 +70,33 @@ const removeUSER = () => window.localStorage.removeItem(userKey);
 export const medalStore = defineStore('todos', {
   state: () => ({
     loading: false,
+    loadingLocal: false,
     accessToken: null,
     loggedInAthlete: {},
     units: ['mi', 'km'],
     selectedUnits: "mi",
     athleteList: [],
     athlete: {
-      runs: []
+      runs: [],
+      new_runs: {},
+      meta: {}
     },
   }),
   getters: {
     isLoggedIn(state) {
-      console.log('isLoggedIn', !!state.accessToken);
       return !!state.accessToken;
     },
     athleteRuns(state) {
-      let grouped = groupBy(state.athlete.runs, "class_key", ["class", "class_key"], "start_date_local");
-      let groupedSorted = Object.entries(grouped).sort((a, b) => classKeys.indexOf(a.gKey) - classKeys.indexOf(b.gKey));
-      return groupedSorted.map(gs => gs[1]);
-
+      return groupBy(state.athlete.runs, "class_key", ["class", "class_key"], "start_date_local");
     },
     isLoading(state) {
       return state.loading;
+    },
+    getSessionSlug(state) {
+      return state.loggedInAthlete.slug;
+    },
+    isOnboarding(state) {
+      return state.athlete && !state.athlete.last_run_date && state.loggedInAthlete.slug ===  state.athlete.slug && !state.athlete.total_runs;
     }
   },
   actions: {
@@ -100,7 +121,6 @@ export const medalStore = defineStore('todos', {
     async getAccessTokenFromCode(code) {
       const state = this;
       try {
-        console.log("getAccessToken", code);
         axios.post(
           API('login'),
           {
@@ -121,7 +141,7 @@ export const medalStore = defineStore('todos', {
           };
           setUser(userData);
           this.loggedInAthlete = userData;
-          router.push(`/athlete/${responseData.slug}`);
+          router.push('/me');
         });
 
       } catch (response) {
@@ -129,23 +149,25 @@ export const medalStore = defineStore('todos', {
       }
     },
     async getAthlete(slug) {
-      try {
-        this.loading = true;
-        const response = await axios.get(API('athlete', slug));
-        this.athlete = response.data;
 
-        this.loading = false;
-      } catch (response) {
-        console.log("error", response.errors);
-      } finally {
-        this.loading = false;
-      }
+      this.loading = true;
+      return axios.get(API('athlete', slug))
+        .then( (response) => {
+          this.athlete = response.data;
+          this.loading = false;
+          return { data: this.athlete, error: null };
+        })
+        .catch((error) => {
+          this.athlete = null;
+          this.loading = false;
+          return { data: null, error: error.response.data };
+        });
+
     },
     async getAthletes(fetch) {
       if (!fetch && this.athleteList.length){ return; }
       try {
         this.loading = true;
-        console.log("getAthletes");
         const response = await axios.get(API('list'));
         this.athleteList = response.data;
       } catch (response) {
@@ -155,18 +177,30 @@ export const medalStore = defineStore('todos', {
       }
     },
     async buildAthleteRuns() {
-      if (this.athleteList.length){ return; }
+      this.loadingLocal = true;
 
-      try {
-        this.loading = true;
-        console.log("buildAthlete");
-        const response = await axios.get(API('build'));
-        this.athlete = response.data;
-      } catch (response) {
-        console.log("error", response.errors);
-      } finally {
-        this.loading = false;
-      }
+      return axios.post(API('build'), null)
+        .then((response) => {
+          this.athlete = response.data;
+          this.loadingLocal = false;
+          return { data: this.athlete.meta, error: null };
+        })
+        .catch((error) => {
+          this.loadingLocal = false;
+          return { data: null, error: error.response.data };
+        });
     },
+    async updateRun(data) {
+        const sendData = {
+          class_key: data.class_key,
+          name: data.name,
+          race: data.race,
+          strava_id: data.strava_id
+        }
+        return axios.put(API('run'), sendData);
+    },
+    refreshAthleteData(data) {
+      this.athlete = data;
+    }
   },
 })

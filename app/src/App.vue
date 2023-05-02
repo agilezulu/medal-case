@@ -1,20 +1,16 @@
 <script setup>
 import {onMounted} from "vue";
-import { RouterLink, RouterView } from "vue-router";
-import { medalStore } from "@/store";
-import LoginStrava from "@/components/LoginStrava.vue";
+import {RouterLink, RouterView} from "vue-router";
 import router from "@/router";
-const store = medalStore();
+import {medalStore} from "@/store";
+import LoginStrava from "@/components/LoginStrava.vue";
+import LoadingSpinner from "@/components/LoadingSpinner.vue";
+import {storeToRefs} from "pinia";
 
-const items =[
-  {
-    label: "Athletes",
-    icon: "pi pi-fw pi-bolt",
-    to: "/",
-  },
-];
+const store = medalStore();
+const { loading } = storeToRefs(medalStore());
 const myProfile = () => {
-  router.push({ name: "me" });
+  router.push({name: "me"});
   //router.push({ name: "athlete", params: { slug: store.loggedInAthlete.slug } });
 }
 onMounted(() => {
@@ -23,39 +19,162 @@ onMounted(() => {
 </script>
 
 <template>
-  <Menubar :model="items">
-    <template #item="{ item }">
-      <router-link
-          :to="item.to"
-          custom
-          v-slot="{ href, navigate, isActive, isExactActive }"
-      >
-        <a
-            :href="href"
-            @click="navigate"
-            class="p-menuitem-link"
-            :class="{
-              'active-link': isActive,
-              'active-link-exact': isExactActive,
-            }"
-        ><i :class="item.icon"></i>{{ item.label }}</a
-        >
-      </router-link>
+  <Menubar>
+    <template #start>
+      <router-link to="/" class="p-menuitem-link"><img src="/medalcase_logo.svg"><span class="mcase-face" style="letter-spacing: 0.5px;">Medalcase</span></router-link>
     </template>
     <template #end>
-      <Button
-          @click="myProfile()"
-          class="p-button-outlined p-button-secondary p-button-sm"
-          iconPos="right"
-          v-if="store.isLoggedIn"
-      >Me &nbsp;<font-awesome-icon icon="fa-light fa-fw fa-user" /></Button>
-      <LoginStrava />
+      <ul role="menubar" tabindex="0" class="menu-end">
+        <li id="link-me" class="p-menuitem" role="menuitem" aria-label="Me" aria-level="1" aria-setsize="1" aria-posinset="2">
+          <div class="p-menuitem-content">
+          <a href="javascript:void(0);"
+              @click="myProfile()"
+              class="p-menuitem-link active-link active-link-exact"
+              v-if="store.isLoggedIn"
+          >Me &nbsp;<font-awesome-icon icon="fa-light fa-fw fa-user"/>
+          </a>
+          </div>
+        </li>
+        <li id="link-strava" class="p-menuitem" role="menuitem" aria-label="Athletes" aria-level="1" aria-setsize="1" aria-posinset="3">
+          <div class="p-menuitem-content">
+          <LoginStrava />
+          </div>
+        </li>
+      </ul>
     </template>
   </Menubar>
-  <router-view></router-view>
-  <Toast />
+  <div class="container">
+    <div class="left-column"></div>
+    <div class="center-column">
+      <div v-if="loading" class="spinner-canvas">
+        <LoadingSpinner />
+      </div>
+      <router-view></router-view>
+    </div>
+    <div class="right-column"></div>
+  </div>
+  <div class="footer">
+    <router-link to="/about" class="p-menuitem-link">About</router-link>
+
+    <Toast position="top-right">
+      <template #message="slotProps">
+        <div class="p-toast-message-text">
+          <span class="p-toast-summary">{{slotProps.message.summary}}</span>
+          <div class="p-toast-detail" v-html="slotProps.message.detail" />
+        </div>
+      </template>
+    </Toast>
+  </div>
+
 </template>
 
 <style lang="scss">
+@import "@/assets/variables.scss";
 
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  justify-content: space-between;
+}
+.p-menubar {
+  box-shadow: 0 5px 5px rgba(0,0,0,0.3);
+  z-index: 12;
+}
+.p-inputswitch.p-inputswitch-checked.btn-action .p-inputswitch-slider,
+.p-inputswitch.p-inputswitch-checked.btn-action:not(.p-disabled):hover .p-inputswitch-slider {
+  background: $color-action;
+}
+
+.p-button.btn-action,
+.p-button.btn-action:enabled:hover {
+  background: $color-action;
+  border: 1px solid $color-action;
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  flex: 1;
+  box-shadow: 0 5px 5px rgba(0,0,0,0.3);
+  z-index: 10;
+}
+.footer {
+  z-index: 9;
+}
+.p-toast {
+  .p-toast-message {
+    .p-toast-message-content {
+      .p-toast-summary {
+        font-weight: 700;
+        font-size: 1.2rem;
+      }
+
+      .p-toast-detail {
+
+      }
+    }
+  }
+}
+.spinner-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #ffffff;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.footer {
+  min-height: 80px;
+  background-color: #eeeeee;
+  padding: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.left-column,
+.right-column {
+  flex-basis: calc((100% - $page-width)/2);
+  max-width: calc((100% - $page-width)/2);
+  //background-color: #f5f5f5;
+}
+
+.center-column {
+  flex-basis: $page-width;
+  max-width: $page-width;
+}
+
+@media (max-width: 1024px) {
+  .left-column,
+  .right-column {
+    flex-basis: 50%;
+    max-width: 50%;
+  }
+  .center-column {
+    flex-basis: 100%;
+    max-width: 100%;
+    padding: 0 12px;
+  }
+}
+.p-menubar-start {
+  display: flex;
+  align-items: center;
+  a {
+    color: #495057;
+  }
+  img {
+    width: 40px;
+    height: 40px;
+  }
+}
+.p-menubar-end {
+  .menu-end {
+    display: flex;
+  }
+}
 </style>

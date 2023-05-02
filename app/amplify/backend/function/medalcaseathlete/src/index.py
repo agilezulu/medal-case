@@ -3,6 +3,7 @@ Main API interface for events
 """
 import awsgi
 import os
+import json
 from datetime import timedelta, datetime
 from flask_cors import CORS
 from pony.flask import Pony
@@ -14,12 +15,13 @@ from flask_jwt_extended import get_jwt
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
+from werkzeug.exceptions import HTTPException
 
 from resources.db.models import *
 
 app = Flask(__name__)
 app.config["STRAVA_VERIFY_TOKEN"] = os.getenv("STRAVA_VERIFY_TOKEN")
-app.config["JWT_SECRET_KEY"] = os.getenv("STRAVA_STREAKS_JWT_SECRET")
+app.config["JWT_SECRET_KEY"] = os.getenv("MEDALCASE_JWT_SECRET")
 app.config["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=31)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=62)
@@ -67,6 +69,21 @@ def make_response(data, tojson=True):
     return response
 
 
+@app.errorhandler(HTTPException)
+def handle_exception(e):
+    """Return JSON instead of HTML for HTTP errors."""
+    # start with the correct headers and status code from the error
+    response = e.get_response()
+    # replace the body with JSON
+    response.data = json.dumps({
+        "code": e.code,
+        "name": e.name,
+        "description": e.description,
+    })
+    response.content_type = "application/json"
+    return response
+
+
 @app.before_request
 def basic_authentication():
     if request.method.lower() == 'options':
@@ -108,7 +125,7 @@ def get_athlete_list():
     return make_response(athletes)
 
 
-@app.route(f'{BASE_PATH}', methods=['GET'])
+@app.route(f'{BASE_PATH}', methods=['POST'])
 @jwt_required()
 def update_athlete_runs():
     """
@@ -132,6 +149,22 @@ def get_athete_by_slug(slug):
     """
     mcase = MedalCase()
     athlete = mcase.get_athlete(slug=slug)
+    return make_response(athlete)
+
+
+@app.route(f'{BASE_PATH}/run', methods=['PUT'])
+@jwt_required()
+def update_athlete_run():
+    """
+    Primary streaks builder to create new or rebuild all
+    :param uuid: mcase athlete uuid
+    :return: streaks
+    """
+    data = request.json
+
+    mcase_id = get_jwt_identity()
+    mcase = MedalCase()
+    athlete = mcase.update_run(mcase_id, data)
     return make_response(athlete)
 
 

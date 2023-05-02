@@ -3,9 +3,7 @@ import Athlete from "@/components/Athlete.vue";
 </script>
 
 <template>
-  <div class="about">
-    <Athlete />
-  </div>
+    <Athlete :current-user="true" />
 </template>
 
 <style>

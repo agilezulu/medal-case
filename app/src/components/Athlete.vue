@@ -1,36 +1,69 @@
 <script setup>
-import { onMounted, computed, ref, getCurrentInstance } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { useRoute } from "vue-router";
-import { medalStore, CLASSES } from "@/store";
+import { medalStore, classLookup, CLASSES } from "@/store";
 import { metersToDistanceUnits, getDate, secsToHMS } from "@/utils/helpers.js";
 import {storeToRefs} from "pinia";
 import { useDialog } from "primevue/usedialog";
 import { useToast } from "primevue/usetoast";
-import { groupBy } from "@/utils/helpers.js";
+import { formatDate } from "@/utils/helpers.js";
 import RunEdit from "@/components/RunEdit.vue";
+import AthleteMedalcase from "@/components/AthleteMedalcase.vue";
+import AthletePhoto from "@/components/AthletePhoto.vue";
+import MedalcaseLogo from "@/components/icons/MedalcaseLogo.vue";
+import BadgeRace from "@/components/icons/BadgeRace.vue";
+import BadgeRun from "@/components/icons/BadgeRun.vue";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
 
-const { loading, athlete } = storeToRefs(medalStore())
+const props =  defineProps({
+  currentUser: Boolean,
+});
+
+const { athlete } = storeToRefs(medalStore());
 const store = medalStore();
 const route = useRoute();
 const dialog = useDialog();
 const toast = useToast();
 
-const classKeys = CLASSES.map(c => c.key);
-//.sort((a, b) => classKeys.indexOf(a.gKey) - classKeys.indexOf(b.gKey)
-const groupedRuns = computed(() => {
-  let grouped = groupBy(store.athleteRuns, "class_key", ["class", "class_key"], "start_date_local");
-  let groupedSorted = Object.entries(grouped).sort((a, b) => classKeys.indexOf(a.gKey) - classKeys.indexOf(b.gKey));
-  return groupedSorted.map(gs => gs[1]);
-});
+const activeClasses = ref([]);
+
+const formatMessages = (meta) => {
+  const gotNew = Object.keys(meta.new_runs).length;
+  let detail = `<div class="m-detail"><div>${meta.scanned_runs} runs since: ${formatDate(meta.last_scan_date)}</div>`;
+  if (gotNew) {
+    Object.keys(meta.new_runs).forEach((key) => {
+      detail += `<div class="m-info"><div class="m-name">${classLookup[key].name}:</div><div class="m-count">${meta.new_runs[key]}</div></div>`;
+    });
+  }
+  detail += '</div>';
+  let summary =  !gotNew ? "No new medals" : "Congrats! New medals found";
+  return { 
+    detail: detail,
+    summary: summary,
+    severity: gotNew ? "success": "info",
+  };
+}
 const buildRuns = () => {
-  store.buildAthleteRuns();
+  store.buildAthleteRuns().then((response) => {
+    console.log('build response', response)
+    if (response.error){
+      toast.add({ severity: 'error', summary: response.error.name, detail: response.error.description, life: 5000 });
+    }
+    else {
+      const messages = formatMessages(response.data);
+      toast.add({
+        severity: messages.severity,
+        summary: messages.summary,
+        detail: messages.detail,
+        life: 12000
+      });
+    }
+  });
 }
 
 const dynamicDialogRef = ref(null);
 
 const editRun = (run) => {
-
   dynamicDialogRef.value = dialog.open(RunEdit, {
     data: {
       run: run
@@ -46,118 +79,219 @@ const editRun = (run) => {
       },
       modal: true
     },
-    onClose: (options) => {
-      const data = options.data;
-      console.log('CLOSED', data);
-      if (data) {
-        toast.add({ severity:'info', data, life: 3000 });
+    onClose: (response) => {
+      if (response.data) {
+        toast.add({ severity: 'success', detail: "Run successfully updated", life: 3000 });
+        store.refreshAthleteData(response.data);
       }
     }
   });
-
 }
 
 onMounted(() => {
-  store.getAthlete(route.params.slug);
+  const athleteSlug = props.currentUser ? store.getSessionSlug : route.params.slug;
+  if (athleteSlug) {
+    store.getAthlete(athleteSlug).then((response) => {
+      if (response.error){
+        toast.add({ severity: 'error', summary: response.error.name, detail: response.error.description, life: 5000 });
+      }
+      else {
+        if (store.isOnboarding){
+          buildRuns();
+        }
+        activeClasses.value = CLASSES.filter((mclass) => store.athleteRuns[mclass.key]);
+      }
+    });
+  }
+  else {
+    toast.add({ severity: 'error', summary: "Error", detail: "Cannot find identifier for athlete", life: 5000 });
+  }
 
 });
 </script>
 
 <template>
-  <div v-if="loading">
-    <LoadingSpinner />
-  </div>
-  <div v-else>
-    <div id="case-header">
-      <!--
-      Runs:
+    <div v-if="store.isOnboarding" id="athlete-onboarding">
       <div>
-        <SelectButton v-model="store.selectedUnits" :options="store.units" aria-labelledby="basic" />
-      </div>
-      -->
-      {{athlete.firstname}}
-      {{athlete.lastname}}
 
-      <Button
-          @click="buildRuns()"
-          class="p-button-outlined p-button-secondary p-button-sm"
-          v-if="store.isLoggedIn"
-      >Build Medalcase <font-awesome-icon icon="fa-light fa-arrows-rotate" /></Button>
-    </div>
-    <div id="case-summary">
-
-        <div class="class-body">
-          <!--
-          <div class="hex-holder">
-                    <div class="hex"></div>
-                    <div class="hex-content"></div>
-                  </div>
-          -->
-
-          <Accordion class="accordion-custom" :multiple="true" :activeIndex="[0]">
-            <template v-for="runClass in store.athleteRuns" :key="runClass.gKey">
-            <AccordionTab>
-              <template #header>
-                <div class="run-class">
-                  <div class="class-name">{{ runClass.class }}</div>
-                  <div class="class-count">{{runClass.gCount}}  <sup :class="runClass.class_key"><font-awesome-icon icon="fa-light fa-medal" /> {{runClass.gRaceCount}}</sup></div>
-
-                </div>
-              </template>
-              <div class="run-list">
-                <div v-for="(run, idx) in runClass.gVal" :key="run.strava_id" class="run-single">
-
-                  <div class="run-info">
-
-                    <div class="run-title">
-                      <span class="run-idx">{{idx+1}}</span>
-                      <span class="run-ico" :class="run.race ? runClass.class_key : 'c_training'"><font-awesome-icon :icon="`fa-fw fa-light ${run.race? 'fa-medal' : 'fa-person-running'}`" /></span>
-                      <a :href="`https://www.strava.com/activities/${run.strava_id}/overview`" target="_new" class="run-name" :class="run.race ? runClass.class_key : 'c_training'">{{run.name}} <font-awesome-icon icon="fa-light fa-arrow-up-right-from-square" transform="shrink-4 up-6" /></a>
-                    </div>
-                    <div class="run-date">{{getDate(run.start_date_local)}}</div>
-                  </div>
-                  <div class="run-stats">
-                    <div class="run-time" :class="run.race ? runClass.class_key : ''">{{ secsToHMS(run.elapsed_time)}}</div>
-                    <div class="run-dist">{{ metersToDistanceUnits(run.distance, 'mi')}}</div>
-                  </div>
-                  <div class="run-tools">
-                    <a href="javascript:void(0);" class="action" @click="editRun(run)"><font-awesome-icon icon="fa-light fa-pencil" /></a>
-                  </div>
-                </div>
-              </div>
-            </AccordionTab>
-            </template>
-          </Accordion>
-
+        <div class="greet">
+          <div class="photo-logo">
+            <div class="pl-bg"><img src="/medalcase_logo.svg" /></div>
+            <div class="pl-img"><AthletePhoto :photo="athlete.photo" :size="100" /></div>
+          </div>
+          <div>Hi {{athlete.firstname}},
+            <br />
+            Welcome to Medalcase!
+          </div>
+        </div>
+        <p> Please stand by while we scan your runs, this might take a minute or so...</p>
+        <div class="local-spinner">
+          <LoadingSpinner />
         </div>
       </div>
+    </div>
+    <div v-else>
+      <div class="back-link">
+        <router-link to="/" class="p-menuitem-link"><font-awesome-icon icon="fa-light fa-fw fa-chevron-left" size="lg" /> list</router-link>
+      </div>
+      <template v-if="athlete">
+      <div id="case-header">
+
+        <AthleteMedalcase :athlete="athlete" />
+
+        <div v-if="currentUser" class="tools-cont">
+          <div class="update-tools">
+            <Button
+                @click="buildRuns()"
+                class="p-button p-component p-button-secondary p-button-outlined p-button-sm"
+                :class="{loading: store.loadingLocal}"
+                :disabled="store.loadingLocal"
+                v-if="store.isLoggedIn"
+            >Update Medalcase <font-awesome-icon icon="fa-light fa-arrows-rotate" fixed-width :spin="store.loadingLocal" /></Button>
+            <div class="last-run-date">Last run: {{formatDate(athlete.last_run_date)}}</div>
+          </div>
+        </div>
+      </div>
+      <div id="case-summary" v-if="store.athlete.runs.length">
+
+          <div class="class-body">
+
+            <Accordion class="accordion-custom" :multiple="true" :activeIndex="[0]">
+
+              <AccordionTab v-for="runClass in activeClasses" :key="runClass.key">
+                <template #header>
+                  <div class="run-class">
+                    <div class="class-name">{{ runClass.name }}</div>
+                    <div class="counts">
+                      <div class="class-count race">
+                        <div class="count race" :class="runClass.key">
+                          <BadgeRace />
+                          <span> {{athlete[`${runClass.key}_race`]}}</span>
+                        </div>
+                      </div>
+                      <div class="class-count" :class="runClass.key">
+                        <div class="medal-bg">
+                          <MedalcaseLogo border="currentColor" center="#ffffff" />
+                        </div>
+                        <div class="count">
+                          <span>{{athlete[runClass.key]}}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+
+                <div class="run-list">
+
+                  <div v-for="(run, idx) in store.athleteRuns[runClass.key].gVal" :key="run.strava_id" class="run-single">
+
+                    <div class="run-info">
+
+                      <div class="run-title">
+                        <span class="run-idx">{{idx+1}}</span>
+                        <span class="run-ico" :class="run.race ? runClass.key : 'c_training'">
+                          <template v-if="run.race"><BadgeRace /></template>
+                          <template v-else><BadgeRun /></template>
+                        </span>
+
+                        <a :href="`https://www.strava.com/activities/${run.strava_id}/overview`" target="_new" class="run-name" :class="run.race ? runClass.key : 'c_training'">{{run.name}} <font-awesome-icon icon="fa-light fa-arrow-up-right-from-square" transform="shrink-4 up-6" /></a>
+                      </div>
+                      <div class="run-date">{{getDate(run.start_date_local)}}</div>
+                    </div>
+                    <div class="run-stats">
+                      <div class="run-time" :class="run.race ? runClass.key : ''">{{ secsToHMS(run.elapsed_time)}}</div>
+                      <div class="run-dist">{{ metersToDistanceUnits(run.distance, 'mi')}}</div>
+                    </div>
+                    <div v-if="props.currentUser" class="run-tools">
+                      <a href="javascript:void(0);" class="action" @click="editRun(run)"><font-awesome-icon icon="fa-light fa-pencil" /></a>
+                    </div>
+                  </div>
+                </div>
+              </AccordionTab>
+
+            </Accordion>
+          </div>
+        </div>
+      </template>
+      <template v-else>
+        <h3>No athele found</h3>
+      </template>
+    </div>
     <DynamicDialog ref="dynamic-dialog">
       <!-- content of the dialog goes here -->
     </DynamicDialog>
-  </div>
+
 </template>
 
 <style lang="scss">
-@import "@/assets/mixins.scss";
-$bordercolor1: #bbbbbb;
-$backgroundcolor1: #dddddd;
-$width1: 60px;
-$borderwidth1: 4px;
-$borderradius1: 0;
-
-$bordercolor2: #ffbbbb;
-$backgroundcolor2: #ffdddd;
-$width2: 80px;
-$borderwidth2: 4px;
-$borderradius2: 4px;
-
-.hex-holder {
+@import "@/assets/main.scss";
+#athlete-onboarding {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .local-spinner {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+.greet {
+  display: flex;
+  align-items: center;
+}
+.photo-logo {
   position: relative;
-  @include hexagon(60px, #eeeeee, 2px, #aaaaaa);
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .pl-bg {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+  }
+  .pl-img {
+    position: absolute;
+    left: 20px;
+    top: -4px;
+  }
+}
+
+.back-link {
+  margin-top: 12px;
 }
 #case-header {
-  .p-button {
-    padding: 0px 12px;
+
+  .tools-cont {
+    display: flex;
+    justify-content: right;
+    .last-run-date {
+      font-size: 0.8rem;
+    }
+  }
+  .update-tools {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: solid 1px #dddddd;
+    background-color: #eeeeee;
+    padding: 4px;
+    border-radius: 6px;
+
+    .p-button {
+      padding: 2px 12px;
+      background-color: #ffffff;
+      &.loading {
+        background-color: $color-action;
+        color: #ffffff;
+      }
+    }
   }
 }
 
@@ -172,23 +306,70 @@ $borderradius2: 4px;
     outline-offset: 0;
     box-shadow: none;
   }
-
-
+  .p-accordion {
+    .p-accordion-header {
+      .p-accordion-header-link {
+        padding-right: 4px;
+      }
+    }
+  }
   .run-class {
     display: flex;
     flex: 1;
     justify-content: space-between;
+    .counts {
+      flex-wrap: nowrap;
+      display: flex;
+      .class-count {
+        position: relative;
+        display: flex;
+        width: 60px;
+        justify-content: center;
+        &.race {
+          justify-content: flex-start;
+        }
+        .medal-bg {
+          position: absolute;
+          width: 60px;
+          top: -16px;
+        }
+
+        .count {
+          position: relative;
+          z-index: 12;
+          &.race {
+            display: flex;
+            .badge {
+              display: inline-block;
+              width: 25px;
+              height: 25px;
+              margin-right: 4px;
+              svg {
+                width: 100%;
+                height: 100%;
+              }
+            }
+          }
+        }
+      }
+    }
   }
   .run-single {
     display: flex;
     justify-content: space-between;
+    /*
+    border-bottom: solid 1px transparent;
     &:hover {
-     background-color: #eeeeee;
+     border-bottom: solid 1px #dddddd;
     }
+     */
+    margin-bottom: 6px;
+
+
   }
   .class-body {
     padding: 12px;
-    width: 600px;
+    width: 100%;
   }
   .run-list {
     .run-info {
@@ -209,7 +390,12 @@ $borderradius2: 4px;
           color: #555555;
         }
         .run-ico {
-          padding-right: 6px;
+          margin-right: 6px;
+          margin-top: 2px;
+          width: 22px;
+          svg {
+            width: 100%;
+          }
         }
       }
       .run-date {
@@ -223,53 +409,7 @@ $borderradius2: 4px;
     }
 
   }
-  .run-type {
-    margin: 12px;
-    border: solid 1px #dddddd;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    flex: 1 1 0px;
-    min-width: 360px;
-    .class-header {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      .run-class {
-        width: 100%;
-        text-align: center;
-        line-height: 2;
-        font-size: 1.2rem;
-        font-weight: 800;
-        background-color: #eeeeee;
-      }
-      .run-class-meta {
-        display: flex;
-        padding: 6px;
-        flex-wrap: wrap;
-        .meta {
-          border: solid 1px #dddddd;
-          border-radius: 12px;
-          line-height: 1.5;
-          margin-right: 12px;
-          margin-bottom: 6px;
-          .meta-key {
-            background-color: #eeeeee;
-            border-radius: 12px;
-            border-right: solid 1px #dddddd;
-            padding: 0 10px;
-            font-weight: 800;
-          }
-          .meta-val {
-            padding: 0 10px;
-          }
 
-        }
-      }
-    }
-
-  }
 
   .idx {
     vertical-align: top;
@@ -285,6 +425,24 @@ $borderradius2: 4px;
   .run-time {
     &.race {
       color: #ff4e00;
+    }
+  }
+}
+
+.p-toast-message-content {
+  .m-detail {
+    .m-info {
+      display: flex;
+      width: 150px;
+      .m-name {
+        flex: 1;
+        font-weight: bold;
+        text-align: right;
+      }
+      .m-count {
+        text-align: right;
+        min-width: 30px
+      }
     }
   }
 }

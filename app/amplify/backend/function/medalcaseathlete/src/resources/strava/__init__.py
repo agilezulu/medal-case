@@ -8,8 +8,8 @@ from flask import abort
 class Strava:
 
     def __init__(self, access_token=None):
-        self.STRAVA_CLIENT_ID = int(os.getenv('STRAVA_STREAKS_CLIENT_ID'))
-        self.STRAVA_CLIENT_SECRET = os.getenv('STRAVA_STREAKS_CLIENT_SECRET')
+        self.STRAVA_CLIENT_ID = int(os.getenv('MEDALCASE_CLIENT_ID'))
+        self.STRAVA_CLIENT_SECRET = os.getenv('MEDALCASE_CLIENT_SECRET')
         self.STRAVA_AUTH_URL = os.getenv('STRAVA_AUTH_URL', 'http://localhost:5170/auth')
 
         if access_token:

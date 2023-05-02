@@ -16,7 +16,7 @@ const login = () => {
 
 </script>
 <template>
-  <div class="strava-auth" v-if="!store.isLoggedIn || show">
+  <template v-if="!store.isLoggedIn || show">
     <Button
       @click="login"
       class="p-button-outlined p-button-secondary"
@@ -24,18 +24,16 @@ const login = () => {
     >
       <img src="@/assets/connect_with_strava.svg" />
     </Button>
-  </div>
-  <div class="strava-auth" v-else>
-    <Button
+  </template>
+  <template v-else>
+    <a href="javascript:void(0);"
+
+       class="p-menuitem-link active-link active-link-exact"
         @click="store.doLogout()"
-        class="p-button-outlined p-button-secondary p-button-sm"
-        iconPos="right"
         v-if="store.isLoggedIn"
-    >Log out &nbsp;<font-awesome-icon icon="fa-light fa-fw fa-arrow-right-from-bracket" /></Button>
-  </div>
+    >Log out &nbsp;<font-awesome-icon icon="fa-light fa-fw fa-arrow-right-from-bracket" /></a>
+  </template>
 </template>
 <style lang="scss">
-.strava-auth {
-  display: inline-block;
-}
+
 </style>

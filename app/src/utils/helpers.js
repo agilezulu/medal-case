@@ -1,3 +1,9 @@
+import moment from "moment";
+
+export const formatDate = (dateStr, formatStr) => {
+  let format = formatStr || 'ddd Do MMMM YYYY';
+  return moment(dateStr).format(format);
+}
 export const round = (value, precision) => {
   const multiplier = Math.pow(10, precision || 0);
   return Math.round(value * multiplier) / multiplier;
@@ -5,6 +11,7 @@ export const round = (value, precision) => {
 
 export const getDate = (datetime) => datetime.split('T')[0];
 export const metersToDistanceUnits = (meters, selectedUnits) => {
+  if (!meters) { return 0; }
   return round(meters * (selectedUnits === 'km' ? 0.001 : 0.000621371), 1) + ` ${selectedUnits}`;
 }
 
@@ -62,15 +69,11 @@ export const groupBy = (data, groupKey, keys, gsortKey) => {
       grp.gKey = group;
       grp.gVal = [];
       grp.gCount = 0;
-      grp.gRaceCount = 0
 
       storage[group] = storage[group] || grp;
       storage[group].gVal.push(item);
       if (gsortKey) {
         storage[group].gVal.sort(compare(gsortKey, 'desc'));
-      }
-      if (groupKey === 'class_key' && item.race) {
-        storage[group].gRaceCount++;
       }
       storage[group].gCount++;
 
