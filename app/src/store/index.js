@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { API } from 'aws-amplify';
 import axios from "axios";
 import router from "@/router";
 import { groupBy } from "@/utils/helpers.js";
@@ -7,23 +8,27 @@ const NODE_ENV = import.meta.env.VITE_NODE_ENV;
 const VUE_APP_CLIENT_ID = import.meta.env.VITE_VUE_APP_CLIENT_ID;
 const URL_LOCAL = `http://${location.host}`;
 const URL_LIVE = "https://medalcase.com";
-
-const STREAKS_LOCAL = "http://localhost:5180";
-const STREAKS_LIVE = "https://medalcase.com/v1/";
+const apiName = "medalcaseapi";
+const API_LOCAL = "http://127.0.0.1:5180";
+const API_LIVE = "";
+const DEVMODE = (NODE_ENV && NODE_ENV === "dev");
+const redirectUrl = DEVMODE ? URL_LOCAL :  URL_LIVE;
+const mcaseAPI = DEVMODE ? API_LOCAL : API_LIVE;
+console.log('DEVMODE', DEVMODE, NODE_ENV);
 export const SCOPES = [
   "read",
   "profile:read_all",
-  "activity:read",
   "activity:read_all"
 ];
+// 'profile:read_all', 'profile:write', 'profile:read_all', 'activity:read_all', 'activity:write'
 export const CLASSES = [
   { name: "26.2", key: "c_marathon", row: 1 },
   { name: "50k", key: "c_50k", row: 1  },
-  { name: "50mi", key: "c_50mi", row: 2  },
-  { name: "100k", key: "c_100k", row: 2  },
+  { name: "50mi", key: "c_50mi", row: 1  },
+  { name: "100k", key: "c_100k", row: 1  },
   { name: "100k+", key: "c_100kplus", row: 2  },
-  { name: "100mi", key: "c_100mi", row: 3  },
-  { name: "Xtreme", key: "c_xtreme", row: 3  },
+  { name: "100mi", key: "c_100mi", row: 2  },
+  { name: "Xtreme", key: "c_xtreme", row: 2  },
 ];
 const classKeys = CLASSES.map(c => c.key);
 export const classLookup = CLASSES.reduce((obj, item) => {
@@ -41,15 +46,22 @@ export const classRows = Object.values(CLASSES.reduce((acc, obj) => {
   return acc;
 }, {}));
 
-const redirectUrl = NODE_ENV === "production" ? URL_LIVE : URL_LOCAL;
-const streaksAPI = NODE_ENV === "production" ? STREAKS_LIVE : STREAKS_LOCAL;
-const API = (key, param) => {
+if (DEVMODE) {
+  axios.interceptors.response.use((response) => {
+    return response.data;
+  }, (error) => {
+    return Promise.reject(error.message);
+  });
+}
+
+const apiPath = (key, param) => {
   return {
-    login: `${streaksAPI}/athlete/login`,
-    list: `${streaksAPI}/athlete/list`,
-    athlete: `${streaksAPI}/athlete/${param}`,
-    build: `${streaksAPI}/athlete`,
-    run: `${streaksAPI}/athlete/run`,
+    login: `${mcaseAPI}/athlete/login`,
+    list: `${mcaseAPI}/athlete/list`,
+    athlete: `${mcaseAPI}/athlete/${param}`,
+    build: `${mcaseAPI}/athlete`,
+    run: `${mcaseAPI}/athlete/run`,
+    chaeck: `${mcaseAPI}/athlete/chaeck`,
     }[key];
 };
 
@@ -87,7 +99,8 @@ export const medalStore = defineStore('todos', {
       return !!state.accessToken;
     },
     athleteRuns(state) {
-      return groupBy(state.athlete.runs, "class_key", ["class", "class_key"], "start_date_local");
+      if (!state.athlete){ return; }
+      return state.athlete.runs.length ? groupBy(state.athlete.runs, "class_key", ["class", "class_key"], "start_date_local") : {};
     },
     isLoading(state) {
       return state.loading;
@@ -103,15 +116,16 @@ export const medalStore = defineStore('todos', {
     setAccess() {
       this.accessToken = getJWT();
       this.loggedInAthlete = getUser();
-      if (this.accessToken){
+      if (DEVMODE && this.accessToken){
         axios.defaults.headers.common[
           "Authorization"
           ] = `Bearer ${this.accessToken}`;
       }
-      //console.log('this.loggedInAthlete', this.loggedInAthlete);
     },
     doLogout(){
-      axios.defaults.headers.common["Authorization"] = null;
+      if (DEVMODE) {
+        axios.defaults.headers.common["Authorization"] = null;
+      }
       removeJWT();
       removeUSER();
       this.accessToken = null;
@@ -120,18 +134,19 @@ export const medalStore = defineStore('todos', {
     },
     async getAccessTokenFromCode(code) {
       const state = this;
+      const postBody = {code: code};
+      console.log(postBody);
+      const api = DEVMODE
+        ? axios.post(apiPath('login'), postBody, {})
+        : API.post(apiName, apiPath('login'), {body: postBody});
       try {
-        axios.post(
-          API('login'),
-          {
-            code: code,
-          },
-          {}
-        ).then(authReponse => {
-          const responseData = authReponse.data;
-          axios.defaults.headers.common[
-            "Authorization"
-            ] = `Bearer ${responseData.access_token}`;
+        api.then(authReponse => {
+          const responseData = authReponse;
+          if (DEVMODE) {
+            axios.defaults.headers.common[
+              "Authorization"
+              ] = `Bearer ${responseData.access_token}`;
+          }
           setJWT(responseData.access_token);
           state.accessToken = responseData.access_token;
           const userData = {
@@ -149,45 +164,61 @@ export const medalStore = defineStore('todos', {
       }
     },
     async getAthlete(slug) {
-
       this.loading = true;
-      return axios.get(API('athlete', slug))
-        .then( (response) => {
-          this.athlete = response.data;
+      const api = DEVMODE ? axios.get(apiPath('athlete', slug)) : API.get(apiName, apiPath('athlete', slug), null);
+      return api.then( (response) => {
+          this.athlete = response;
           this.loading = false;
           return { data: this.athlete, error: null };
         })
         .catch((error) => {
           this.athlete = null;
           this.loading = false;
-          return { data: null, error: error.response.data };
+          return { data: null, error: error.response };
         });
-
     },
     async getAthletes(fetch) {
       if (!fetch && this.athleteList.length){ return; }
-      try {
-        this.loading = true;
-        const response = await axios.get(API('list'));
-        this.athleteList = response.data;
-      } catch (response) {
-        console.log("error", response.errors);
-      } finally {
+      this.loading = true;
+      const api = DEVMODE ? axios.get(apiPath('list')) : API.get(apiName, apiPath('list'), null);
+      api.then((response) => {
+        this.athleteList = response;
         this.loading = false;
-      }
+      }).catch((error) => {
+        console.log("error", error);
+        this.loading = false;
+      });
     },
     async buildAthleteRuns() {
       this.loadingLocal = true;
-
-      return axios.post(API('build'), null)
-        .then((response) => {
-          this.athlete = response.data;
+      const api = DEVMODE ? axios.post(apiPath('build')) : API.post(apiName, apiPath('build'), null);
+      return api.then((response) => {
+          this.athlete = response;
           this.loadingLocal = false;
           return { data: this.athlete.meta, error: null };
         })
         .catch((error) => {
           this.loadingLocal = false;
-          return { data: null, error: error.response.data };
+          return { data: null, error: error };
+        });
+    },
+    async checkAthleteProcessing() {
+      this.loadingLocal = true;
+      const api = DEVMODE ? axios.get(apiPath('check')) : API.get(apiName, apiPath('check'), null);
+      return api.then((response) => {
+          let is_processing = response.is_processing;
+          if (is_processing){
+            return  {is_processing: true, data: null, error: null};
+          }
+          else {
+            this.athlete = response.athlete;
+            this.loadingLocal = false;
+            return {is_processing: response.is_processing, data: this.athlete.meta, error: null};
+          }
+        })
+        .catch((error) => {
+          this.loadingLocal = false;
+          return { data: null, error: error };
         });
     },
     async updateRun(data) {
@@ -197,7 +228,7 @@ export const medalStore = defineStore('todos', {
           race: data.race,
           strava_id: data.strava_id
         }
-        return axios.put(API('run'), sendData);
+        return DEVMODE ? axios.put(apiPath('run'), sendData) : API.put(apiPath('run'), sendData);
     },
     refreshAthleteData(data) {
       this.athlete = data;

@@ -152,8 +152,7 @@ onMounted(() => {
 @media (max-width: 1024px) {
   .left-column,
   .right-column {
-    flex-basis: 50%;
-    max-width: 50%;
+    display: none;
   }
   .center-column {
     flex-basis: 100%;

@@ -28,21 +28,30 @@
       "function": {
         "medalcaseathlete": {
           "secretsPathAmplifyAppId": "do1gkvje3yk6e",
+          "deploymentBucketName": "amplify-medalcase-dev-82539-deployment",
+          "s3Key": "amplify-builds/medalcaseathlete-514f56375a4d4b33784c-build.zip",
           "googleApiKey": "AIzaSyBaRgbnzMy4cEMm5e2h7pyryfYav7ComTo",
           "medalcaseClientId": "39073",
           "medalcaseClientSecret": "2030883d7ee2525d1f9ea4f5d800c7a0200798a0",
           "medalcaseDb": "https://db.medalcase.com",
-          "medalcaseJwtSecret": "nz9kX1Sj9kEmRl9jUYYHHjXn3XxnG1SqilrBtwR8",
-          "deploymentBucketName": "amplify-medalcase-dev-82539-deployment",
-          "s3Key": "amplify-builds/medalcaseathlete-6c7361582f5853576368-build.zip"
+          "medalcaseJwtSecret": "nz9kX1Sj9kEmRl9jUYYHHjXn3XxnG1SqilrBtwR8"
         },
         "medalcasemedalcaselambdalayer": {
           "deploymentBucketName": "amplify-medalcase-dev-82539-deployment",
-          "s3Key": "amplify-builds/medalcasemedalcaselambdalayer-LambdaLayerVersion4793671f-build.zip"
+          "s3Key": "amplify-builds/medalcasemedalcaselambdalayer-LambdaLayerVersion9f07acdb-build.zip"
         }
       },
       "api": {
         "medalcaseapi": {}
+      },
+      "hosting": {
+        "amplifyhosting": {
+          "appId": "do1gkvje3yk6e",
+          "type": "manual"
+        }
+      },
+      "auth": {
+        "medalcase": {}
       }
     }
   }

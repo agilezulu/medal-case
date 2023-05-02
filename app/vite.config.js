@@ -9,9 +9,7 @@ export default defineConfig({
   server: {
     port: 5183,
   },
-  define: {
-    global: {},
-  },
+
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),

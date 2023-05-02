@@ -27,7 +27,7 @@ coverage
 *.sln
 *.sw?
 
-/.env
+/.env.local
 /amplify/backend/function/medalcasemedalcaselambdalayer/opt/python/
 
 #amplify-do-not-edit-begin

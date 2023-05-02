@@ -1,11 +1,11 @@
 <script setup>
 import { OrbitSpinner } from "epic-spinners";
-import MedalcaseLogo from "@/components/icons/MedalcaseLogo.vue";
+import MedalcaseLogoPulse from "@/components/icons/MedalcaseLogoPulse.vue";
 </script>
 
 <template>
     <div class="spinner-cont">
-      <div class="spinnerbg add-spin"><MedalcaseLogo border="#FD4B01" center="#ffffff" /></div>
+      <div class="spinnerbg add-spin"><MedalcaseLogoPulse border="#FD4B01" center="#ffffff" /></div>
       <orbit-spinner
           :animation-duration="1200"
           :size="155"

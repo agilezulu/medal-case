@@ -19,12 +19,13 @@ const closeDialog = () => {
 };
 const saveRun = () => {
     store.updateRun(runToEdit.value).then((response) => {
-      dialogRef.value.close(response.data);
+      dialogRef.value.close(response);
     }, error => {
+      console.log(error);
       toast.add({
         severity:'error',
-        summary: error.response.data.name,
-        detail: error.response.data.description, life: 3000 });
+        summary: error.response.name,
+        detail: error.response.description, life: 3000 });
     });
 }
 </script>

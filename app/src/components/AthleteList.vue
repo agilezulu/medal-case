@@ -43,9 +43,12 @@ getAthletes();
         <Column field="firstname" header="Name" :sortable="true">
           <template #body="slotProps">
             <div class="athlete-name">
-              <div class="photo-bg"><MedalcaseLogo border="#FD4B01" center="#ffffff" /></div>
-              <AthletePhoto :photo="slotProps.data.photo" :size="70" />
+              <div class="hex-photo">
+                  <div class="photo-bg"><MedalcaseLogo border="#FD4B01" center="#ffffff" /></div>
+                  <AthletePhoto :photo="slotProps.data.photo" :size="70" />
+              </div>
               <router-link :to="{ name: 'athlete', params: { slug: slotProps.data.slug } }" class="name-link">{{slotProps.data.firstname}} {{slotProps.data.lastname}}</router-link>
+              <img :src="`/img/flags/${slotProps.data.country_code}.svg`" class="a-flag"/>
             </div>
           </template>
         </Column>
@@ -90,14 +93,27 @@ $total-size: 50px;
     position: relative;
     display: flex;
     align-items: center;
-    .photo-bg {
-      width: 49px;
-      left: -7px;
-      position: absolute;
-      top: -12px;
+    .a-flag {
+      max-width: 25px;
+      max-height: 25px;
     }
+    .hex-photo {
+      position: relative;
+      width: 50px;
+      height: 50px;
+      .photo-bg {
+        width: 51px;
+        position: absolute;
+      }
+      .a-photo.hexagon {
+        left: 8px;
+        top: -9px;
+      }
+    }
+
     .name-link {
-      margin-left: 43px;
+      padding: 0 6px;
+      flex: 1;
     }
   }
   .athelete-total {
@@ -121,6 +137,7 @@ $total-size: 50px;
     }
     .total-count {
       z-index: 5;
+      font-size: 15px;
     }
 
   }

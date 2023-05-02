@@ -234,6 +234,9 @@ $stack-margin-lr: calc($medal-width / 16);
         }
       }
     }
+    .athlete-info {
+      position: relative;
+    }
   }
 }
 </style>
