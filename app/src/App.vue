@@ -55,7 +55,7 @@ onMounted(() => {
   </div>
   <div class="footer">
     <router-link to="/about" class="p-menuitem-link">About</router-link>
-
+    <div class="pbs"><img src="/img/api_logo_pwrdBy_strava_horiz_light.svg" style="width: 138px;"></div>
     <Toast position="top-right">
       <template #message="slotProps">
         <div class="p-toast-message-text">
@@ -102,6 +102,15 @@ onMounted(() => {
 }
 .footer {
   z-index: 9;
+  min-height: 80px;
+  background-color: #eeeeee;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .pbs {
+    display: flex;
+  }
 }
 .p-toast {
   .p-toast-message {
@@ -129,14 +138,7 @@ onMounted(() => {
   justify-content: center;
   z-index: 100;
 }
-.footer {
-  min-height: 80px;
-  background-color: #eeeeee;
-  padding: 15px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+
 .left-column,
 .right-column {
   flex-basis: calc((100% - $page-width)/2);

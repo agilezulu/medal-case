@@ -225,10 +225,9 @@ onUnmounted(() => {
                           <template v-if="run.race"><BadgeRace /></template>
                           <template v-else><BadgeRun /></template>
                         </span>
-
-                        <a :href="`https://www.strava.com/activities/${run.strava_id}/overview`" target="_new" class="run-name" :class="run.race ? runClass.key : 'c_training'">{{run.name}} <font-awesome-icon icon="fa-light fa-arrow-up-right-from-square" transform="shrink-4 up-6" /></a>
+                        <span class="run-name" :class="run.race ? runClass.key : 'c_training'" v-html="run.name"></span>
                       </div>
-                      <div class="run-date">{{getDate(run.start_date_local)}}</div>
+                      <div class="run-date">{{getDate(run.start_date_local)}} | <a :href="`https://www.strava.com/activities/${run.strava_id}/overview`" class="vos" target="_new"><span>View on Strava <font-awesome-icon icon="fa-light fa-arrow-up-right-from-square" transform="shrink-4" /></span></a></div>
                     </div>
                     <div class="run-stats">
                       <div class="run-time face-mono" :class="[run.race ? runClass.key : '', store.athleteRuns[runClass.key].pb === run.elapsed_time ? 'class-pb' : '']">{{ secsToHMS(run.elapsed_time)}}</div>
@@ -442,6 +441,11 @@ onUnmounted(() => {
   .run-list {
     .run-info {
       flex: 1;
+      .vos {
+        font-size: 10px;
+        display: inline-block;
+        margin-left: 2px;
+      }
       .run-title {
         display: flex;
         .run-name {
@@ -472,18 +476,19 @@ onUnmounted(() => {
     }
     .run-stats {
       .run-time {
-        padding: 0 12px;
+        text-align: right;
         &.class-pb {
           border: solid 1px #dddddd;
           border-radius: 18px;
+          padding: 0 12px;
         }
       }
       .run-dist {
-        padding-left: 12px;
+        text-align: right;
       }
     }
     .run-tools {
-      flex: 0 0 40px;
+      flex: 0 0 25px;
       display: flex;
       justify-content: flex-end;
     }
@@ -501,6 +506,10 @@ onUnmounted(() => {
     font-weight: 300;
     font-size: 0.8em;
     color: #666666;
+  }
+  .run-date {
+    margin-top: -7px;
+    margin-left: 27px;
   }
   .run-time {
     &.race {

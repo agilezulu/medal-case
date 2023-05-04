@@ -15,14 +15,14 @@ const props = defineProps({
       -webkit-animation: pulse 10s infinite;
       }
       @keyframes pulse {
-        0%   { fill: #FD4B01 }
+        0%   { fill: #FC4C02 }
         50%  { fill: #ffffff }
-        100% { fill: #FD4B01 }
+        100% { fill: #FC4C02 }
       }
       @-webkit-keyframes pulse {
-        0%   { fill: #FD4B01 }
+        0%   { fill: #FC4C02 }
         50%  { fill: #ffffff }
-        100% { fill: #FD4B01 }
+        100% { fill: #FC4C02 }
       }
       ]]>
     </svg:style>
