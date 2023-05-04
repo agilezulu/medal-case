@@ -195,20 +195,34 @@ onUnmounted(() => {
                         </div>
                     </div>
                     <div class="counts">
+                      <Popper
+                          arrow
+                          hover
+                          placement="bottom-end"
+                          :content="`${athlete[`${runClass.key}_race`]} race${athlete[`${runClass.key}_race`] > 1 ? 's' : ''}`"
+                        >
                       <div class="class-count race">
                         <div class="count race" :class="runClass.key">
                           <BadgeRace />
                           <span> {{athlete[`${runClass.key}_race`]}}</span>
                         </div>
                       </div>
-                      <div class="class-count" :class="runClass.key">
-                        <div class="medal-bg">
-                          <MedalcaseLogo border="currentColor" center="#ffffff" />
+                      </Popper>
+                      <Popper
+                          arrow
+                          hover
+                          placement="bottom-end"
+                          :content="`${athlete[runClass.key]} run${athlete[runClass.key] > 1 ? 's' : ''} in total`"
+                        >
+                        <div class="class-count" :class="runClass.key">
+                          <div class="medal-bg">
+                            <MedalcaseLogo border="currentColor" center="#ffffff"/>
+                          </div>
+                          <div class="count">
+                            <span>{{athlete[runClass.key]}}</span>
+                          </div>
                         </div>
-                        <div class="count">
-                          <span>{{athlete[runClass.key]}}</span>
-                        </div>
-                      </div>
+                        </Popper>
                     </div>
                   </div>
                 </template>
@@ -227,10 +241,10 @@ onUnmounted(() => {
                         </span>
                         <span class="run-name" :class="run.race ? runClass.key : 'c_training'" v-html="run.name"></span>
                       </div>
-                      <div class="run-date">{{getDate(run.start_date_local)}} | <a :href="`https://www.strava.com/activities/${run.strava_id}/overview`" class="vos" target="_new"><span>View on Strava <font-awesome-icon icon="fa-light fa-arrow-up-right-from-square" transform="shrink-4" /></span></a></div>
+                      <div class="run-date">{{getDate(run.start_date_local)}} | <a :href="`https://www.strava.com/activities/${run.strava_id}/overview`" :class="runClass.key" class="vos" target="_new"><span>View on Strava <font-awesome-icon icon="fa-light fa-arrow-up-right-from-square" transform="shrink-4" /></span></a></div>
                     </div>
                     <div class="run-stats">
-                      <div class="run-time face-mono" :class="[run.race ? runClass.key : '', store.athleteRuns[runClass.key].pb === run.elapsed_time ? 'class-pb' : '']">{{ secsToHMS(run.elapsed_time)}}</div>
+                      <div class="run-time face-mono" :class="[store.athleteRuns[runClass.key].pb === run.elapsed_time ? `class-pb ${runClass.key}_bg`: '']">{{ secsToHMS(run.elapsed_time)}}</div>
                       <div class="run-dist">{{ metersToDistanceUnits(run.distance, 'mi')}}</div>
                     </div>
                     <div v-if="props.currentUser" class="run-tools">
@@ -442,7 +456,7 @@ onUnmounted(() => {
     .run-info {
       flex: 1;
       .vos {
-        font-size: 10px;
+        font-size: 12px;
         display: inline-block;
         margin-left: 2px;
       }
@@ -477,18 +491,19 @@ onUnmounted(() => {
     .run-stats {
       .run-time {
         text-align: right;
+        padding: 0 12px;
         &.class-pb {
-          border: solid 1px #dddddd;
           border-radius: 18px;
-          padding: 0 12px;
+          color: #ffffff;
         }
       }
       .run-dist {
         text-align: right;
+        padding-right: 12px;
       }
     }
     .run-tools {
-      flex: 0 0 25px;
+      flex: 0 0 20px;
       display: flex;
       justify-content: flex-end;
     }

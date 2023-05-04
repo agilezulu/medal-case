@@ -3,9 +3,10 @@ import App from "@/App.vue";
 import router from "@/router";
 import { createPinia } from "pinia";
 import { Amplify } from "aws-amplify";
-import awsExports from "./aws-exports";
+//import awsExports from "./aws-exports";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon, FontAwesomeLayers, FontAwesomeLayersText } from "@fortawesome/vue-fontawesome";
+import Popper from "vue3-popper";
 
 import PrimeVue from "primevue/config";
 import SelectButton from "primevue/selectbutton";
@@ -22,6 +23,7 @@ import Toast from "primevue/toast";
 import InputText from "primevue/inputtext";
 import Dropdown from "primevue/dropdown";
 import InputSwitch from "primevue/inputswitch";
+
 
 import DialogService from "primevue/dialogservice";
 import ToastService from "primevue/toastservice";
@@ -108,6 +110,8 @@ app.component("Toast", Toast);
 app.component("InputText", InputText);
 app.component("Dropdown", Dropdown);
 app.component("InputSwitch", InputSwitch);
+
+app.component("Popper", Popper);
 
 app.component("font-awesome-icon", FontAwesomeIcon);
 app.component("font-awesome-layers", FontAwesomeLayers);
