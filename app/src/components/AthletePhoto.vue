@@ -8,49 +8,43 @@ const props = defineProps({
 const hex2props = computed(() => {
   return {
     'height': props.size + "px",
-    'width': (props.size/2) + "px"
+    'width': (props.size * (99/120)) + "px"
   };
 });
 </script>
 <template>
-  <div class="a-photo hexagon " :style="hex2props"><div class="hexagon-in1"><div class="hexagon-in2" :style="`background-image: url('${photo}');`"></div></div></div>
+    <div class="photo-logo" :style="hex2props">
+        <div class="pl-bg"><img src="/medalcase_logo.svg" /></div>
+        <div class="a-photo" :style="`background-image: url('${photo}');`"></div>
+    </div>
+
 </template>
 
 <style lang="scss">
-.a-photo {
-  position: absolute;
-}
-.hexagon {
-  overflow: hidden;
-  visibility: hidden;
-  -webkit-transform: rotate(120deg);
-  -moz-transform: rotate(120deg);
-  -ms-transform: rotate(120deg);
-  -o-transform: rotate(120deg);
-  transform: rotate(120deg);
-}
-.hexagon-in1 {
-  overflow: hidden;
-  width: 100%;
-  height: 100%;
-  -webkit-transform: rotate(-60deg);
-  -moz-transform: rotate(-60deg);
-  -ms-transform: rotate(-60deg);
-  -o-transform: rotate(-60deg);
-  transform: rotate(-60deg);
-}
-.hexagon-in2 {
-  width: 100%;
-  height: 100%;
-  background-repeat: no-repeat;
-  background-position: 50%;
-  visibility: visible;
-  -webkit-transform: rotate(-60deg);
-  -moz-transform: rotate(-60deg);
-  -ms-transform: rotate(-60deg);
-  -o-transform: rotate(-60deg);
-  transform: rotate(-60deg);
-  background-size: cover;
+.photo-logo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .pl-bg {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+  }
+  .a-photo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 69%;
+    height: 69%;
+    transform: translate(-50%, -50%);
+    background-repeat: no-repeat;
+    background-position: 50%;
+    background-size: cover;
+    clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
+  }
 }
 
 </style>

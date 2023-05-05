@@ -1,6 +1,7 @@
 <script setup>
 import {classRows, CLASSES, medalStore} from "@/store";
 import MedalcaseLogo from "@/components/icons/MedalcaseLogo.vue";
+import MedalcaseBadge from "@/components/icons/MedalcaseBadge.vue";
 import {computed} from "vue";
 import {secsToHMS, metersToDistanceUnits} from "@/utils/helpers.js";
 import {storeToRefs} from "pinia";
@@ -43,72 +44,31 @@ const pbMarathon = computed(() => {
 
 <template>
   <div class="athlete-medalcase">
-    <div class="athlete-info">
-      <div class="photo-logo">
-        <div class="pl-bg"><img src="/medalcase_logo.svg" /></div>
-        <div class="pl-img"><AthletePhoto :photo="athlete.photo" :size="100" /></div>
-      </div>
-      <div class="info">
-        <div class="a-name">{{athlete.firstname}} {{athlete.lastname}}</div>
-        <div class="stats">
-          <div class="a-stat">
-            <div class="stat-name">Total runs</div>
-            <div class="stat-value">{{athlete.total_runs}}</div>
-          </div>
-          <div class="a-stat">
-            <div class="stat-name">Total distance</div>
-            <div class="stat-value">{{metersToDistanceUnits(athlete.total_distance, selectedUnits)}}</div>
-          </div>
-          <div class="a-stat">
-            <div class="stat-name">26.2 PB</div>
-            <div class="stat-value">{{pbMarathon}}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
       <div class="hexgrid">
           <div class="main">
               <div class="container-hex">
-                  <template v-for="(row, idx) in classRows" :key="idx">
-                      <div v-for="c in row" class="mcase-class" :class="[ athlete[c.key] > 0 ? c.key : 'disabled' ]" :key="c.key">
-                          <div class="medal-bg">
-                              <!-- <img v-if="c.key === 'c_marathon'" src="/c_marathon.svg" /> -->
-                              <MedalcaseLogo :border="athlete[c.key] ? 'currentColor' : '#999999'" :center="athlete[c.key] ? '#ffffff' : '#dddddd'" />
-                          </div>
-                          <div class="medal-stats">
-                              <div class="medal-count" :class="`${c.key}_border`">{{athlete[c.key]}}</div>
-                              <div class="medal-name">{{c.name}}</div>
-                          </div>
+                  <div class="mcase-class">
+                      <div class="medal-bg"><img src="/medalcase_logo.svg" class="class-medal" /></div>
+                      <div class="medal-stats total">
+                          <span class="medal-count">{{totalMedals.runs}}</span>
                       </div>
-                  </template>
+                  </div>
+                  <div v-for="c in CLASSES" class="mcase-class" :class="[ athlete[c.key] > 0 ? `${c.key}_bgbadge` : 'disabled' ]" :key="c.key">
+                      <!--
+                      <div class="medal-bg">
+                          <MedalcaseBadge :class-name="c.key" />
+                      </div>
+                      -->
+                      <div class="medal-stats">
+                          <div class="medal-count" :class="`${c.key}_border`">{{athlete[c.key]}}</div>
+                          <div class="medal-name">{{c.name}}</div>
+                      </div>
+                  </div>
+
               </div>
           </div>
       </div>
-  <!--
-    <div  class="athlete-medals">
-      <div class="mcase-row">
-        <div class="mcase-class">
-          <div class="medal-bg"><img src="/medalcase_logo.svg" class="class-medal" /></div>
-          <div class="medal-stats total">
-            <span class="medal-name">{{totalMedals.runs}}</span>
-          </div>
-        </div>
-      </div>
-      <div v-for="(row, idx) in classRows" class="mcase-row" :key="idx">
-        <div v-for="c in row" class="mcase-class" :class="[ athlete[c.key] > 0 ? c.key : 'disabled' ]" :key="c.key">
-          <div class="medal-bg">
-            <MedalcaseLogo :border="athlete[c.key] ? 'currentColor' : '#999999'" :center="athlete[c.key] ? '#ffffff' : '#dddddd'" />
-          </div>
-          <div class="medal-stats">
-            <div class="medal-count" :class="`${c.key}_border`">{{athlete[c.key]}}</div>
-            <div class="medal-name">{{c.name}}</div>
-          </div>
 
-        </div>
-      </div>
-    </div>
-    -->
   </div>
 </template>
 
@@ -117,24 +77,56 @@ $medal-width: 200px;
 $stack-margin-top: calc($medal-width / 4)-2;
 $stack-margin-lr: calc($medal-width / 16);
 
+$s: 170px;  /* size  */
+$m: 2px;    /* margin */
+$f: calc($s * 1.732 + 4 * $m - 1px);
 
 .main {
   display:flex;
-  $s: 200px;  /* size  */
-  $m: 8px;    /* margin */
-  $f: calc($s * 1.732 + 4 * $m - 1px);
+  padding: 12px 0 0 12px;
   .container-hex {
-    font-size: 0; /* disable white space between inline block element */
-    div.mcase-class {
+    font-size: 0;
+    .mcase-class {
       position: relative;
       width: $s;
       margin: $m;
       height: calc($s * 1.1547);
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       font-size:initial;
       clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
       margin-bottom: calc($m - $s * 0.2885);
-      background: #ff0000;
+      background-color: #dddddd;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+
+      .medal-bg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .medal-stats {
+        position: absolute;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        &.total {
+          color: #ffffff;
+          .medal-count {
+            font-size: 30px;
+            font-weight: 800
+          }
+        }
+      }
     }
     &::before {
       content: "";
@@ -146,40 +138,11 @@ $stack-margin-lr: calc($medal-width / 16);
   }
 }
 
-
 .athlete-medalcase {
   position: relative;
-  .athlete-info {
-    display: flex;
-    position: absolute;
-    top: 12px;
-    .photo-logo {
-
-    }
-    .info {
-      margin-left: 8px;
-    }
-    .a-name {
-      font-size: 1.3rem;
-      font-weight: 800;
-    }
-    .stats {
-
-      .a-stat {
-        display: flex;
-        align-items: center;
-
-        .stat-name {
-          font-weight: 800;
-        }
-
-        .stat-value {
-          text-align: right;
-          padding: 3px 8px;
-        }
-      }
-    }
-  }
+  margin-bottom: 60px;
+  display: flex;
+  justify-content: center;
   .athlete-medals {
     display: flex;
     flex-direction: column;
@@ -211,88 +174,10 @@ $stack-margin-lr: calc($medal-width / 16);
         }
       }
     }
-
-    .mcase-row {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-
-    }
-
-
-  }
-  .mcase-class {
-    display: flex;
-    /*
-    width: $medal-width;
-    height: $medal-width;
-    position: relative;
-    justify-content: center;
-
-    margin-top: -$stack-margin-top;
-    margin-left: -$stack-margin-lr;
-    margin-right: -$stack-margin-lr;
-
-     */
-
-
-    .medal-stats {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      align-items: center;
-      //width: 100%;
-      //bottom: 34px;
-      .medal-count {
-        border-width: 5px;
-        border-style: solid;
-        background-color: rgba(255,255,255,0.5);
-        height: 44px;
-        width: 105px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 800;
-        font-size: 1.5rem;
-        color: #333333;
-      }
-      .medal-name {
-        font-size: 1.2rem;
-        font-weight: 800;
-      }
-      &.total {
-        justify-content: center;
-        .medal-name {
-          position: relative;
-          font-size: 42px;
-          font-weight: 800;
-          top: 34px;
-          color: #ffffff;
-        }
-      }
-    }
-    &.disabled {
-      .medal-stats {
-        color: #777777;
-        justify-content: center;
-        margin-top: 67px;
-        .medal-count {
-          display: none;
-        }
-      }
-    }
   }
   @media (max-width: 549px) {
     .athlete-medals {
-      .mcase-row {
-        .mcase-class {
-          margin-top: 0;
-        }
-      }
-    }
-    .athlete-info {
-      position: relative;
+
     }
   }
 }

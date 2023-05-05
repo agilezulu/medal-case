@@ -43,10 +43,7 @@ getAthletes();
         <Column field="firstname" header="Name" :sortable="true">
           <template #body="slotProps">
             <div class="athlete-name">
-              <div class="hex-photo">
-                  <div class="photo-bg"><MedalcaseLogo border="#FD4B01" center="#ffffff" /></div>
-                  <AthletePhoto :photo="slotProps.data.photo" :size="70" />
-              </div>
+              <AthletePhoto :photo="slotProps.data.photo" :size="50" />
               <router-link :to="{ name: 'athlete', params: { slug: slotProps.data.slug } }" class="name-link">{{slotProps.data.firstname}} {{slotProps.data.lastname}}</router-link>
               <img :src="`/img/flags/${slotProps.data.country_code}.svg`" class="a-flag"/>
             </div>
@@ -102,7 +99,8 @@ $total-size: 50px;
       width: 50px;
       height: 50px;
       .photo-bg {
-        width: 51px;
+        width: 43px;
+        left: 4px;
         position: absolute;
       }
       .a-photo.hexagon {
@@ -127,10 +125,8 @@ $total-size: 50px;
     font-weight: 800;
     .total-bg {
       position: absolute;
-      top: 0;
+      top: -4px;
       left: 0;
-      right: 0;
-      bottom: 0;
       img {
         width: 100%;
       }

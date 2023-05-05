@@ -7,6 +7,7 @@ import {storeToRefs} from "pinia";
 import { useDialog } from "primevue/usedialog";
 import { useToast } from "primevue/usetoast";
 import { formatDate } from "@/utils/helpers.js";
+import PopOver from "@/components/PopOver.vue";
 import RunEdit from "@/components/RunEdit.vue";
 import AthleteMedalcase from "@/components/AthleteMedalcase.vue";
 import AthletePhoto from "@/components/AthletePhoto.vue";
@@ -14,6 +15,7 @@ import MedalcaseLogo from "@/components/icons/MedalcaseLogo.vue";
 import BadgeRace from "@/components/icons/BadgeRace.vue";
 import BadgeRun from "@/components/icons/BadgeRun.vue";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
+import AthleteList from "@/components/AthleteList.vue";
 
 const props =  defineProps({
   currentUser: Boolean,
@@ -156,110 +158,122 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
-    <div v-else>
+    <div v-else id="athlete-medalcase">
+        <!--
       <div class="back-link">
         <router-link to="/" class="p-menuitem-link"><font-awesome-icon icon="fa-light fa-fw fa-chevron-left" size="lg" /> list</router-link>
       </div>
+      -->
       <template v-if="athlete">
       <div id="case-header">
-
         <AthleteMedalcase :athlete="athlete" />
-
-        <div v-if="currentUser" class="tools-cont">
-          <div class="update-tools">
-            <Button
-                @click="buildRuns()"
-                class="p-button p-component p-button-secondary p-button-outlined p-button-sm"
-                :class="{loading: store.loadingLocal}"
-                :disabled="store.loadingLocal"
-                v-if="store.isLoggedIn"
-            >Update Medalcase <font-awesome-icon icon="fa-light fa-arrows-rotate" fixed-width :spin="store.loadingLocal" /></Button>
-            <div class="last-run-date">Last run: {{formatDate(athlete.last_run_date)}}</div>
-          </div>
-        </div>
       </div>
-      <div id="case-summary" v-if="store.athlete.runs.length">
 
-          <div class="class-body">
+        <div class="container">
+          <div class="left-column"></div>
+          <div class="center-column">
 
-            <Accordion class="accordion-custom" :multiple="true" :activeIndex="[0]">
-
-              <AccordionTab v-for="runClass in activeClasses" :key="runClass.key">
-                <template #header>
-                  <div class="run-class" :class="runClass.key">
-                    <div class="class-name">
-                        <div class="name-label">{{ runClass.name }}</div>
-                        <div class="class-pb">
-                            <div class="pb-title">PB</div>
-                            <div class="pb-val face-mono" :class="runClass.key">{{ secsToHMS(store.athleteRuns[runClass.key].pb)}}</div>
-                        </div>
+            <div id="action-bar">
+                <div class="athlete-info">
+                    <AthletePhoto :photo="athlete.photo" :size="80" />
+                    <div class="inf">
+                        <div class="a-name">{{athlete.firstname}} {{athlete.lastname}}</div>
+                        <img :src="`/img/flags/${athlete.country_code}.svg`" class="a-flag"/>
                     </div>
-                    <div class="counts">
-                      <Popper
-                          arrow
-                          hover
-                          placement="bottom-end"
-                          :content="`${athlete[`${runClass.key}_race`]} race${athlete[`${runClass.key}_race`] > 1 ? 's' : ''}`"
-                        >
-                      <div class="class-count race">
-                        <div class="count race" :class="runClass.key">
-                          <BadgeRace />
-                          <span> {{athlete[`${runClass.key}_race`]}}</span>
-                        </div>
-                      </div>
-                      </Popper>
-                      <Popper
-                          arrow
-                          hover
-                          placement="bottom-end"
-                          :content="`${athlete[runClass.key]} run${athlete[runClass.key] > 1 ? 's' : ''} in total`"
-                        >
-                        <div class="class-count" :class="runClass.key">
-                          <div class="medal-bg">
-                            <MedalcaseLogo border="currentColor" center="#ffffff"/>
-                          </div>
-                          <div class="count">
-                            <span>{{athlete[runClass.key]}}</span>
-                          </div>
-                        </div>
-                        </Popper>
-                    </div>
-                  </div>
-                </template>
 
-                <div class="run-list">
-
-                  <div v-for="(run, idx) in store.athleteRuns[runClass.key].gVal" :key="run.strava_id" class="run-single">
-
-                    <div class="run-info">
-
-                      <div class="run-title">
-                        <span class="run-idx">{{idx+1}}</span>
-                        <span class="run-ico" :class="run.race ? runClass.key : 'c_training'">
-                          <template v-if="run.race"><BadgeRace /></template>
-                          <template v-else><BadgeRun /></template>
-                        </span>
-                        <span class="run-name" :class="run.race ? runClass.key : 'c_training'" v-html="run.name"></span>
-                      </div>
-                      <div class="run-date">{{getDate(run.start_date_local)}} | <a :href="`https://www.strava.com/activities/${run.strava_id}/overview`" :class="runClass.key" class="vos" target="_new"><span>View on Strava <font-awesome-icon icon="fa-light fa-arrow-up-right-from-square" transform="shrink-4" /></span></a></div>
-                    </div>
-                    <div class="run-stats">
-                      <div class="run-time face-mono" :class="[store.athleteRuns[runClass.key].pb === run.elapsed_time ? `class-pb ${runClass.key}_bg`: '']">{{ secsToHMS(run.elapsed_time)}}</div>
-                      <div class="run-dist">{{ metersToDistanceUnits(run.distance, 'mi')}}</div>
-                    </div>
-                    <div v-if="props.currentUser" class="run-tools">
-                      <a href="javascript:void(0);" class="action" @click="editRun(run)"><font-awesome-icon icon="fa-light fa-pencil" /></a>
-                    </div>
-                  </div>
                 </div>
-              </AccordionTab>
 
-            </Accordion>
+                <div v-if="currentUser" class="tools-cont">
+                    <div class="update-tools">
+                        <Button
+                                @click="buildRuns()"
+                                class="p-button p-component p-button-secondary p-button-outlined p-button-sm"
+                                :class="{loading: store.loadingLocal}"
+                                :disabled="store.loadingLocal"
+                                v-if="store.isLoggedIn"
+                        >Update Medalcase <font-awesome-icon icon="fa-light fa-arrows-rotate" fixed-width :spin="store.loadingLocal" /></Button>
+                        <div class="last-run-date">Last run: {{formatDate(athlete.last_run_date)}}</div>
+                    </div>
+                </div>
+            </div>
+            <div id="case-summary" v-if="store.athlete.runs.length">
+
+
+                <div class="class-body">
+
+                  <Accordion class="accordion-custom" :multiple="true" :activeIndex="[0]">
+
+                    <AccordionTab v-for="runClass in activeClasses" :key="runClass.key">
+                      <template #header>
+                        <div class="run-class" :class="runClass.key">
+                          <div class="class-name">
+                              <div class="name-label">{{ runClass.name }}</div>
+                              <div class="class-pb">
+                                  <div class="pb-title">PB</div>
+                                  <div class="pb-val face-mono" :class="runClass.key">{{ secsToHMS(store.athleteRuns[runClass.key].pb)}}</div>
+                              </div>
+                          </div>
+                          <div class="counts">
+                            <PopOver :content="`${athlete[`${runClass.key}_race`]} <b>${runClass.name}</b> race${athlete[`${runClass.key}_race`] > 1 ? 's' : ''}`">
+                            <div class="class-count race">
+                              <div class="count race" :class="runClass.key">
+                                <BadgeRace />
+                                <span> {{athlete[`${runClass.key}_race`]}}</span>
+                              </div>
+                            </div>
+                            </PopOver>
+                            <PopOver :content="`${athlete[runClass.key]}  <b>${runClass.name}</b>  run${athlete[runClass.key] > 1 ? 's' : ''} in total`">
+                              <div class="class-count" :class="runClass.key">
+                                <div class="medal-bg">
+                                  <MedalcaseLogo border="currentColor" center="#ffffff"/>
+                                </div>
+                                <div class="count">
+                                  <span>{{athlete[runClass.key]}}</span>
+                                </div>
+                              </div>
+                              </PopOver>
+                          </div>
+                        </div>
+                      </template>
+
+                      <div class="run-list">
+
+                        <div v-for="(run, idx) in store.athleteRuns[runClass.key].gVal" :key="run.strava_id" class="run-single">
+
+                          <div class="run-info">
+
+                            <div class="run-title">
+                              <span class="run-idx">{{idx+1}}</span>
+                              <span class="run-ico" :class="run.race ? runClass.key : 'c_training'">
+                                <template v-if="run.race"><BadgeRace /></template>
+                                <template v-else><BadgeRun /></template>
+                              </span>
+                              <span class="run-name" :class="run.race ? runClass.key : 'c_training'" v-html="run.name"></span>
+                            </div>
+                            <div class="run-date">{{getDate(run.start_date_local)}} | <a :href="`https://www.strava.com/activities/${run.strava_id}/overview`" :class="runClass.key" class="vos" target="_new"><span>View on Strava <font-awesome-icon icon="fa-light fa-arrow-up-right-from-square" transform="shrink-4" /></span></a></div>
+                          </div>
+                          <div class="run-stats">
+                            <div class="run-time face-mono" :class="[store.athleteRuns[runClass.key].pb === run.elapsed_time ? `class-pb ${runClass.key}_bg`: '']">{{ secsToHMS(run.elapsed_time)}}</div>
+                            <div class="run-dist">{{ metersToDistanceUnits(run.distance, 'mi')}}</div>
+                          </div>
+                          <div v-if="props.currentUser" class="run-tools">
+                            <a href="javascript:void(0);" class="action" @click="editRun(run)"><font-awesome-icon icon="fa-light fa-pencil" /></a>
+                          </div>
+                        </div>
+                      </div>
+                    </AccordionTab>
+
+                  </Accordion>
+                </div>
+              </div>
           </div>
+          <div class="right-column"></div>
         </div>
       </template>
       <template v-else>
-        <h3>No athele found</h3>
+          <div class="noathlete">
+            <h3>No athele found</h3>
+          </div>
       </template>
     </div>
     <DynamicDialog ref="dynamic-dialog">
@@ -282,29 +296,22 @@ onUnmounted(() => {
     align-items: center;
   }
 }
-.greet {
-  display: flex;
-  align-items: center;
-}
-.photo-logo {
-  position: relative;
-  width: 90px;
-  height: 90px;
+.noathlete {
   display: flex;
   align-items: center;
   justify-content: center;
-  .pl-bg {
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
+  flex: 1;
+}
+#athlete-medalcase {
+  flex: 1;
+  .popper {
+    font-weight: 400;
   }
-  .pl-img {
-    position: absolute;
-    left: 20px;
-    top: -4px;
-  }
+
+}
+.greet {
+  display: flex;
+  align-items: center;
 }
 
 .back-link {
@@ -312,6 +319,30 @@ onUnmounted(() => {
 }
 #case-header {
 
+
+}
+#action-bar {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  .athlete-info {
+    position: relative;
+    display: flex;
+    align-items: center;
+    .inf {
+      display: flex;
+      flex-direction: column;
+      margin-left: 8px;
+      .a-flag {
+        max-width: 50px;
+        max-height: 30px;
+      }
+    }
+    .a-name {
+      font-weight: 800;
+    }
+  }
   .tools-cont {
     display: flex;
     justify-content: right;
@@ -320,7 +351,7 @@ onUnmounted(() => {
     }
   }
   .update-tools {
-    display: inline-flex;
+    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -339,7 +370,6 @@ onUnmounted(() => {
     }
   }
 }
-
 #case-summary {
   display: flex;
   flex-direction: row;
@@ -403,12 +433,13 @@ onUnmounted(() => {
         display: flex;
         width: 50px;
         justify-content: center;
+        z-index: 100;
         &.race {
           min-width: 56px;
         }
         .medal-bg {
           position: absolute;
-          width: 50px;
+          width: 44px;
           top: -13px;
         }
 
@@ -438,15 +469,9 @@ onUnmounted(() => {
   .run-single {
     display: flex;
     justify-content: space-between;
-    /*
-    border-bottom: solid 1px transparent;
-    &:hover {
-     border-bottom: solid 1px #dddddd;
-    }
-     */
-    margin-bottom: 6px;
-
-
+    border-bottom: solid 1px #eeeeee;
+    margin-bottom: 12px;
+    padding-bottom: 3px;
   }
   .class-body {
     padding: 12px;

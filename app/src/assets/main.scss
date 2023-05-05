@@ -2,7 +2,7 @@
 
 :root {
   --popper-theme-background-color: #ffffff;
-  --popper-theme-background-color-hover: #eeeeee;
+  --popper-theme-background-color-hover: #ffffff;
   --popper-theme-text-color: #333333;
   --popper-theme-border-width: 0px;
   --popper-theme-border-style: solid;
@@ -60,6 +60,10 @@ $class-colors: $color-c_marathon, $color-c_50k, $color-c_50mi, $color-c_100k, $c
   .#{nth($class-keys, $i)}_bg {
     background-color: #{nth($class-colors, $i)};
   }
+  .#{nth($class-keys, $i)}_bgbadge {
+    background-image: url('/img/#{nth($class-keys, $i)}.png');
+  }
+
 }
 .add-spin {
   animation-name: spin;

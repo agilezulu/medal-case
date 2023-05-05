@@ -43,17 +43,15 @@ onMounted(() => {
       </ul>
     </template>
   </Menubar>
+    <div id="app-body">
   <div class="container">
-    <div class="left-column"></div>
-    <div class="center-column">
       <div v-if="loading" class="spinner-canvas">
         <LoadingSpinner />
       </div>
       <router-view></router-view>
-    </div>
-    <div class="right-column"></div>
   </div>
-  <div class="footer">
+    </div>
+  <div id="app-footer">
     <router-link to="/about" class="p-menuitem-link">About</router-link>
     <div class="pbs"><img src="/img/api_logo_pwrdBy_strava_horiz_light.svg" style="width: 138px;"></div>
     <Toast position="top-right">
@@ -93,14 +91,16 @@ onMounted(() => {
 }
 
 .container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
   flex: 1;
+  display: flex;
+}
+#app-body {
   box-shadow: 0 5px 5px rgba(0,0,0,0.3);
   z-index: 10;
+  flex: 1;
+  display: flex;
 }
-.footer {
+#app-footer {
   z-index: 9;
   min-height: 80px;
   background-color: #eeeeee;
