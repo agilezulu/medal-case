@@ -3,7 +3,7 @@
 """
 import uuid
 import time
-from flask_socketio import emit
+import json
 from bisect import bisect_right
 from pony import orm
 from datetime import datetime, date, timezone
@@ -446,10 +446,12 @@ class MedalCase:
         bin_idx = bisect_right(self.class_bins, dist_mi) - 1
         return self.run_classes[bin_idx]
 
-    def update_athlete_medalcase(self, mcase_id):
+    def update_athlete_medalcase(self, mcase_id, apig_management_client, connection_id):
         """
         Update an athlete's runs since their last run or build all for the first time
         :param mcase_id:
+        :param apig_management_client:
+        :param connection_id:
         :return:
         """
         athlete = self._get_athlete_by_id(mcase_id)
@@ -508,12 +510,15 @@ class MedalCase:
                         new_medals[run_class.key] += 1
                         new_scans += 1
                         Run(**run_params)
-                        emit('athlete_update', {
+                        message = {
                             'data': {
                                 'name': activity.name,
                                 'key': run_class.key
                             }
-                        })
+                        }
+                        serialised = json.dumps(message).encode('utf-8')
+                        # emit('athlete_update', message)
+                        apig_management_client.post_to_connection(Data=serialised, ConnectionId=connection_id)
 
                 # update last checked run
                 if activity_start_date_epoch > last_scanned_epoch:
@@ -529,13 +534,6 @@ class MedalCase:
                 total_distance=(athlete.total_distance + new_distance)
             )
             self.update_athlete_totals(athlete)
-            athlete_data = self.get_athlete(athlete_model=athlete)
-            athlete_data['meta'] = {
-                'new_runs': new_medals,
-                'scanned_runs': new_scans,
-                'last_scan_date': last_scanned_utc.strftime('%Y-%m-%dT%H:%M:%S')
-            }
-            return athlete_data
     
     def get_athlete(self, mcase_id=None, slug=None, athlete_model=None):
         """

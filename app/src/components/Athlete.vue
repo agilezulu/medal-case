@@ -1,7 +1,6 @@
 <script setup>
 import { onUnmounted, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import router from "@/router";
 import { medalStore, CLASSES } from "@/store";
 import { metersToDistanceUnits, getDate, secsToHMS } from "@/utils/helpers.js";
 import {storeToRefs} from "pinia";
@@ -37,19 +36,19 @@ const confirm = useConfirm();
 const activeClasses = ref([]);
 const dynamicDialogRef = ref(null);
 
+
 const confirmDelete = () => {
   confirm.require({
     group: 'account',
     header: 'Confirm deletion of your Medalcase account',
-    message: 'Are you sure you want to proceed? <br /> This <i>will not</i> delete anything from your Strava account',
+    message: 'Are you sure you want to proceed? <br /> This will  <i><b>not</b></i> delete anything from your Strava account',
     icon: 'pi pi-exclamation-triangle',
     acceptIcon: 'pi pi-check',
     rejectIcon: 'pi pi-times',
     accept: () => {
       store.deleteAthlete().then(() => {
-        store.doLogout();
-        router.push('home');
         toast.add({ severity: 'success', summary: 'Account deleted', detail: 'Thanks for stopping by! Your account has now been deleted', life: 5000 });
+        store.doLogout();
       }, error => {
         console.log(error);
         toast.add({
@@ -123,10 +122,11 @@ const updatesModal = () => {
       },
       modal: true
     },
-    onClose: (response) => {
-      if (response.data) {
-        toast.add({ severity: 'success', detail: "Run successfully updated", life: 3000 });
-        store.refreshAthleteData(response.data);
+    onClose: (closeMeta) => {
+      console.log('onClose', closeMeta.data);
+      if (closeMeta.data > 0) {
+        toast.add({ severity: 'success', detail: "New medals added", life: 3000 });
+        fetchAthlete();
       }
     }
   });
@@ -142,23 +142,23 @@ onUnmounted(() => {
 
 <template>
     <div v-if="store.isOnboarding" id="athlete-onboarding">
-      <div>
-
-        <div class="greet">
-          <div class="photo-logo">
-            <div class="pl-bg"><img src="/medalcase_logo.svg" /></div>
-            <div class="pl-img"><AthletePhoto :photo="athlete.photo" :size="100" /></div>
-          </div>
-          <div>Hi {{athlete.firstname}},
-            <br />
-            Welcome to Medalcase!
-          </div>
+        <div class="container">
+            <div class="left-column"></div>
+            <div class="center-column">
+                <div class="greet">
+                  <div class="photo-logo">
+                    <div class="pl-bg"><img src="/medalcase_logo.svg" /></div>
+                    <div class="pl-img"><AthletePhoto :photo="athlete.photo" :size="100" /></div>
+                  </div>
+                  <div class="msg">Hi {{athlete.firstname}},
+                    <br />
+                    Welcome to Medalcase!
+                  </div>
+                </div>
+                <p> Please stand by while we scan your runs, this might take a minute or so...</p>
+            </div>
+            <div class="right-column"></div>
         </div>
-        <p> Please stand by while we scan your runs, this might take a minute or so...</p>
-        <div class="local-spinner">
-          <LoadingSpinner />
-        </div>
-      </div>
     </div>
     <div v-else id="athlete-medalcase">
 
@@ -185,23 +185,14 @@ onUnmounted(() => {
 
                 <div class="tools-cont">
                     <div class="set-units"><SelectButton v-model="selectedUnits" :options="units" aria-labelledby="basic" /></div>
-
                     <div class="update-tools" v-if="currentUser" >
                         <div class="last-run-date">Last run: {{formatDate(athlete.last_run_date)}}</div>
                         <Button
-                                @click="updatesModal()"
-                                v-if="store.isLoggedIn"
-                                severity="secondary"
-                                outlined
+                          @click="updatesModal()"
+                          v-if="store.isLoggedIn"
+                          severity="secondary"
+                          outlined
                         >Update Medalcase <font-awesome-icon icon="fa-light fa-fw fa-arrows-rotate" fixed-width :spin="store.loadingLocal" /></Button>
-
-                        <ConnectionManager />
-
-                        <div>
-                            <ul>
-                                <li v-for="(update, idx) in state.runUpdates" :key="idx">{{update.data}}</li>
-                            </ul>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -248,9 +239,7 @@ onUnmounted(() => {
                       <div class="run-list">
 
                         <div v-for="(run, idx) in store.athleteRuns[runClass.key].gVal" :key="run.strava_id" class="run-single">
-
                           <div class="run-info">
-
                             <div class="run-title">
                               <span class="run-idx">{{idx+1}}</span>
                               <span class="run-ico" :class="run.race ? runClass.key : 'c_training'">
@@ -295,14 +284,19 @@ onUnmounted(() => {
 @import "@/assets/main.scss";
 #athlete-onboarding {
   height: 100%;
+  width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
-  .local-spinner {
-    position: relative;
+  align-items: flex-start;
+  padding-top: 30px;
+  .center-column {
     display: flex;
     justify-content: center;
+    flex-direction: column;
     align-items: center;
+    .msg {
+      margin-left: 12px;
+    }
   }
 }
 .noathlete {

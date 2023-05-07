@@ -178,8 +178,10 @@ export const medalStore = defineStore('todos', {
     },
     async getAthlete(slug) {
       this.loading = true;
+      console.log('GET ATHLETE');
       const api = DEVMODE ? axios.get(apiPath('athlete', slug)) : API.get(apiName, apiPath('athlete', slug), null);
       return api.then( (response) => {
+        console.log('ATHLETE >>> ', response);
           this.athlete = response;
           this.loading = false;
           return { data: this.athlete, error: null };

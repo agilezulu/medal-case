@@ -5,28 +5,22 @@ import awsgi
 import os
 import json
 import boto3
-import redis
 import logging
 from datetime import timedelta
 from flask_cors import CORS
 from pony.flask import Pony
 from pony import orm
 from flask import Flask, jsonify, request, Response, abort
-from flask_socketio import SocketIO, emit
+#from flask_socketio import SocketIO, emit
 from resources.medalcase import MedalCase
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, decode_token
 from werkzeug.exceptions import HTTPException
+from botocore.exceptions import ClientError
 
 from resources.db.models import *
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
-AWS_REGION = 'eu-west-1'
-SQS_URL = 'https://sqs.eu-west-1.amazonaws.com/087685034478/medalcase.fifo'
-REDIS_URL = 'medalcase-redis.yc3arn.ng.0001.euw1.cache.amazonaws.com'
-
-r = redis.Redis(host=REDIS_URL, port=6379, decode_responses=True)
 
 app = Flask(__name__)
 app.config["STRAVA_VERIFY_TOKEN"] = os.getenv("STRAVA_VERIFY_TOKEN")
@@ -56,7 +50,7 @@ db.generate_mapping(create_tables=False)
 Pony(app)
 jwt = JWTManager(app)
 CORS(app, supports_credentials=True)
-socketio = SocketIO(app, cors_allowed_origins="*")
+# socketio = SocketIO(app, cors_allowed_origins="*")
 
 BASE_PATH = '/athlete'
 
@@ -79,7 +73,7 @@ def make_response(data, tojson=True):
     response.headers.add('Access-Control-Allow-Methods', 'OPTIONS,POST,GET')
     return response
 
-
+'''
 @socketio.on_error()        # Handles the default namespace
 def error_handler(e):
     print('SOCKET ERROR', e)
@@ -108,13 +102,14 @@ def update_athlete_runs(message):
     :param uuid: mcase athlete uuid
     :return: socket messages
     """
-    print('CAll update runs')
+
     mcase_id = get_jwt_identity()
     mcase = MedalCase(mcase_id=mcase_id)
+    print('CAll update runs for:', mcase_id)
     athlete = mcase.update_athlete_medalcase(mcase_id)
 
     emit('athlete_update_complete', {'data': athlete})
-
+'''
 
 @app.errorhandler(HTTPException)
 def handle_exception(e):
@@ -219,7 +214,7 @@ def delete_athlete():
     return make_response(resp)
 
 
-def handle_connect(mcase_id, connection_id):
+def handle_connect(connection_id):
     """
     Handles new connections by adding the connection ID and mcase_id to Redis
     :param mcase_id: The name of the user that started the connection.
@@ -228,12 +223,7 @@ def handle_connect(mcase_id, connection_id):
              to the DynamoDB table.
     """
     status_code = 200
-    try:
-        r.set(connection_id, str(mcase_id))
-        logger.info(f"Added connection {connection_id} for user {mcase_id}")
-    except Exception as exp:
-        logger.exception(f"ERROR: {exp} // user {mcase_id}")
-        status_code = 503
+    logger.info(f"Added connection {connection_id} for user")
     return status_code
 
 
@@ -245,68 +235,32 @@ def handle_disconnect(connection_id):
              from the DynamoDB table.
     """
     status_code = 200
-    try:
-        r.delete(connection_id)
-        logger.info("Disconnected connection %s.", connection_id)
-    except Exception as exp:
-        logger.exception(f"ERROR: {exp} // connection {connection_id}")
-        status_code = 503
+    logger.info("Disconnected connection %s.", connection_id)
     return status_code
 
 
-def handle_build_runs(connection_id, event_body, apig_management_client):
+@orm.db_session
+def handle_build_runs(mcase_id, apig_management_client, connection_id):
     """
-    Handles messages sent by a participant in the chat. Looks up all connections
-    currently tracked in the DynamoDB table, and uses the API Gateway Management API
-    to post the message to each other connection.
-    When posting to a connection results in a GoneException, the connection is
-    considered disconnected and is removed from the table. This is necessary
-    because disconnect messages are not always sent when a client disconnects.
-    :param table: The DynamoDB connection table.
+    Build runs ands sens updates back over socket
+    :param mcase_id: Athlete id
     :param connection_id: The ID of the connection that sent the message.
-    :param event_body: The body of the message sent from API Gateway. This is a
-                       dict with a `msg` field that contains the message to send.
     :param apig_management_client: A Boto3 API Gateway Management API client.
-    :return: An HTTP status code that indicates the result of posting the message
-             to all active connections.
+
+    :return: An HTTP status code
     """
     status_code = 200
-    user_name = 'guest'
+
     try:
-        item_response = table.get_item(Key={'connection_id': connection_id})
-        user_name = item_response['Item']['user_name']
-        logger.info("Got user name %s.", user_name)
+        print('CAll update runs for:', mcase_id)
+        mcase = MedalCase(mcase_id=mcase_id)
+
+        mcase.update_athlete_medalcase(mcase_id, apig_management_client, connection_id)
+        apig_management_client.post_to_connection(Data='athlete_update_complete', ConnectionId=connection_id)
     except ClientError:
-        logger.exception("Couldn't find user name. Using %s.", user_name)
-
-    connection_ids = []
-    try:
-        scan_response = table.scan(ProjectionExpression='connection_id')
-        connection_ids = [item['connection_id'] for item in scan_response['Items']]
-        logger.info("Found %s active connections.", len(connection_ids))
-    except ClientError:
-        logger.exception("Couldn't get connections.")
-        status_code = 404
-
-    message = f"{user_name}: {event_body['msg']}".encode('utf-8')
-    logger.info("Message: %s", message)
-
-    for other_conn_id in connection_ids:
-        try:
-            if other_conn_id != connection_id:
-                send_response = apig_management_client.post_to_connection(
-                    Data=message, ConnectionId=other_conn_id)
-                logger.info(
-                    "Posted message to connection %s, got response %s.",
-                    other_conn_id, send_response)
-        except ClientError:
-            logger.exception("Couldn't post to connection %s.", other_conn_id)
-        except apig_management_client.exceptions.GoneException:
-            logger.info("Connection %s is gone, removing.", other_conn_id)
-            try:
-                table.delete_item(Key={'connection_id': other_conn_id})
-            except ClientError:
-                logger.exception("Couldn't remove connection %s.", other_conn_id)
+        logger.exception("Couldn't post to connection %s.", connection_id)
+    except apig_management_client.exceptions.GoneException:
+        logger.info("Connection %s is gone, removing.", connection_id)
 
     return status_code
 
@@ -319,46 +273,72 @@ def handler(event, context):
     :return:
     """
     print('EVENT', event)
-    print('CONTEXT', context)
     connection_id = event.get('requestContext', {}).get('connectionId')
-    route_key = event.get('requestContext', {}).get('routeKey')
-    mcase_id = event.get('queryStringParameters', {}).get('mcase_id')
+    """
+    EVENT = {
+        'requestContext': {
+            'routeKey': '$default', 
+            'messageId': 'Ei1Jse5yDoECE9w=', 
+            'eventType': 'MESSAGE',
+            'extendedRequestId': 'Ei1JsFS0DoEFt8g=', 
+            'requestTime': '07/May/2023:09:00:20 +0000',
+            'messageDirection': 'IN', 
+            'stage': 'prod', 
+            'connectedAt': 1683449962688,
+            'requestTimeEpoch': 1683450020160,
+            'identity': {
+                'apiKey': 'YkxgqM5IVEae9AViOs7Jqa3ad98Jsgmn2TACafs5', 
+                'apiKeyId': 'qnf4iywhr7',
+                'sourceIp': '90.194.74.138'
+            }, 'requestId': 'Ei1JsFS0DoEFt8g=',
+            'domainName': '8vzirn1xee.execute-api.eu-west-1.amazonaws.com',
+            'connectionId': 'Ei1AtejdjoECE9w=',
+            'apiId': '8vzirn1xee'
+        }, 
+        'body': '{ "foo": "bar" }',
+        'isBase64Encoded': False
+    }
+    """
     # handle websocket connections
     # ------------------------------
     if connection_id:
-        socketio_manage(event, context)
-        '''
-        event["httpMethod"] = "GET"
-        event["path"] = "/athlete/list"
-        event["queryStringParameters"] = {}
-        '''
-        #if mcase_id:
-        #    mcase = MedalCase(mcase_id=mcase_id)
-        #    athlete = mcase.update_athlete_medalcase(mcase_id)
-        response = {'statusCode': 200}
-        if route_key == '$connect':
-            if not mcase_id:
-                return {'statusCode': 404}
-            response['statusCode'] = handle_connect(mcase_id, connection_id)
+        with app.app_context():
+            route_key = event.get('requestContext', {}).get('routeKey')
 
-        elif route_key == '$disconnect':
-            response['statusCode'] = handle_disconnect(connection_id)
-        elif route_key == 'buildRuns':
-            body = event.get('body')
-            body = json.loads(body if body is not None else '{"msg": ""}')
+            response = {'statusCode': 200}
             domain = event.get('requestContext', {}).get('domainName')
             stage = event.get('requestContext', {}).get('stage')
             if domain is None or stage is None:
                 logger.warning(f"Couldn't send message: domain '{domain}',stage '{stage}'")
                 response['statusCode'] = 400
+                return response
+
+            if route_key == '$connect':
+                response['statusCode'] = handle_connect(connection_id)
+            elif route_key == '$disconnect':
+                response['statusCode'] = handle_disconnect(connection_id)
             else:
+                body = json.loads(event.get('body', {}))
+                jwt = body.get('jwt', None)
+                if not jwt:
+                    logger.error("No jwt found in body")
+                    response['statusCode'] = 404
+                    return response
+
+                token = decode_token(jwt)
+                mcase_id = token.get('sub', None)
+                if not mcase_id:
+                    print("No mcase_id")
+                    response['statusCode'] = 404
+                    return response
+
+                mcase_id = int(mcase_id)
                 apig_management_client = boto3.client('apigatewaymanagementapi', endpoint_url=f'https://{domain}/{stage}')
-                response['statusCode'] = handle_build_runs(connection_id, body, apig_management_client)
-        else:
-            response['statusCode'] = 404
+                handle_build_runs(mcase_id, apig_management_client, connection_id)
+                message = json.dumps({'data': 'COMPLETE'}).encode('utf-8')
+                apig_management_client.post_to_connection(Data=message, ConnectionId=connection_id)
 
-        return response
-
+            return response
 
     # regular REST API calls
     # ------------------------------
@@ -368,5 +348,5 @@ def handler(event, context):
 
 if __name__ == '__main__':
     orm.sql_debug(True)
-    socketio.run(app, host='127.0.0.1', port=5180, debug=True)
-    #app.run(debug=True, host='127.0.0.1', port=5180)
+    # socketio.run(app, host='127.0.0.1', port=5180, debug=True)
+    app.run(debug=True, host='127.0.0.1', port=5180)

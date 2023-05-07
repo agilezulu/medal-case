@@ -8,15 +8,22 @@ export const state = reactive({
 });
 
 const NODE_ENV = import.meta.env.VITE_NODE_ENV;
-const URL = NODE_ENV === "dev" ? "http://127.0.0.1:5180" : "https://api.medalcase.com";
+const URL = NODE_ENV === "dev" ? "http://127.0.0.1:5180" : "https://8vzirn1xee.execute-api.eu-west-1.amazonaws.com";
 //export const socket = io(URL);
 
-const token = getJWT();
 export const socket = io(URL, {
-  autoConnect: false, extraHeaders: {
-    "Authorization": `Bearer ${token}`
+  autoConnect: false, path: "/prod", extraHeaders: {
+    "Authorization": `Bearer ${getJWT()}`
   }
 });
+
+export const setSockAuth = () => {
+  socket.disconnect();
+  socket.io.opts.extraHeaders = {
+    "Authorization": `Bearer ${getJWT()}`
+  };
+  socket.connect();
+};
 
 socket.on("connect", () => {
   state.connected = true;
@@ -27,16 +34,18 @@ socket.on("disconnect", () => {
   state.connected = false;
 });
 
-socket.on("update", (...args) => {
+socket.on("update", () => {
   //state.runUpdates.push(args);
 });
 
 socket.on('athlete_update', function(msg) {
-  console.log('athlete_update', msg);
-  state.runUpdates.push(msg)
+  state.runUpdates.push(msg.data);
+  const messageContainer = document.getElementById("runs-stream-container");
+  messageContainer.scrollTop = messageContainer.scrollHeight;
 });
 
 socket.on('athlete_update_complete', function() {
+  console.log('SOCK: athlete_update_complete')
   state.processing = false;
   socket.disconnect();
 });

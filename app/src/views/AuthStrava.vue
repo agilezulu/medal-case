@@ -3,6 +3,7 @@ import { onMounted, computed } from "vue";
 import { SCOPES, medalStore } from "@/store";
 import LoginStrava from "@/components/LoginStrava.vue";
 import {useToast} from "primevue/usetoast";
+import router from "@/router";
 const store = medalStore();
 const toast = useToast();
 const scopesDesc = {
@@ -16,8 +17,10 @@ const scopesDesc = {
     "the same access as activity:read, plus privacy zone data and access to read the activities with visibility set to Only You",
 };
 let params = new URLSearchParams(window.location.search);
-const gotScopes = params.get("scope").split(",");
+const scope_vals = params.get("scope");
+const gotScopes = scope_vals ? params.get("scope").split(",") : [];
 const code = params.get("code");
+const error = params.get("error");
 const validatedScope = (scope) => {
   return gotScopes.indexOf(scope) > -1;
 };
@@ -34,6 +37,15 @@ const allValid = computed(() => {
   return valid;
 });
 onMounted(() => {
+  if (error && error === 'access_denied'){
+    toast.add({
+      severity: 'error',
+      summary: "Cannot login",
+      detail: "Authorisation cancelled or there was an error",
+      life: 5000
+    });
+    router.push({ path: '/' });
+  }
   if (allValid.value) {
     store.getAccessTokenFromCode(code).then((response) => {
       console.log('getAccessTokenFromCode', response);
@@ -50,7 +62,7 @@ onMounted(() => {
     toast.add({
       severity: 'error',
       summary: "Missing authorisations",
-      detail: "Some required Strava authorsations are missing",
+      detail: "Some required Strava authorisations are missing",
       life: 5000
     });
     //console.log("ERROR -> Missing scope(s)");

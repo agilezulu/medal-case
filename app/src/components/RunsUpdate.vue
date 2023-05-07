@@ -1,35 +1,54 @@
 <script setup>
-import {ref, onMounted, inject, onUnmounted, nextTick, computed, watch} from "vue";
-import {classLookup, medalStore} from "@/store";
+import { ref, onMounted, inject, onUnmounted, nextTick, computed } from "vue";
+import { classLookup } from "@/store";
+import { getJWT } from "@/utils/helpers.js";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
-import {socket, state} from "@/socket";
-
+import {useToast} from "primevue/usetoast";
+const toast = useToast();
 const dialogRef = inject("dialogRef");
-const store = medalStore();
 
 const messageStreamContainer = ref(null);
+const runUpdates = ref([]);
+const processing = ref(false);
 
-const updateRuns = () => {
-  state.processing = true;
-  if (!state.connected){
-    socket.connect();
-  }
-  socket.emit('update', {}, () => {
-    //
-    state.processing = false;
-    //socket.disconnect();
-  });
+const socket = new WebSocket("wss://8vzirn1xee.execute-api.eu-west-1.amazonaws.com/prod");
+
+socket.onopen = function() {
+  console.log("wss successfully connected");
+  processing.value = true;
+  socket.send(JSON.stringify({"jwt": getJWT()}));
 }
 
-watch(state.runUpdates, () => {
-  console.log('store.runUpdates changed!');
-  nextTick();
-  messageStreamContainer.value.scrollTop = messageStreamContainer.value.scrollHeight;
-
-}, {deep:true});
+socket.onmessage = function(event) {
+  let response = JSON.parse(event.data);
+  console.log('response', response);
+  if (response === 'COMPLETE'){
+    processing.value = false;
+  }
+  else if (response.message){
+    toast.add({
+      severity: 'error',
+      summary: response.message,
+      life: 3000
+    });
+    closeDialog();
+  }
+  else if ( response.key ) {
+    runUpdates.value.push(response);
+    nextTick();
+    messageStreamContainer.value.scrollTop = messageStreamContainer.value.scrollHeight;
+  }
+}
+socket.onclose = function(event) {
+  if (event.wasClean) {
+    console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+  } else {
+    console.log(`[close] Connection died: code=${event.code}`);
+  }
+};
 
 const medalSummary = computed(() => {
-  const summary = state.runUpdates.reduce((obj, item) => {
+  const summary = runUpdates.value.reduce((obj, item) => {
     if (!obj[item.key]){
       obj[item.key] = {
         name: classLookup[item.key].name,
@@ -55,7 +74,7 @@ const medalSummary = computed(() => {
 onMounted(() => {
   console.log('RunsUpdate');
 
-  updateRuns();
+  //updateRuns();
   /*
   stillLoading.value = true;
   //messageStreamContainer.value.scrollTop = messageStreamContainer.value.scrollHeight;
@@ -81,22 +100,24 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  socket.disconnect();
+  socket.close();
 });
 
 const closeDialog = () => {
-  dialogRef.value.close();
-  store.runUpdates = [];
+  dialogRef.value.close(medalSummary.value.length);
 };
 
 </script>
 <template>
     <div id="update-runs">
           <div class="update-status">
-              <template v-if="state.processing">
+              <div v-if="processing">
                 <LoadingSpinner />
-              </template>
-              <template v-else>
+                  <div class="tally" v-show="runUpdates.length > 0">
+                      found: {{runUpdates.length}}
+                  </div>
+              </div>
+              <div v-else>
                   <div class="update-summary">
                       <div v-if="medalSummary.length" class="s-block">
                         <div class="s-message">
@@ -104,6 +125,7 @@ const closeDialog = () => {
                         </div>
                         <div v-for="medal in medalSummary" :key="medal.key" class="medal">
                             <div class="s-name" :class="medal.key">{{medal.name}}</div>
+                            <div class="s-badge"><font-awesome-icon icon="fa-sharp fa-light fa-hexagon" size="xl" :rotation="90" :class="medal.key" /></div>
                             <div class="s-count">{{medal.count}}</div>
                         </div>
                       </div>
@@ -114,14 +136,13 @@ const closeDialog = () => {
                       </div>
                       <Button label="Close" @click="closeDialog()"/>
                   </div>
-
-              </template>
+              </div>
           </div>
-          <div class="runs-stream-container" ref="messageStreamContainer">
+          <div id="runs-stream-container" ref="messageStreamContainer">
               <ul class="runs">
-                  <li v-show="state.processing && state.runUpdates.length === 0">processing...</li>
-                  <li v-for="(run, idx) in state.runUpdates" :key="idx" class="single-run">
-                      <font-awesome-icon icon="fa-sharp fa-solid fa-hexagon" size="xl" :rotation="90" :class="run.key" />
+                  <li v-show="processing && runUpdates.length === 0">processing...</li>
+                  <li v-for="(run, idx) in runUpdates" :key="idx" class="single-run">
+                      <font-awesome-icon icon="fa-sharp fa-light fa-hexagon" size="xl" :rotation="90" :class="run.key" />
                       <span class="run-name">{{run.name}}</span>
                   </li>
               </ul>
@@ -155,6 +176,10 @@ const closeDialog = () => {
         text-align: right;
         font-weight: 800;
       }
+      .s-badge {
+        width: 30px;
+        text-align: center;
+      }
       .s-count {
         min-width: 30px;
         text-align: right;
@@ -165,12 +190,17 @@ const closeDialog = () => {
   .update-status {
     display: flex;
     justify-content: center;
+
     width: 200px;
+    .tally {
+      text-align: center;
+    }
   }
-  .runs-stream-container {
+  #runs-stream-container {
     flex: 1;
     height: 260px;
     overflow-y: scroll;
+    scroll-behavior: smooth;
   }
   .runs {
     margin-bottom: 32px;
