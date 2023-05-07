@@ -254,9 +254,7 @@ def handle_build_runs(mcase_id, apig_management_client, connection_id):
     try:
         print('CAll update runs for:', mcase_id)
         mcase = MedalCase(mcase_id=mcase_id)
-
         mcase.update_athlete_medalcase(mcase_id, apig_management_client, connection_id)
-        apig_management_client.post_to_connection(Data='athlete_update_complete', ConnectionId=connection_id)
     except ClientError:
         logger.exception("Couldn't post to connection %s.", connection_id)
     except apig_management_client.exceptions.GoneException:
@@ -272,7 +270,7 @@ def handler(event, context):
     :param context:
     :return:
     """
-    print('EVENT', event)
+    #print('EVENT', event)
     connection_id = event.get('requestContext', {}).get('connectionId')
     """
     EVENT = {

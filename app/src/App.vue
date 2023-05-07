@@ -101,6 +101,7 @@ onMounted(() => {
 .container {
   flex: 1;
   display: flex;
+  width: 100%;
 }
 #app-body {
   box-shadow: 0 5px 5px rgba(0,0,0,0.3);

@@ -14,7 +14,7 @@ const API_LIVE = "";
 const DEVMODE = (NODE_ENV && NODE_ENV === "dev");
 const redirectUrl = DEVMODE ? URL_LOCAL :  URL_LIVE;
 const mcaseAPI = DEVMODE ? API_LOCAL : API_LIVE;
-console.log('DEVMODE', DEVMODE, NODE_ENV);
+//console.log('DEVMODE', DEVMODE, NODE_ENV);
 export const SCOPES = [
   "read",
   "profile:read_all",
@@ -65,7 +65,8 @@ const apiPath = (key, param) => {
     }[key];
 };
 
-export const STRAVA_OAUTH_URL = `https://www.strava.com/oauth/authorize?client_id=${VUE_APP_CLIENT_ID}&response_type=code&redirect_uri=${redirectUrl}/exchange_token&approval_prompt=force&scope=${SCOPES.join(
+const encodedUrl = encodeURI(redirectUrl);
+export const STRAVA_OAUTH_URL = `https://www.strava.com/oauth/authorize?client_id=${VUE_APP_CLIENT_ID}&response_type=code&redirect_uri=${encodedUrl}/exchange_token&approval_prompt=auto&scope=${SCOPES.join(
   ","
 )}`;
 
@@ -178,10 +179,8 @@ export const medalStore = defineStore('todos', {
     },
     async getAthlete(slug) {
       this.loading = true;
-      console.log('GET ATHLETE');
       const api = DEVMODE ? axios.get(apiPath('athlete', slug)) : API.get(apiName, apiPath('athlete', slug), null);
       return api.then( (response) => {
-        console.log('ATHLETE >>> ', response);
           this.athlete = response;
           this.loading = false;
           return { data: this.athlete, error: null };

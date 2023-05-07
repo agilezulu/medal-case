@@ -186,5 +186,8 @@ $f: calc($s * 1.732 + 4 * $m - 1px);
 
     }
   }
+  @media (max-width: 549px) {
+    margin-bottom: 200px;
+  }
 }
 </style>
