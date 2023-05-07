@@ -1,5 +1,14 @@
 import moment from "moment";
 
+export const jwtKey = "medalcase_jwt";
+export const userKey = "medalcase_user";
+export const setJWT = (token) => window.localStorage.setItem(jwtKey, token);
+export const getJWT = () => window.localStorage.getItem(jwtKey);
+export const removeJWT = () => window.localStorage.removeItem(jwtKey);
+export const setUser = (data) => window.localStorage.setItem(userKey, JSON.stringify(data));
+export const getUser = () => JSON.parse(window.localStorage.getItem(userKey));
+export const removeUSER = () => window.localStorage.removeItem(userKey);
+
 export const formatDate = (dateStr, formatStr) => {
   let format = formatStr || 'ddd Do MMMM YYYY';
   return moment(dateStr).format(format);
@@ -15,6 +24,10 @@ export const metersToDistanceUnits = (meters, selectedUnits) => {
   return round(meters * (selectedUnits === 'km' ? 0.001 : 0.000621371), 1) + ` ${selectedUnits}`;
 }
 
+export const miToKm = (miles) => {
+  if (!miles) { return 0; }
+  return round(miles * 1.60934, 1);
+}
 export const secsToHMS = (secs) => {
   const sec_num = parseInt(secs, 10);
   const hours   = Math.floor(sec_num / 3600);

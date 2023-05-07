@@ -23,16 +23,18 @@ import Toast from "primevue/toast";
 import InputText from "primevue/inputtext";
 import Dropdown from "primevue/dropdown";
 import InputSwitch from "primevue/inputswitch";
-
+import ConfirmDialog from "primevue/confirmdialog";
 
 import DialogService from "primevue/dialogservice";
 import ToastService from "primevue/toastservice";
+import ConfirmationService from "primevue/confirmationservice";
 import "./assets/main.scss";
 
-import "@/assets//theme.css";
+
 import "primeflex/primeflex.css";
 import "primevue/resources/primevue.min.css";
 import "primeicons/primeicons.css";
+import "@/assets//theme.css";
 
 import {
   faMedal,
@@ -43,7 +45,8 @@ import {
   faArrowsRotate,
   faPencil,
   faCircleStar,
-  faChevronLeft
+  faChevronLeft,
+  faTrashCan,
 } from "@fortawesome/pro-light-svg-icons";
 
 import {
@@ -51,7 +54,8 @@ import {
 } from "@fortawesome/sharp-light-svg-icons";
 
 import {
-  faStarOfLife
+  faStarOfLife,
+  faHexagon as fasHexagon
 } from "@fortawesome/sharp-solid-svg-icons";
 
 
@@ -66,7 +70,9 @@ library.add(
   faCircleStar,
   faHexagon,
   faStarOfLife,
-  faChevronLeft
+  faChevronLeft,
+  faTrashCan,
+  fasHexagon
 );
 
 //Amplify.configure(awsExports);
@@ -95,6 +101,7 @@ app.use(pinia);
 app.use(PrimeVue, { ripple: true });
 app.use(ToastService);
 app.use(DialogService);
+app.use(ConfirmationService);
 
 app.component("SelectButton", SelectButton);
 app.component("Menubar", Menubar);
@@ -110,6 +117,7 @@ app.component("Toast", Toast);
 app.component("InputText", InputText);
 app.component("Dropdown", Dropdown);
 app.component("InputSwitch", InputSwitch);
+app.component("ConfirmDialog", ConfirmDialog);
 
 app.component("Popper", Popper);
 

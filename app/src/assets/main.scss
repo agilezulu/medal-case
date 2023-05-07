@@ -38,13 +38,19 @@ body {
   font-weight: normal;
 
 }
-
+.muted {
+  font-size: 12px;
+  color: #999999;
+}
 a {
   text-decoration: none;
   color: $color-action;
   &.action {
     color: $color-action;
   }
+}
+.action-color {
+  color: $color-action;
 }
 
 $class-keys: c_marathon, c_50k, c_50mi, c_100k, c_100kplus, c_100mi, c_xtreme, c_training;
@@ -62,6 +68,12 @@ $class-colors: $color-c_marathon, $color-c_50k, $color-c_50mi, $color-c_100k, $c
   }
   .#{nth($class-keys, $i)}_bgbadge {
     background-image: url('/img/#{nth($class-keys, $i)}.png');
+  }
+  .#{nth($class-keys, $i)}_bgbadge_notyet {
+    background-image: url('/img/#{nth($class-keys, $i)}_notyet.png');
+  }
+  .#{nth($class-keys, $i)}_bgoverlay {
+    background-color: rgba(nth($class-colors, $i), 0.9);
   }
 
 }

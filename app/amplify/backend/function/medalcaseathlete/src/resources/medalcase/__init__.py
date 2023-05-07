@@ -3,7 +3,7 @@
 """
 import uuid
 import time
-import json
+from flask_socketio import emit
 from bisect import bisect_right
 from pony import orm
 from datetime import datetime, date, timezone
@@ -271,6 +271,7 @@ class MedalCase:
                 "firstname": athlete.firstname,
                 "lastname": athlete.lastname,
                 "id": athlete.id,
+                "units": athlete.units,
                 "tokens": {
                     'access_token': user['access_creds']['access_token'],
                     'refresh_token': user['access_creds']['refresh_token'],
@@ -507,6 +508,12 @@ class MedalCase:
                         new_medals[run_class.key] += 1
                         new_scans += 1
                         Run(**run_params)
+                        emit('athlete_update', {
+                            'data': {
+                                'name': activity.name,
+                                'key': run_class.key
+                            }
+                        })
 
                 # update last checked run
                 if activity_start_date_epoch > last_scanned_epoch:
@@ -574,23 +581,12 @@ class MedalCase:
             return self.get_athlete(mcase_id=mcase_id)
         abort(404, description=f"Error: Invalid access to update a run")
 
-    def check_athlete_processing(self, mcase_id):
+    def delete_athlete(self, mcase_id):
         """
-        Check the processing status of an athlete
+        delete athlete
         :param mcase_id:
         :return:
         """
         with orm.db_session:
-            athlete = Athlete[mcase_id]
-            return athlete.processing
-
-    def set_athlete_processing(self, mcase_id, set_status):
-        """
-        Update the processing status of an athlete
-        :param mcase_id:
-        :param set_status:
-        :return:
-        """
-        with orm.db_session:
-            athlete = Athlete[mcase_id]
-            athlete.processing = set_status
+            Athlete[mcase_id].delete()
+            return 'OK'

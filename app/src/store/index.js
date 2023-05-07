@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { API } from 'aws-amplify';
 import axios from "axios";
 import router from "@/router";
-import { groupBy } from "@/utils/helpers.js";
+import { groupBy, getJWT, getUser, removeJWT, removeUSER, setJWT, setUser } from "@/utils/helpers.js";
 
 const NODE_ENV = import.meta.env.VITE_NODE_ENV;
 const VUE_APP_CLIENT_ID = import.meta.env.VITE_VUE_APP_CLIENT_ID;
@@ -22,13 +22,13 @@ export const SCOPES = [
 ];
 // 'profile:read_all', 'profile:write', 'profile:read_all', 'activity:read_all', 'activity:write'
 export const CLASSES = [
-  { name: "26.2", key: "c_marathon", row: 1 },
-  { name: "50k", key: "c_50k", row: 1  },
-  { name: "50mi", key: "c_50mi", row: 1  },
-  { name: "100k", key: "c_100k", row: 1  },
-  { name: "100k+", key: "c_100kplus", row: 2  },
-  { name: "100mi", key: "c_100mi", row: 2  },
-  { name: "Xtreme", key: "c_xtreme", row: 2  },
+  { name: "26.2", key: "c_marathon", seq: 1 },
+  { name: "50k", key: "c_50k", seq: 2  },
+  { name: "50mi", key: "c_50mi", seq: 3  },
+  { name: "100k", key: "c_100k", seq: 4  },
+  { name: "100k+", key: "c_100kplus", seq: 5  },
+  { name: "100mi", key: "c_100mi", seq: 6  },
+  { name: "Xtreme", key: "c_xtreme", seq: 7  },
 ];
 const classKeys = CLASSES.map(c => c.key);
 export const classLookup = CLASSES.reduce((obj, item) => {
@@ -61,23 +61,13 @@ const apiPath = (key, param) => {
     athlete: `${mcaseAPI}/athlete/${param}`,
     build: `${mcaseAPI}/athlete`,
     run: `${mcaseAPI}/athlete/run`,
-    chaeck: `${mcaseAPI}/athlete/chaeck`,
+    delete: `${mcaseAPI}/athlete`,
     }[key];
 };
 
 export const STRAVA_OAUTH_URL = `https://www.strava.com/oauth/authorize?client_id=${VUE_APP_CLIENT_ID}&response_type=code&redirect_uri=${redirectUrl}/exchange_token&approval_prompt=force&scope=${SCOPES.join(
   ","
 )}`;
-
-const jwtKey = "medalcase_jwt";
-const userKey = "medalcase_user";
-const setJWT = (token) => window.localStorage.setItem(jwtKey, token);
-const getJWT = () => window.localStorage.getItem(jwtKey);
-const removeJWT = () => window.localStorage.removeItem(jwtKey);
-
-const setUser = (data) => window.localStorage.setItem(userKey, JSON.stringify(data));
-const getUser = () => JSON.parse(window.localStorage.getItem(userKey));
-const removeUSER = () => window.localStorage.removeItem(userKey);
 
 export const medalStore = defineStore('todos', {
   state: () => ({
@@ -110,6 +100,29 @@ export const medalStore = defineStore('todos', {
     },
     isOnboarding(state) {
       return state.athlete && !state.athlete.last_run_date && state.loggedInAthlete.slug ===  state.athlete.slug && !state.athlete.total_runs;
+    },
+    medalUpdateSummary(state) {
+      const summary = state.runUpdates.reduce((obj, item) => {
+        if (!obj[item.key]){
+          obj[item.key] = {
+            name: classLookup[item.key].name,
+            seq: classLookup[item.key].seq,
+            key: item.key,
+            count: 0
+          };
+        }
+        obj[item.key].count++;
+        return obj;
+      }, {});
+      return Object.values(summary).sort((a, b) => {
+        if (a.seq < b.seq) {
+          return -1;
+        }
+        if (a.seq > b.seq) {
+          return 1;
+        }
+        return 0;
+      })
     }
   },
   actions: {
@@ -135,7 +148,6 @@ export const medalStore = defineStore('todos', {
     async getAccessTokenFromCode(code) {
       const state = this;
       const postBody = {code: code};
-      console.log(postBody);
       const api = DEVMODE
         ? axios.post(apiPath('login'), postBody, {})
         : API.post(apiName, apiPath('login'), {body: postBody});
@@ -153,10 +165,13 @@ export const medalStore = defineStore('todos', {
             firstname: responseData.firstname,
             lastname: responseData.lastname,
             slug: responseData.slug,
+            units: responseData.units,
           };
           setUser(userData);
           this.loggedInAthlete = userData;
+          this.selectedUnits = userData.units;
           router.push('/me');
+
         }).catch((error) => {
           return { data: null, error: error };
         });
@@ -187,6 +202,7 @@ export const medalStore = defineStore('todos', {
         this.loading = false;
       });
     },
+    /*
     async buildAthleteRuns() {
       this.loadingLocal = true;
       const api = DEVMODE ? axios.post(apiPath('build')) : API.post(apiName, apiPath('build'), null);
@@ -200,25 +216,8 @@ export const medalStore = defineStore('todos', {
           return { data: null, error: error };
         });
     },
-    async checkAthleteProcessing() {
-      this.loadingLocal = true;
-      const api = DEVMODE ? axios.get(apiPath('check')) : API.get(apiName, apiPath('check'), null);
-      return api.then((response) => {
-          let is_processing = response.is_processing;
-          if (is_processing){
-            return  {is_processing: true, data: null, error: null};
-          }
-          else {
-            this.athlete = response.athlete;
-            this.loadingLocal = false;
-            return {is_processing: response.is_processing, data: this.athlete.meta, error: null};
-          }
-        })
-        .catch((error) => {
-          this.loadingLocal = false;
-          return { data: null, error: error };
-        });
-    },
+
+     */
     async updateRun(data) {
         const sendData = {
           class_key: data.class_key,
@@ -226,7 +225,10 @@ export const medalStore = defineStore('todos', {
           race: data.race,
           strava_id: data.strava_id
         }
-        return DEVMODE ? axios.put(apiPath('run'), sendData) : API.put(apiPath('run'), sendData);
+        return DEVMODE ? axios.put(apiPath('run'), sendData) : API.put(apiName, apiPath('run'), sendData);
+    },
+    async deleteAthlete() {
+        return DEVMODE ? axios.delete(apiPath('delete'), {}) : API.del(apiName, apiPath('delete'), {});
     },
     refreshAthleteData(data) {
       this.athlete = data;

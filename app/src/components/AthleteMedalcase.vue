@@ -53,15 +53,10 @@ const pbMarathon = computed(() => {
                           <span class="medal-count">{{totalMedals.runs}}</span>
                       </div>
                   </div>
-                  <div v-for="c in CLASSES" class="mcase-class" :class="[ athlete[c.key] > 0 ? `${c.key}_bgbadge` : 'disabled' ]" :key="c.key">
-                      <!--
-                      <div class="medal-bg">
-                          <MedalcaseBadge :class-name="c.key" />
-                      </div>
-                      -->
+                  <div v-for="c in CLASSES" class="mcase-class" :class="[ athlete[c.key] > 0 ? `${c.key}_bgbadge` : `${c.key}_bgbadge_notyet` ]" :key="c.key">
                       <div class="medal-stats">
                           <div class="medal-count" :class="`${c.key}_border`">{{athlete[c.key]}}</div>
-                          <div class="medal-name">{{c.name}}</div>
+                          <div class="medal-name" :class="`${c.key}_bgoverlay`">{{c.name}}</div>
                       </div>
                   </div>
 
@@ -97,7 +92,7 @@ $f: calc($s * 1.732 + 4 * $m - 1px);
       font-size:initial;
       clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
       margin-bottom: calc($m - $s * 0.2885);
-      background-color: #dddddd;
+      background-color: #ffffff;
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -119,12 +114,23 @@ $f: calc($s * 1.732 + 4 * $m - 1px);
         justify-content: center;
         flex-direction: column;
         align-items: center;
+        color: #ffffff;
+        bottom: 0;
+        .medal-count {
+          font-size: 30px;
+          font-weight: 800
+        }
+        .medal-name {
+          text-align: center;
+          font-weight: 800;
+          width: 100%;
+          padding: 2px 0 25px 0;
+          text-shadow: 0 3px 5px #333333;
+        }
         &.total {
-          color: #ffffff;
-          .medal-count {
-            font-size: 30px;
-            font-weight: 800
-          }
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
         }
       }
     }

@@ -1,12 +1,15 @@
 <script setup>
 import { onUnmounted, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import { medalStore, classLookup, CLASSES } from "@/store";
+import router from "@/router";
+import { medalStore, CLASSES } from "@/store";
 import { metersToDistanceUnits, getDate, secsToHMS } from "@/utils/helpers.js";
 import {storeToRefs} from "pinia";
+import { useConfirm } from "primevue/useconfirm";
 import { useDialog } from "primevue/usedialog";
 import { useToast } from "primevue/usetoast";
 import { formatDate } from "@/utils/helpers.js";
+import { socket, state } from "@/socket";
 import PopOver from "@/components/PopOver.vue";
 import RunEdit from "@/components/RunEdit.vue";
 import AthleteMedalcase from "@/components/AthleteMedalcase.vue";
@@ -15,79 +18,52 @@ import MedalcaseLogo from "@/components/icons/MedalcaseLogo.vue";
 import BadgeRace from "@/components/icons/BadgeRace.vue";
 import BadgeRun from "@/components/icons/BadgeRun.vue";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
-import AthleteList from "@/components/AthleteList.vue";
+import RunsUpdate from "@/components/RunsUpdate.vue";
+
+import ConnectionManager from "@/components/ConnectionManager.vue";
 
 const props =  defineProps({
   currentUser: Boolean,
 });
 
-const { athlete } = storeToRefs(medalStore());
+const { athlete, selectedUnits, units } = storeToRefs(medalStore());
+
 const store = medalStore();
 const route = useRoute();
 const dialog = useDialog();
 const toast = useToast();
+const confirm = useConfirm();
 
 const activeClasses = ref([]);
-const polling = ref(null);
 const dynamicDialogRef = ref(null);
 
-const formatMessages = (meta) => {
-  const gotNew = Object.keys(meta.new_runs).length;
-  let detail = `<div class="m-detail"><div>${meta.scanned_runs} runs since: ${formatDate(meta.last_scan_date)}</div>`;
-  if (gotNew) {
-    Object.keys(meta.new_runs).forEach((key) => {
-      detail += `<div class="m-info"><div class="m-name">${classLookup[key].name}:</div><div class="m-count">${meta.new_runs[key]}</div></div>`;
-    });
-  }
-  detail += '</div>';
-  let summary =  !gotNew ? "No new medals" : "Congrats! New medals found";
-  return {
-    detail: detail,
-    summary: summary,
-    severity: gotNew ? "success": "info",
-  };
-}
-
-const checkStatus = () => {
-
-  polling.value = setInterval(() => {
-    store.checkAthleteProcessing().then((response) => {
-      console.log('Processing state:', response);
-      if (response.error){
+const confirmDelete = () => {
+  confirm.require({
+    group: 'account',
+    header: 'Confirm deletion of your Medalcase account',
+    message: 'Are you sure you want to proceed? <br /> This <i>will not</i> delete anything from your Strava account',
+    icon: 'pi pi-exclamation-triangle',
+    acceptIcon: 'pi pi-check',
+    rejectIcon: 'pi pi-times',
+    accept: () => {
+      store.deleteAthlete().then(() => {
+        store.doLogout();
+        router.push('home');
+        toast.add({ severity: 'success', summary: 'Account deleted', detail: 'Thanks for stopping by! Your account has now been deleted', life: 5000 });
+      }, error => {
+        console.log(error);
         toast.add({
-          severity: 'error',
-          summary: response.error.name,
-          detail: response.error.description,
-          life: 5000
-        });
-      }
-      else if (response.is_processing){
-        console.log('is processing');
-      }
-      else {
-        const messages = formatMessages(response.data);
-        toast.add({
-          severity: messages.severity,
-          summary: messages.summary,
-          detail: messages.detail,
-          life: 12000
-        });
-      }
-    });
-  }, 5000);
-}
+          severity:'error',
+          summary: error.response.name,
+          detail: error.response.description, life: 3000 });
+      });
 
-const buildRuns = () => {
-  store.buildAthleteRuns().then((response) => {
-    console.log('build response', response)
-    if (response.error){
-      toast.add({ severity: 'error', summary: response.error.name, detail: response.error.description, life: 5000 });
-    }
-    else {
-      checkStatus();
+    },
+    reject: () => {
+      toast.add({ severity: 'info', summary: 'Cancelled', detail: 'You have not deleted your account', life: 3000 });
     }
   });
-}
+};
 
 const editRun = (run) => {
   dynamicDialogRef.value = dialog.open(RunEdit, {
@@ -114,7 +90,7 @@ const editRun = (run) => {
   });
 }
 
-onMounted(() => {
+const fetchAthlete = () => {
   const athleteSlug = props.currentUser ? store.getSessionSlug : route.params.slug;
   if (athleteSlug) {
     store.getAthlete(athleteSlug).then((response) => {
@@ -123,7 +99,7 @@ onMounted(() => {
       }
       else {
         if (store.isOnboarding){
-          buildRuns();
+          updatesModal();
         }
         activeClasses.value = store.athleteRuns ? CLASSES.filter((mclass) => store.athleteRuns[mclass.key]) : [];
       }
@@ -132,9 +108,35 @@ onMounted(() => {
   else {
     toast.add({ severity: 'error', summary: "Error", detail: "Cannot find identifier for athlete", life: 5000 });
   }
+}
+
+const updatesModal = () => {
+  dynamicDialogRef.value = dialog.open(RunsUpdate, {
+    props: {
+      header: "Scanning for new medals...",
+      style: {
+        width: '50vw',
+      },
+      breakpoints:{
+        '960px': '75vw',
+        '640px': '90vw'
+      },
+      modal: true
+    },
+    onClose: (response) => {
+      if (response.data) {
+        toast.add({ severity: 'success', detail: "Run successfully updated", life: 3000 });
+        store.refreshAthleteData(response.data);
+      }
+    }
+  });
+}
+
+onMounted(() => {
+  fetchAthlete();
 });
 onUnmounted(() => {
-  clearInterval(polling.value);
+  socket.disconnect();
 })
 </script>
 
@@ -159,11 +161,7 @@ onUnmounted(() => {
       </div>
     </div>
     <div v-else id="athlete-medalcase">
-        <!--
-      <div class="back-link">
-        <router-link to="/" class="p-menuitem-link"><font-awesome-icon icon="fa-light fa-fw fa-chevron-left" size="lg" /> list</router-link>
-      </div>
-      -->
+
       <template v-if="athlete">
       <div id="case-header">
         <AthleteMedalcase :athlete="athlete" />
@@ -178,21 +176,32 @@ onUnmounted(() => {
                     <AthletePhoto :photo="athlete.photo" :size="80" />
                     <div class="inf">
                         <div class="a-name">{{athlete.firstname}} {{athlete.lastname}}</div>
-                        <img :src="`/img/flags/${athlete.country_code}.svg`" class="a-flag"/>
+                        <img v-if="athlete.country_code" :src="`/img/flags/${athlete.country_code}.svg`" class="a-flag"/>
+                        <div v-if="currentUser" class="deleteme">
+                            <a href="javascript:void(0);" @click="confirmDelete()"><font-awesome-icon icon="fa-light fa-trash-can" /> Delete Me</a>
+                        </div>
                     </div>
-
                 </div>
 
-                <div v-if="currentUser" class="tools-cont">
-                    <div class="update-tools">
-                        <Button
-                                @click="buildRuns()"
-                                class="p-button p-component p-button-secondary p-button-outlined p-button-sm"
-                                :class="{loading: store.loadingLocal}"
-                                :disabled="store.loadingLocal"
-                                v-if="store.isLoggedIn"
-                        >Update Medalcase <font-awesome-icon icon="fa-light fa-arrows-rotate" fixed-width :spin="store.loadingLocal" /></Button>
+                <div class="tools-cont">
+                    <div class="set-units"><SelectButton v-model="selectedUnits" :options="units" aria-labelledby="basic" /></div>
+
+                    <div class="update-tools" v-if="currentUser" >
                         <div class="last-run-date">Last run: {{formatDate(athlete.last_run_date)}}</div>
+                        <Button
+                                @click="updatesModal()"
+                                v-if="store.isLoggedIn"
+                                severity="secondary"
+                                outlined
+                        >Update Medalcase <font-awesome-icon icon="fa-light fa-fw fa-arrows-rotate" fixed-width :spin="store.loadingLocal" /></Button>
+
+                        <ConnectionManager />
+
+                        <div>
+                            <ul>
+                                <li v-for="(update, idx) in state.runUpdates" :key="idx">{{update.data}}</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -254,7 +263,7 @@ onUnmounted(() => {
                           </div>
                           <div class="run-stats">
                             <div class="run-time face-mono" :class="[store.athleteRuns[runClass.key].pb === run.elapsed_time ? `class-pb ${runClass.key}_bg`: '']">{{ secsToHMS(run.elapsed_time)}}</div>
-                            <div class="run-dist">{{ metersToDistanceUnits(run.distance, 'mi')}}</div>
+                            <div class="run-dist">{{ metersToDistanceUnits(run.distance, selectedUnits)}}</div>
                           </div>
                           <div v-if="props.currentUser" class="run-tools">
                             <a href="javascript:void(0);" class="action" @click="editRun(run)"><font-awesome-icon icon="fa-light fa-pencil" /></a>
@@ -307,7 +316,10 @@ onUnmounted(() => {
   .popper {
     font-weight: 400;
   }
-
+  .deleteme {
+    font-size: 13px;
+    margin-top: 8px;
+  }
 }
 .greet {
   display: flex;
@@ -346,6 +358,10 @@ onUnmounted(() => {
   .tools-cont {
     display: flex;
     justify-content: right;
+    align-items: center;
+    .set-units {
+      padding: 12px;
+    }
     .last-run-date {
       font-size: 0.8rem;
     }

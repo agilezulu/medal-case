@@ -42,8 +42,11 @@ const saveRun = () => {
       <div class="col-12 md:col-10 set-distance">
         <Dropdown v-model="runToEdit.class_key" :options="CLASSES" optionLabel="name" optionValue="key" id="run_class" placeholder="Select a run distance" class="w-full md:w-14rem outline-none" />
         <div class="distance">
-          <div>{{ metersToDistanceUnits(runToEdit.distance, 'mi') }}</div>
-          <div>{{ metersToDistanceUnits(runToEdit.distance, 'km') }}</div>
+            <div class="dist">
+              <div>{{ metersToDistanceUnits(runToEdit.distance, 'mi') }}</div>
+              <div>{{ metersToDistanceUnits(runToEdit.distance, 'km') }}</div>
+            </div>
+            <div class="inf">Strava<br />distance</div>
         </div>
       </div>
     </div>
@@ -56,9 +59,12 @@ const saveRun = () => {
     </div>
     <div class="field grid">
       <div class="col-12 mb-2 md:col-2 md:mb-0"></div>
-      <div class="col-12 md:col-10 flex">
+      <div class="col-12 md:col-10">
+          <div class=" flex">
         <Button label="Cancel" severity="secondary" class="btn"  outlined @click="closeDialog()"/>
         <Button label="Save" class="btn btn-action"  @click="saveRun() "/>
+      </div>
+        <div class="muted">This will only update Medalcase, not Strava</div>
       </div>
     </div>
   </div>
@@ -89,10 +95,23 @@ const saveRun = () => {
     align-items: center;
 
     .distance {
-      padding-left: 8px;
       display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
+      font-size: 12px;
+      border: solid 1px #dddddd;
+      margin-left: 12px;
+      .dist {
+        padding: 1px 6px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: center;
+      }
+      .inf {
+        background-color: #eeeeee;
+        display: flex;
+        align-items: center;
+        padding: 0 6px;
+      }
     }
   }
 }

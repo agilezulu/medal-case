@@ -12,11 +12,9 @@ from flask_cors import CORS
 from pony.flask import Pony
 from pony import orm
 from flask import Flask, jsonify, request, Response, abort
+from flask_socketio import SocketIO, emit
 from resources.medalcase import MedalCase
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import get_jwt_identity
-from flask_jwt_extended import jwt_required
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 from werkzeug.exceptions import HTTPException
 
 from resources.db.models import *
@@ -55,10 +53,10 @@ app.config.update(dict(
 db.bind(**app.config['PONY'])
 db.generate_mapping(create_tables=False)
 
-
 Pony(app)
 jwt = JWTManager(app)
 CORS(app, supports_credentials=True)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 BASE_PATH = '/athlete'
 
@@ -80,6 +78,42 @@ def make_response(data, tojson=True):
     response.headers.add('Access-Control-Allow-Credentials', 'true')
     response.headers.add('Access-Control-Allow-Methods', 'OPTIONS,POST,GET')
     return response
+
+
+@socketio.on_error()        # Handles the default namespace
+def error_handler(e):
+    print('SOCKET ERROR', e)
+    pass
+
+
+@socketio.on('connect')
+@jwt_required()
+def test_connect():
+    mcase_id = get_jwt_identity()
+    print('Client connected', mcase_id)
+    emit('my response', {'data': 'Connected'})
+
+
+@socketio.on('disconnect')
+def test_disconnect():
+    print('Client disconnected')
+
+
+@socketio.on('update')
+@jwt_required()
+@orm.db_session
+def update_athlete_runs(message):
+    """
+    Primary streaks builder to create new or rebuild all
+    :param uuid: mcase athlete uuid
+    :return: socket messages
+    """
+    print('CAll update runs')
+    mcase_id = get_jwt_identity()
+    mcase = MedalCase(mcase_id=mcase_id)
+    athlete = mcase.update_athlete_medalcase(mcase_id)
+
+    emit('athlete_update_complete', {'data': athlete})
 
 
 @app.errorhandler(HTTPException)
@@ -126,6 +160,7 @@ def athlete_login():
             "slug": data["slug"],
             "firstname": data["firstname"],
             "lastname": data["lastname"],
+            "units": data["units"]
         })
     except Exception as exp:
         abort(500, description=str(exp))
@@ -140,73 +175,6 @@ def get_athlete_list():
     mcase = MedalCase()
     athletes = mcase.get_athletes()
     return make_response(athletes)
-
-
-@app.route(f'{BASE_PATH}', methods=['POST'])
-@jwt_required()
-def update_athlete_runs():
-    """
-    Primary streaks builder to create new or rebuild all
-    :param uuid: mcase athlete uuid
-    :return: streaks
-    """
-    mcase_id = get_jwt_identity()
-    mcase = MedalCase(mcase_id=mcase_id)
-    # check if currently processing
-    is_processing = mcase.check_athlete_processing(mcase_id)
-    if is_processing:
-        return make_response({
-            "is_processing": True
-        })
-
-    # send message to SQS
-    '''
-    client = boto3.client('sqs', region_name=AWS_REGION)
-    #queue_url = client.get_queue_url(QueueName='medalcase.fifo')
-    response = client.send_message(
-        QueueUrl=SQS_URL,
-        MessageBody=str(mcase_id),
-        MessageDeduplicationId=f's-{mcase_id}',
-        MessageGroupId='MedalcaseAthleteProcess'
-    )
-    print('RESPONSE', response)
-    message_id = response.get('MessageId')
-    '''
-
-    # set athlete to processing
-    mcase.set_athlete_processing(mcase_id, True)
-
-    return make_response({
-        "is_processing": True,
-        "message_id": message_id
-    })
-
-
-@app.route(f'{BASE_PATH}/check', methods=['GET'])
-@jwt_required()
-def check_athlete_processing():
-    """
-    Primary streaks builder to create new or rebuild all
-    :param uuid: mcase athlete uuid
-    :return: streaks
-    """
-    msg_id = request.args.get('msg_id')
-    mcase_id = get_jwt_identity()
-    mcase = MedalCase(mcase_id=mcase_id)
-    # check sqs message queue
-
-    # check database to see if athlete complete
-    is_processing = mcase.check_athlete_processing(mcase_id)
-    if is_processing:
-        return make_response({
-            "is_processing": True
-        })
-
-    athlete = mcase.update_athlete_medalcase(mcase_id)
-    return make_response({
-        "is_processing": False,
-        "athlete": athlete
-    })
 
 
 @app.route(f'{BASE_PATH}/<slug>', methods=['GET'])
@@ -235,6 +203,20 @@ def update_athlete_run():
     mcase = MedalCase()
     athlete = mcase.update_run(mcase_id, data)
     return make_response(athlete)
+
+
+@app.route(f'{BASE_PATH}', methods=['DELETE'])
+@jwt_required()
+def delete_athlete():
+    """
+    Delete athlete and runs
+    :param uuid: mcase athlete uuid
+    :return: streaks
+    """
+    mcase_id = get_jwt_identity()
+    mcase = MedalCase()
+    resp = mcase.delete_athlete(mcase_id)
+    return make_response(resp)
 
 
 def handle_connect(mcase_id, connection_id):
@@ -270,6 +252,7 @@ def handle_disconnect(connection_id):
         logger.exception(f"ERROR: {exp} // connection {connection_id}")
         status_code = 503
     return status_code
+
 
 def handle_build_runs(connection_id, event_body, apig_management_client):
     """
@@ -341,8 +324,9 @@ def handler(event, context):
     route_key = event.get('requestContext', {}).get('routeKey')
     mcase_id = event.get('queryStringParameters', {}).get('mcase_id')
     # handle websocket connections
-    #------------------------------
+    # ------------------------------
     if connection_id:
+        socketio_manage(event, context)
         '''
         event["httpMethod"] = "GET"
         event["path"] = "/athlete/list"
@@ -375,12 +359,14 @@ def handler(event, context):
 
         return response
 
+
     # regular REST API calls
-    #------------------------------
+    # ------------------------------
     else:
         return awsgi.response(app, event, context)
 
 
 if __name__ == '__main__':
     orm.sql_debug(True)
-    app.run(debug=True, host='127.0.0.1', port=5180)
+    socketio.run(app, host='127.0.0.1', port=5180, debug=True)
+    #app.run(debug=True, host='127.0.0.1', port=5180)

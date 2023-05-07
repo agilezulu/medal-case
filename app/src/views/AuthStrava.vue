@@ -35,7 +35,6 @@ const allValid = computed(() => {
 });
 onMounted(() => {
   if (allValid.value) {
-    console.log(`SCOPES OK -> ${code}`);
     store.getAccessTokenFromCode(code).then((response) => {
       console.log('getAccessTokenFromCode', response);
       if (response && response.error){
@@ -54,7 +53,7 @@ onMounted(() => {
       detail: "Some required Strava authorsations are missing",
       life: 5000
     });
-    console.log("ERROR -> Missing scope(s)");
+    //console.log("ERROR -> Missing scope(s)");
   }
 });
 </script>

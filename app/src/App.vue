@@ -1,14 +1,14 @@
 <script setup>
-import {onMounted} from "vue";
+import { onMounted, ref } from "vue";
 import {RouterLink, RouterView} from "vue-router";
 import router from "@/router";
 import {medalStore} from "@/store";
 import LoginStrava from "@/components/LoginStrava.vue";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
 import {storeToRefs} from "pinia";
-
+const {loading} = storeToRefs();
 const store = medalStore();
-const { loading } = storeToRefs(medalStore());
+
 const myProfile = () => {
   router.push({name: "me"});
   //router.push({ name: "athlete", params: { slug: store.loggedInAthlete.slug } });
@@ -62,6 +62,14 @@ onMounted(() => {
         </div>
       </template>
     </Toast>
+    <ConfirmDialog group="account">
+        <template #message="slotProps">
+            <div class="flex p-4 align-items-center">
+                <i :class="slotProps.message.icon" class="action-color" style="font-size: 1.5rem"></i>
+                <div class="pl-2" v-html="slotProps.message.message"></div>
+            </div>
+        </template>
+    </ConfirmDialog>
   </div>
 
 </template>
