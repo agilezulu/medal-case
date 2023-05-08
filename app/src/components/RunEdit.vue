@@ -24,8 +24,9 @@ const saveRun = () => {
       console.log('saveRun error', error);
       toast.add({
         severity:'error',
-        summary: error.response.name,
-        detail: error.response.description, life: 3000 });
+        summary: error.response ? error.response.name : 'Error',
+        detail: error.response ? error.response.description : JSON.stringify(error),
+        life: 3000 });
     });
 }
 </script>

@@ -225,7 +225,7 @@ export const medalStore = defineStore('todos', {
           race: data.race,
           strava_id: data.strava_id
         }
-        return DEVMODE ? axios.put(apiPath('run'), sendData) : API.put(apiName, apiPath('run'), sendData);
+        return DEVMODE ? axios.put(apiPath('run'), sendData) : API.put(apiName, apiPath('run'), {body: sendData});
     },
     async deleteAthlete() {
         return DEVMODE ? axios.delete(apiPath('delete'), {}) : API.del(apiName, apiPath('delete'), {});
