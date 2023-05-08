@@ -97,9 +97,9 @@ const fetchAthlete = () => {
         toast.add({ severity: 'error', summary: response.error.name, detail: response.error.description, life: 5000 });
       }
       else {
-        if (store.isOnboarding){
-          updatesModal();
-        }
+        //if (store.isOnboarding){
+        //  updatesModal();
+        //}
         activeClasses.value = store.athleteRuns ? CLASSES.filter((mclass) => store.athleteRuns[mclass.key]) : [];
       }
     });
@@ -155,7 +155,8 @@ onUnmounted(() => {
                     Welcome to Medalcase!
                   </div>
                 </div>
-                <p> Please stand by while we scan your runs, this might take a minute or so...</p>
+                <p>Click below to scan all of your Strava runs for medals...</p>
+                <Button label="Scan my runs" @click="updatesModal()"></Button>
             </div>
             <div class="right-column"></div>
         </div>

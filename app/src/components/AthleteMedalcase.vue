@@ -47,16 +47,19 @@ const pbMarathon = computed(() => {
       <div class="hexgrid">
           <div class="main">
               <div class="container-hex">
-                  <div class="mcase-class">
+                  <div class="mcase-class ">
                       <div class="medal-bg"><img src="/medalcase_logo.svg" class="class-medal" /></div>
                       <div class="medal-stats total">
                           <span class="medal-count">{{totalMedals.runs}}</span>
                       </div>
                   </div>
-                  <div v-for="c in CLASSES" class="mcase-class" :class="[ athlete[c.key] > 0 ? `${c.key}_bgbadge` : `${c.key}_bgbadge_notyet` ]" :key="c.key">
-                      <div class="medal-stats">
-                          <div class="medal-count" :class="`${c.key}_border`">{{athlete[c.key]}}</div>
-                          <div class="medal-name" :class="`${c.key}_bgoverlay`">{{c.name}}</div>
+                  <!-- :class="[ athlete[c.key] > 0 ? `${c.key}_bgbadge` : `${c.key}_bgbadge_notyet` ]"  -->
+                  <div v-for="c in CLASSES" class="mcase-class" :key="c.key">
+                      <div class="medal-bg"><img :src="`/img/${c.key}${athlete[c.key] > 0 ? '': '_notyet'}.png`" class="class-medal" /></div>
+                      <div v-show="athlete.runs.length" class="medal-stats badge">
+                          <!--  :class="`${c.key}_badgecount`" -->
+                          <div v-if="athlete[c.key] > 0" class="medal-count badge">{{athlete[c.key]}}</div>
+                          <div v-else class="medal-count notyet">not yet</div>
                       </div>
                   </div>
 
@@ -106,6 +109,9 @@ $f: calc($s * 1.732 + 4 * $m - 1px);
         display: flex;
         align-items: center;
         justify-content: center;
+        .class-medal {
+          height: 100%;
+        }
       }
       .medal-stats {
         position: absolute;
@@ -116,21 +122,28 @@ $f: calc($s * 1.732 + 4 * $m - 1px);
         align-items: center;
         color: #ffffff;
         bottom: 0;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         .medal-count {
           font-size: 30px;
-          font-weight: 800
-        }
-        .medal-name {
-          text-align: center;
           font-weight: 800;
-          width: 100%;
-          padding: 2px 0 25px 0;
-          text-shadow: 0 3px 5px #333333;
-        }
-        &.total {
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
+          border-radius: 50%;
+          width: 60px;
+          height: 60px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          &.badge {
+            //background-color: rgba(252, 76, 2,0.8);
+            text-shadow: 2px 3px 6px #000000,  -2px 3px 6px #333333;
+          }
+          &.notyet {
+            //background-color: rgba(255, 255, 255,0.5);
+            color: #888888;
+            font-size: 16px;
+            text-shadow: 2px 3px 6px #ffffff, -2px 3px 6px #ffffff;
+          }
         }
       }
     }

@@ -111,6 +111,7 @@ def update_athlete_runs(message):
     emit('athlete_update_complete', {'data': athlete})
 '''
 
+
 @app.errorhandler(HTTPException)
 def handle_exception(e):
     """Return JSON instead of HTML for HTTP errors."""
@@ -141,11 +142,11 @@ def athlete_login():
     """
     mcase = MedalCase()
     code = request.json.get('code', None)
-    print('LOGIN - code', code)
+    # print('LOGIN - code', code)
     try:
         data = mcase.user_login(code)
 
-        print('LOGIN - data', data)
+        # print('LOGIN - data', data)
         # set JWT expires to
         access_token = create_access_token(
             identity=data["id"]
@@ -193,7 +194,7 @@ def update_athlete_run():
     :return: streaks
     """
     data = request.json
-
+    print('UPDATE RUN', data)
     mcase_id = get_jwt_identity()
     mcase = MedalCase()
     athlete = mcase.update_run(mcase_id, data)
@@ -300,43 +301,51 @@ def handler(event, context):
     # handle websocket connections
     # ------------------------------
     if connection_id:
-        with app.app_context():
-            route_key = event.get('requestContext', {}).get('routeKey')
 
-            response = {'statusCode': 200}
-            domain = event.get('requestContext', {}).get('domainName')
-            stage = event.get('requestContext', {}).get('stage')
-            if domain is None or stage is None:
-                logger.warning(f"Couldn't send message: domain '{domain}',stage '{stage}'")
-                response['statusCode'] = 400
+        domain = event.get('requestContext', {}).get('domainName')
+        stage = event.get('requestContext', {}).get('stage')
+        apig_management_client = boto3.client('apigatewaymanagementapi', endpoint_url=f'https://{domain}/{stage}')
+        try:
+            with app.app_context():
+                route_key = event.get('requestContext', {}).get('routeKey')
+
+                response = {'statusCode': 200}
+
+                if domain is None or stage is None:
+                    logger.warning(f"Couldn't send message: domain '{domain}',stage '{stage}'")
+                    response['statusCode'] = 400
+                    return response
+
+                if route_key == '$connect':
+                    response['statusCode'] = handle_connect(connection_id)
+                elif route_key == '$disconnect':
+                    response['statusCode'] = handle_disconnect(connection_id)
+                else:
+                    body = json.loads(event.get('body', {}))
+                    jwt = body.get('jwt', None)
+                    if not jwt:
+                        logger.error("No jwt found in body")
+                        response['statusCode'] = 404
+                        return response
+
+                    token = decode_token(jwt)
+                    mcase_id = token.get('sub', None)
+                    if not mcase_id:
+                        print("No mcase_id")
+                        response['statusCode'] = 404
+                        return response
+
+                    mcase_id = int(mcase_id)
+
+                    handle_build_runs(mcase_id, apig_management_client, connection_id)
+                    message = json.dumps({'data': 'COMPLETE'}).encode('utf-8')
+                    apig_management_client.post_to_connection(Data=message, ConnectionId=connection_id)
+
                 return response
-
-            if route_key == '$connect':
-                response['statusCode'] = handle_connect(connection_id)
-            elif route_key == '$disconnect':
-                response['statusCode'] = handle_disconnect(connection_id)
-            else:
-                body = json.loads(event.get('body', {}))
-                jwt = body.get('jwt', None)
-                if not jwt:
-                    logger.error("No jwt found in body")
-                    response['statusCode'] = 404
-                    return response
-
-                token = decode_token(jwt)
-                mcase_id = token.get('sub', None)
-                if not mcase_id:
-                    print("No mcase_id")
-                    response['statusCode'] = 404
-                    return response
-
-                mcase_id = int(mcase_id)
-                apig_management_client = boto3.client('apigatewaymanagementapi', endpoint_url=f'https://{domain}/{stage}')
-                handle_build_runs(mcase_id, apig_management_client, connection_id)
-                message = json.dumps({'data': 'COMPLETE'}).encode('utf-8')
-                apig_management_client.post_to_connection(Data=message, ConnectionId=connection_id)
-
-            return response
+        except Exception as exp:
+            message = json.dumps({'data': {'ERROR': str(exp)}}).encode('utf-8')
+            apig_management_client.post_to_connection(Data=message, ConnectionId=connection_id)
+            return {'statusCode': 500}
 
     # regular REST API calls
     # ------------------------------

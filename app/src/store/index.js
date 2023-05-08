@@ -65,8 +65,7 @@ const apiPath = (key, param) => {
     }[key];
 };
 
-const encodedUrl = encodeURI(redirectUrl);
-export const STRAVA_OAUTH_URL = `https://www.strava.com/oauth/authorize?client_id=${VUE_APP_CLIENT_ID}&response_type=code&redirect_uri=${encodedUrl}/exchange_token&approval_prompt=auto&scope=${SCOPES.join(
+export const STRAVA_OAUTH_URL = `https://www.strava.com/oauth/authorize?client_id=${VUE_APP_CLIENT_ID}&response_type=code&redirect_uri=${redirectUrl}/exchange_token&approval_prompt=auto&scope=${SCOPES.join(
   ","
 )}`;
 
@@ -100,7 +99,7 @@ export const medalStore = defineStore('todos', {
       return state.loggedInAthlete.slug;
     },
     isOnboarding(state) {
-      return state.athlete && !state.athlete.last_run_date && state.loggedInAthlete.slug ===  state.athlete.slug && !state.athlete.total_runs;
+      return state.athlete && !state.athlete.last_run_date && state.loggedInAthlete && state.loggedInAthlete.slug ===  state.athlete.slug && !state.athlete.total_runs;
     },
     medalUpdateSummary(state) {
       const summary = state.runUpdates.reduce((obj, item) => {
