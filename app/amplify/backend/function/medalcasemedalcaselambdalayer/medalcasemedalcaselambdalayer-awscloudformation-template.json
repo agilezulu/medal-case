@@ -20,7 +20,7 @@
     }
   },
   "Resources": {
-    "LambdaLayerVersion9f07acdb": {
+    "LambdaLayerVersion91f20dd9": {
       "Type": "AWS::Lambda::LayerVersion",
       "Properties": {
         "CompatibleRuntimes": {
@@ -51,13 +51,50 @@
       "DeletionPolicy": "Delete",
       "UpdateReplacePolicy": "Retain"
     },
-    "LambdaLayerPermissionPrivate9f07acdb": {
+    "LambdaLayerPermissionPrivate91f20dd9": {
       "Type": "AWS::Lambda::LayerVersionPermission",
       "Properties": {
         "Action": "lambda:GetLayerVersion",
         "LayerVersionArn": {
-          "Ref": "LambdaLayerVersion9f07acdb"
+          "Ref": "LambdaLayerVersion91f20dd9"
         },
+        "Principal": {
+          "Ref": "AWS::AccountId"
+        }
+      }
+    },
+    "LambdaLayerVersion9f07acdb": {
+      "Type": "AWS::Lambda::LayerVersion",
+      "Properties": {
+        "CompatibleRuntimes": [
+          "python3.8"
+        ],
+        "Content": {
+          "S3Bucket": {
+            "Ref": "deploymentBucketName"
+          },
+          "S3Key": "amplify-builds/medalcasemedalcaselambdalayer-LambdaLayerVersion9f07acdb-build.zip"
+        },
+        "Description": "Updated layer version 2023-05-01T20:13:46.617Z",
+        "LayerName": {
+          "Fn::Sub": [
+            "medalcasemedalcaselambdalayer-${env}",
+            {
+              "env": {
+                "Ref": "env"
+              }
+            }
+          ]
+        }
+      },
+      "DeletionPolicy": "Delete",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "LambdaLayerPermissionPrivate9f07acdb": {
+      "Type": "AWS::Lambda::LayerVersionPermission",
+      "Properties": {
+        "Action": "lambda:GetLayerVersion",
+        "LayerVersionArn": "arn:aws:lambda:eu-west-1:087685034478:layer:medalcasemedalcaselambdalayer-dev:9",
         "Principal": {
           "Ref": "AWS::AccountId"
         }
@@ -363,7 +400,7 @@
   "Outputs": {
     "Arn": {
       "Value": {
-        "Ref": "LambdaLayerVersion9f07acdb"
+        "Ref": "LambdaLayerVersion91f20dd9"
       }
     }
   }

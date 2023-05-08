@@ -37,11 +37,13 @@ const breaks = [
                         </td>
                         <td class="class-dist">
                             {{ selectedUnits === 'mi' ? `${b[2]}mi` : `${miToKm(b[2])}km` }}
+                            <span v-if="idx < breaks.length-1">
+                            <i class="pi pi-arrow-right"></i>&nbsp;{{ selectedUnits === 'mi' ? `${b[3]}mi` : `${miToKm(b[3])}km` }}
+                            </span>
+                            <span v-else><i class="pi pi-plus"></i></span>
                         </td>
                         <td class="class-dist">
-                            <span v-if="idx < breaks.length-1">
-                            {{ selectedUnits === 'mi' ? `${b[3]}mi` : `${miToKm(b[3])}km` }}
-                            </span>
+
                         </td>
                     </tr>
                     </tbody>
@@ -59,7 +61,7 @@ const breaks = [
 
 <style lang="scss">
 .class-dist {
-  text-align: right;
+  text-align: left;
 }
 .m-name {
   text-align: center;

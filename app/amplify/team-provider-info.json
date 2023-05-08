@@ -29,7 +29,7 @@
         "medalcaseathlete": {
           "secretsPathAmplifyAppId": "do1gkvje3yk6e",
           "deploymentBucketName": "amplify-medalcase-dev-82539-deployment",
-          "s3Key": "amplify-builds/medalcaseathlete-514f56375a4d4b33784c-build.zip",
+          "s3Key": "amplify-builds/medalcaseathlete-6d735953654e45767541-build.zip",
           "googleApiKey": "AIzaSyBaRgbnzMy4cEMm5e2h7pyryfYav7ComTo",
           "medalcaseClientId": "39073",
           "medalcaseClientSecret": "2030883d7ee2525d1f9ea4f5d800c7a0200798a0",
@@ -38,7 +38,7 @@
         },
         "medalcasemedalcaselambdalayer": {
           "deploymentBucketName": "amplify-medalcase-dev-82539-deployment",
-          "s3Key": "amplify-builds/medalcasemedalcaselambdalayer-LambdaLayerVersion9f07acdb-build.zip"
+          "s3Key": "amplify-builds/medalcasemedalcaselambdalayer-LambdaLayerVersion91f20dd9-build.zip"
         }
       },
       "api": {

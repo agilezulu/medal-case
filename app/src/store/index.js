@@ -14,7 +14,7 @@ const API_LIVE = "";
 const DEVMODE = (NODE_ENV && NODE_ENV === "dev");
 const redirectUrl = DEVMODE ? URL_LOCAL :  URL_LIVE;
 const mcaseAPI = DEVMODE ? API_LOCAL : API_LIVE;
-console.log('DEVMODE', DEVMODE, NODE_ENV);
+//console.log('DEVMODE', DEVMODE, NODE_ENV);
 export const SCOPES = [
   "read",
   "profile:read_all",
@@ -65,7 +65,7 @@ const apiPath = (key, param) => {
     }[key];
 };
 
-export const STRAVA_OAUTH_URL = `https://www.strava.com/oauth/authorize?client_id=${VUE_APP_CLIENT_ID}&response_type=code&redirect_uri=${redirectUrl}/exchange_token&approval_prompt=force&scope=${SCOPES.join(
+export const STRAVA_OAUTH_URL = `https://www.strava.com/oauth/authorize?client_id=${VUE_APP_CLIENT_ID}&response_type=code&redirect_uri=${redirectUrl}/exchange_token&approval_prompt=auto&scope=${SCOPES.join(
   ","
 )}`;
 
@@ -99,7 +99,7 @@ export const medalStore = defineStore('todos', {
       return state.loggedInAthlete.slug;
     },
     isOnboarding(state) {
-      return state.athlete && !state.athlete.last_run_date && state.loggedInAthlete.slug ===  state.athlete.slug && !state.athlete.total_runs;
+      return state.athlete && !state.athlete.last_run_date && state.loggedInAthlete && state.loggedInAthlete.slug ===  state.athlete.slug && !state.athlete.total_runs;
     },
     medalUpdateSummary(state) {
       const summary = state.runUpdates.reduce((obj, item) => {
@@ -178,10 +178,8 @@ export const medalStore = defineStore('todos', {
     },
     async getAthlete(slug) {
       this.loading = true;
-      console.log('GET ATHLETE');
       const api = DEVMODE ? axios.get(apiPath('athlete', slug)) : API.get(apiName, apiPath('athlete', slug), null);
       return api.then( (response) => {
-        console.log('ATHLETE >>> ', response);
           this.athlete = response;
           this.loading = false;
           return { data: this.athlete, error: null };
@@ -227,7 +225,7 @@ export const medalStore = defineStore('todos', {
           race: data.race,
           strava_id: data.strava_id
         }
-        return DEVMODE ? axios.put(apiPath('run'), sendData) : API.put(apiName, apiPath('run'), sendData);
+        return DEVMODE ? axios.put(apiPath('run'), sendData) : API.put(apiName, apiPath('run'), {body: sendData});
     },
     async deleteAthlete() {
         return DEVMODE ? axios.delete(apiPath('delete'), {}) : API.del(apiName, apiPath('delete'), {});

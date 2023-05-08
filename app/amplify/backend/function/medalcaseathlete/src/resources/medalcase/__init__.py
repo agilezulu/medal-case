@@ -454,15 +454,15 @@ class MedalCase:
         :param connection_id:
         :return:
         """
-        athlete = self._get_athlete_by_id(mcase_id)
-        last_scanned_utc = athlete.last_run_date if athlete.last_run_date else datetime.strptime('2009-01-01T00:00:00', '%Y-%m-%dT%H:%M:%S')
-        last_scanned_epoch = last_scanned_utc.timestamp()
-        new_medals = {}
-        new_scans = 0
-        new_distance = 0
-        after = last_scanned_utc
-        print(f'AFTER: {after}')
         with orm.db_session:
+            athlete = self._get_athlete_by_id(mcase_id)
+            last_scanned_utc = athlete.last_run_date if athlete.last_run_date else datetime.strptime('2009-01-01T00:00:00', '%Y-%m-%dT%H:%M:%S')
+            last_scanned_epoch = last_scanned_utc.timestamp()
+            new_medals = {}
+            new_scans = 0
+            new_distance = 0
+            after = last_scanned_utc
+            print(f'AFTER: {after}')
             min_medal_dist = min(c.min for c in RunClass.select())
             for activity in self.strava.get_activities(after=after):
                 dist_mi = self.meters_to_miles(activity.distance)
@@ -517,7 +517,6 @@ class MedalCase:
                             }
                         }
                         serialised = json.dumps(message).encode('utf-8')
-                        # emit('athlete_update', message)
                         apig_management_client.post_to_connection(Data=serialised, ConnectionId=connection_id)
 
                 # update last checked run
@@ -534,7 +533,7 @@ class MedalCase:
                 total_distance=(athlete.total_distance + new_distance)
             )
             self.update_athlete_totals(athlete)
-    
+
     def get_athlete(self, mcase_id=None, slug=None, athlete_model=None):
         """
         Get an athele from DB

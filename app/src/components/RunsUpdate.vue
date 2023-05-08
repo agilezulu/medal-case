@@ -9,7 +9,7 @@ const dialogRef = inject("dialogRef");
 
 const messageStreamContainer = ref(null);
 const runUpdates = ref([]);
-const processing = ref(false);
+const processing = ref(true);
 
 const socket = new WebSocket("wss://8vzirn1xee.execute-api.eu-west-1.amazonaws.com/prod");
 
@@ -20,23 +20,26 @@ socket.onopen = function() {
 }
 
 socket.onmessage = function(event) {
-  let response = JSON.parse(event.data);
-  console.log('response', response);
+  let r = JSON.parse(event.data);
+  let response = r.data;
+  //console.log('response', response);
+  if (!response){ return; }
   if (response === 'COMPLETE'){
     processing.value = false;
-  }
-  else if (response.message){
-    toast.add({
-      severity: 'error',
-      summary: response.message,
-      life: 3000
-    });
-    closeDialog();
   }
   else if ( response.key ) {
     runUpdates.value.push(response);
     nextTick();
     messageStreamContainer.value.scrollTop = messageStreamContainer.value.scrollHeight;
+  }
+  else {
+    toast.add({
+      severity: 'error',
+      summary: response ? JSON.stringify(response) : JSON.stringify(r),
+      life: 5000
+    });
+    processing.value = false;
+    closeDialog();
   }
 }
 socket.onclose = function(event) {
@@ -45,6 +48,7 @@ socket.onclose = function(event) {
   } else {
     console.log(`[close] Connection died: code=${event.code}`);
   }
+  processing.value = false;
 };
 
 const medalSummary = computed(() => {
@@ -121,7 +125,7 @@ const closeDialog = () => {
                   <div class="update-summary">
                       <div v-if="medalSummary.length" class="s-block">
                         <div class="s-message">
-                            Congratulations!!<br /> New medals found:
+                            Congratulations!!<br /> <b>{{runUpdates.length}}</b> New medals found:
                         </div>
                         <div v-for="medal in medalSummary" :key="medal.key" class="medal">
                             <div class="s-name" :class="medal.key">{{medal.name}}</div>
@@ -165,9 +169,6 @@ const closeDialog = () => {
     padding: 12px;
     .s-block {
       margin-bottom: 12px;
-      .s-message {
-        font-size: 18px;
-      }
     }
     .medal {
       display: flex;
