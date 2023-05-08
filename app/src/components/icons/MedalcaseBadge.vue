@@ -4,5 +4,5 @@ const props = defineProps({
 })
 </script>
 <template>
-  <img :src="`/img/${className}.png`" style="width: 100%;"/>
+  <img :src="`/img/${className}.png`" :alt="className" style="height: 103px;"/>
 </template>

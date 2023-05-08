@@ -48,15 +48,15 @@ const pbMarathon = computed(() => {
           <div class="main">
               <div class="container-hex">
                   <div class="mcase-class ">
-                      <div class="medal-bg"><img src="/medalcase_logo.svg" class="class-medal" /></div>
+                      <div class="medal-bg"><img src="/medalcase_logo.svg" alt="Athlete Medalcase Number" class="class-medal" /></div>
                       <div class="medal-stats total">
                           <span class="medal-count">{{totalMedals.runs}}</span>
                       </div>
                   </div>
                   <!-- :class="[ athlete[c.key] > 0 ? `${c.key}_bgbadge` : `${c.key}_bgbadge_notyet` ]"  -->
                   <div v-for="c in CLASSES" class="mcase-class" :key="c.key">
-                      <div class="medal-bg"><img :src="`/img/${c.key}${athlete[c.key] > 0 ? '': '_notyet'}.png`" class="class-medal" /></div>
-                      <div v-show="athlete.runs.length" class="medal-stats badge">
+                      <div class="medal-bg"><img :src="`/img/${c.key}${athlete[c.key] > 0 ? '': '_notyet'}.png`" :alt="c.name" class="class-medal" /></div>
+                      <div class="medal-stats badge">
                           <!--  :class="`${c.key}_badgecount`" -->
                           <div v-if="athlete[c.key] > 0" class="medal-count badge">{{athlete[c.key]}}</div>
                           <div v-else class="medal-count notyet">not yet</div>
@@ -135,11 +135,13 @@ $f: calc($s * 1.732 + 4 * $m - 1px);
           justify-content: center;
           align-items: center;
           &.badge {
-            //background-color: rgba(252, 76, 2,0.8);
+            @supports (-webkit-text-stroke: 1px #333333) {
+              -webkit-text-stroke: 1px #333333;
+              -webkit-text-fill-color: #ffffff;
+            }
             text-shadow: 2px 3px 6px #000000,  -2px 3px 6px #333333;
           }
           &.notyet {
-            //background-color: rgba(255, 255, 255,0.5);
             color: #888888;
             font-size: 16px;
             text-shadow: 2px 3px 6px #ffffff, -2px 3px 6px #ffffff;
