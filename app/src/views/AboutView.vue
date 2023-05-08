@@ -33,7 +33,6 @@ const breaks = [
 
                         <td class="m-name">
                           <MedalcaseBadge :class-name="b[1]" />
-                            <div class="class-label">{{b[0]}}</div>
                         </td>
                         <td class="class-dist">
                             {{ selectedUnits === 'mi' ? `${b[2]}mi` : `${miToKm(b[2])}km` }}
@@ -66,7 +65,6 @@ const breaks = [
 .m-name {
   text-align: center;
   font-weight: bold;
-  width: 105px;
   position: relative;
   .class-label {
     position: absolute;
