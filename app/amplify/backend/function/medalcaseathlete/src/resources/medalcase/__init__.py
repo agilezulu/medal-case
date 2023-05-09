@@ -6,7 +6,7 @@ import time
 import json
 from bisect import bisect_right
 from pony import orm
-from datetime import datetime, date, timezone
+from datetime import datetime, date, timezone, timedelta
 from geopy.geocoders import GoogleV3
 from flask import current_app as app, abort
 from stravalib import unithelper
@@ -482,18 +482,26 @@ class MedalCase:
                     new_distance += int(unithelper.meters(activity.distance))
                     run_class = self.get_run_class(dist_mi)
                     location = self.get_start_location(activity.start_latlng)
+
+                    elapsed_time = activity.elapsed_time
+                    if isinstance(elapsed_time, timedelta):
+                        elapsed_time = int(elapsed_time.total_seconds())
+                    moving_time = activity.moving_time
+                    if isinstance(moving_time, timedelta):
+                        moving_time = int(moving_time.total_seconds())
+
                     run_params = {
                         "strava_id":  activity.id,
                         "name":  activity.name or 'No Name',
                         "distance":  activity.distance,
-                        "moving_time":  activity.moving_time or 0,
-                        "elapsed_time":  activity.elapsed_time or 0,
+                        "moving_time":  moving_time,
+                        "elapsed_time": elapsed_time,
                         "total_elevation_gain":  activity.total_elevation_gain or 0,
                         "start_date":  activity.start_date.replace(tzinfo=None),
                         "start_date_local":  activity.start_date_local,
                         "utc_offset":  activity.utc_offset or 0,
-                        "timezone":  activity.timezone or '',
-                        "start_latlng":  activity.start_latlng or '',
+                        "timezone":  str(activity.timezone) or '',
+                        "start_latlng":  str(activity.start_latlng) or '',
                         "location_country":  location.get('country', 'Unknown'),
                         "location_city":  location.get('city', 'Unknown'),
                         "average_heartrate":  activity.average_heartrate or 0,

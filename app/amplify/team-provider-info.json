@@ -29,7 +29,7 @@
         "medalcaseathlete": {
           "secretsPathAmplifyAppId": "do1gkvje3yk6e",
           "deploymentBucketName": "amplify-medalcase-dev-82539-deployment",
-          "s3Key": "amplify-builds/medalcaseathlete-507168414a5239637055-build.zip",
+          "s3Key": "amplify-builds/medalcaseathlete-61457252466b4954785a-build.zip",
           "googleApiKey": "AIzaSyBaRgbnzMy4cEMm5e2h7pyryfYav7ComTo",
           "medalcaseClientId": "39073",
           "medalcaseClientSecret": "2030883d7ee2525d1f9ea4f5d800c7a0200798a0",
