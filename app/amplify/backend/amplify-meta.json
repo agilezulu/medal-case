@@ -18,14 +18,14 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda",
       "dependsOn": [],
-      "lastBuildTimeStamp": "2023-05-09T11:35:05.684Z",
+      "lastBuildTimeStamp": "2023-05-09T13:58:26.474Z",
       "lastBuildType": "PROD",
-      "lastPushTimeStamp": "2023-05-09T11:36:13.857Z",
-      "lastPackageTimeStamp": "2023-05-09T11:35:08.373Z",
-      "distZipFilename": "medalcaseathlete-61457252466b4954785a-build.zip",
+      "lastPushTimeStamp": "2023-05-09T13:58:47.818Z",
+      "lastPackageTimeStamp": "2023-05-09T13:58:44.361Z",
+      "distZipFilename": "medalcaseathlete-58764b466f714d774f38-build.zip",
       "s3Bucket": {
         "deploymentBucketName": "amplify-medalcase-dev-82539-deployment",
-        "s3Key": "amplify-builds/medalcaseathlete-61457252466b4954785a-build.zip"
+        "s3Key": "amplify-builds/medalcaseathlete-58764b466f714d774f38-build.zip"
       },
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-medalcase-dev-82539-deployment/amplify-cfn-templates/function/medalcaseathlete-cloudformation-template.json",
@@ -57,7 +57,7 @@
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-medalcase-dev-82539-deployment/amplify-cfn-templates/function/medalcasemedalcaselambdalayer-awscloudformation-template.json",
         "logicalId": "functionmedalcasemedalcaselambdalayer"
       },
-      "lastPushTimeStamp": "2023-05-09T11:36:13.695Z",
+      "lastPushTimeStamp": "2023-05-09T13:57:22.346Z",
       "output": {
         "Arn": "arn:aws:lambda:eu-west-1:087685034478:layer:medalcasemedalcaselambdalayer-dev:10"
       }
@@ -81,7 +81,7 @@
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-medalcase-dev-82539-deployment/amplify-cfn-templates/api/medalcaseapi-cloudformation-template.json",
         "logicalId": "apimedalcaseapi"
       },
-      "lastPushTimeStamp": "2023-05-09T11:36:13.698Z",
+      "lastPushTimeStamp": "2023-05-09T13:57:22.350Z",
       "output": {
         "ApiName": "medalcaseapi",
         "RootUrl": "https://pffgqxplji.execute-api.eu-west-1.amazonaws.com/dev",
@@ -99,50 +99,10 @@
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-medalcase-dev-82539-deployment/amplify-cfn-templates/hosting/amplifyhosting-template.json",
         "logicalId": "hostingamplifyhosting"
       },
-      "lastPushTimeStamp": "2023-05-09T11:36:13.700Z",
+      "lastPushTimeStamp": "2023-05-09T13:57:22.351Z",
       "output": {},
       "lastPushDirHash": "RLtoDODgvwvDsukqujX0ahmKoSM="
     }
   },
-  "auth": {
-    "medalcase": {
-      "service": "Cognito",
-      "serviceType": "managed",
-      "providerPlugin": "awscloudformation",
-      "dependsOn": [],
-      "frontendAuthConfig": {
-        "socialProviders": [],
-        "usernameAttributes": [],
-        "signupAttributes": [
-          "EMAIL"
-        ],
-        "passwordProtectionSettings": {
-          "passwordPolicyMinLength": 8,
-          "passwordPolicyCharacters": []
-        },
-        "mfaConfiguration": "OFF",
-        "mfaTypes": [
-          "SMS"
-        ],
-        "verificationMechanisms": [
-          "EMAIL"
-        ]
-      },
-      "providerMetadata": {
-        "s3TemplateURL": "https://s3.amazonaws.com/amplify-medalcase-dev-82539-deployment/amplify-cfn-templates/auth/medalcase-cloudformation-template.json",
-        "logicalId": "authmedalcase"
-      },
-      "lastPushTimeStamp": "2023-05-09T11:36:13.702Z",
-      "output": {
-        "UserPoolId": "eu-west-1_71wu5NUfJ",
-        "AppClientIDWeb": "1kgol7bvreg29kf6ra5kcnauho",
-        "AppClientID": "1aj36818ubrj1bnghm1d2gtgvc",
-        "IdentityPoolId": "eu-west-1:f02dd0ff-be32-4618-9e34-0e52a88d6ee0",
-        "UserPoolArn": "arn:aws:cognito-idp:eu-west-1:087685034478:userpool/eu-west-1_71wu5NUfJ",
-        "IdentityPoolName": "medalcase_identitypool_31ec90a7__dev",
-        "UserPoolName": "medalcase_userpool_31ec90a7"
-      },
-      "lastPushDirHash": "pHqABNJK4WvjGFs1lVyaWX/rfSY="
-    }
-  }
+  "auth": {}
 }
