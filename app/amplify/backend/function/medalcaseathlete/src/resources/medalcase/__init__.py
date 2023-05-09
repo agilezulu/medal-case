@@ -4,6 +4,7 @@
 import uuid
 import time
 import json
+from decimal import Decimal
 from bisect import bisect_right
 from pony import orm
 from datetime import datetime, date, timezone, timedelta
@@ -361,10 +362,9 @@ class MedalCase:
             "start_date_local":  run.start_date_local.strftime('%Y-%m-%dT%H:%M:%SZ'),
             "location_country":  run.location_country,
             "race": run.race == 1,
-            "summary_polyline": run.summary_polyline,
             "class": run.run_class.name,
             "class_key": run.run_class.key,
-            "class_parent": run.run_class.parent,
+            "class_parent": run.run_class.parent
         }
 
     def get_athletes(self):
@@ -449,6 +449,43 @@ class MedalCase:
         bin_idx = bisect_right(self.class_bins, dist_mi) - 1
         return self.run_classes[bin_idx]
 
+    def _build_run_from_activity(self, activity):
+        """
+        Build a run ready for saving
+        :param activity:
+        :return:
+        """
+        dist_mi = self.meters_to_miles(activity.distance)
+        run_class = self.get_run_class(dist_mi)
+        location = self.get_start_location(activity.start_latlng)
+
+        elapsed_time = activity.elapsed_time
+        if isinstance(elapsed_time, timedelta):
+            elapsed_time = int(elapsed_time.total_seconds())
+        moving_time = activity.moving_time
+        if isinstance(moving_time, timedelta):
+            moving_time = int(moving_time.total_seconds())
+
+        return {
+            "strava_id":  activity.id,
+            "name":  activity.name or 'No Name',
+            "distance":  activity.distance,
+            "moving_time":  moving_time,
+            "elapsed_time": elapsed_time,
+            "total_elevation_gain":  activity.total_elevation_gain or 0,
+            "start_date":  activity.start_date.replace(tzinfo=None),
+            "start_date_local":  activity.start_date_local,
+            "utc_offset":  activity.utc_offset or 0,
+            "timezone":  str(activity.timezone) or '',
+            "start_latlng":  str(activity.start_latlng) or '',
+            "location_country":  location.get('country', 'Unknown'),
+            "location_city":  location.get('city', 'Unknown'),
+            "average_heartrate":  activity.average_heartrate or 0,
+            "average_cadence":  activity.average_cadence or 0,
+            "race": activity.workout_type == 1,
+            "run_class": run_class
+        }
+
     def update_athlete_medalcase(self, mcase_id, apig_management_client, connection_id):
         """
         Update an athlete's runs since their last run or build all for the first time
@@ -480,56 +517,28 @@ class MedalCase:
 
                 if activity.type in self.valid_types and dist_mi >= min_medal_dist:
                     new_distance += int(unithelper.meters(activity.distance))
-                    run_class = self.get_run_class(dist_mi)
-                    location = self.get_start_location(activity.start_latlng)
-
-                    elapsed_time = activity.elapsed_time
-                    if isinstance(elapsed_time, timedelta):
-                        elapsed_time = int(elapsed_time.total_seconds())
-                    moving_time = activity.moving_time
-                    if isinstance(moving_time, timedelta):
-                        moving_time = int(moving_time.total_seconds())
-
-                    run_params = {
-                        "strava_id":  activity.id,
-                        "name":  activity.name or 'No Name',
-                        "distance":  activity.distance,
-                        "moving_time":  moving_time,
-                        "elapsed_time": elapsed_time,
-                        "total_elevation_gain":  activity.total_elevation_gain or 0,
-                        "start_date":  activity.start_date.replace(tzinfo=None),
-                        "start_date_local":  activity.start_date_local,
-                        "utc_offset":  activity.utc_offset or 0,
-                        "timezone":  str(activity.timezone) or '',
-                        "start_latlng":  str(activity.start_latlng) or '',
-                        "location_country":  location.get('country', 'Unknown'),
-                        "location_city":  location.get('city', 'Unknown'),
-                        "average_heartrate":  activity.average_heartrate or 0,
-                        "average_cadence":  activity.average_cadence or 0,
-                        "race": activity.workout_type == 1,
-                        "summary_polyline":  '',
-                        "athlete": athlete,
-                        "run_class": run_class
-                    }
+                    run_params = self._build_run_from_activity(activity)
                     try:
                         run = Run[activity.id]
                         # if we already have the run just update some meta to allow for local editing
                         run.set(
                             name=run_params["name"],
-                            location_country=location.get('country', 'Unknown'),
-                            location_city=location.get('location_city', 'Unknown'),
+                            location_country=run_params['country'],
+                            location_city=run_params['location_city'],
                         )
                     except orm.core.ObjectNotFound:
-                        if run_class.key not in new_medals:
-                            new_medals[run_class.key] = 0
-                        new_medals[run_class.key] += 1
+                        class_key = run_params["run_class"].key
+                        if class_key not in new_medals:
+                            new_medals[class_key] = 0
+                        new_medals[class_key] += 1
                         new_scans += 1
+                        run_params["athlete"] = athlete
                         Run(**run_params)
                         message = {
                             'action': 'newrun',
                             'value': {
                                 'name': activity.name,
-                                'key': run_class.key
+                                'key': class_key
                             }
                         }
                         serialised = json.dumps(message).encode('utf-8')
@@ -573,26 +582,43 @@ class MedalCase:
             "runs": [self.template_run(run) for run in athlete.runs]
         }
 
-    def update_run(self, mcase_id, data):
+    def update_run(self, mcase_id, run_id, data):
         """
         Update an athlete run
         :param mcase_id:
+        :param run_id: id of run
         :param data:
         :return:
         """
-        run_id = data.get('strava_id')
-        run = Run[run_id]
+        with orm.db_session:
+            run = Run[run_id]
 
-        if run and run.athlete.id == mcase_id:
-            run_class = RunClass.get(key=data.get("class_key"))
-            with orm.db_session:
+            if run and run.athlete.id == mcase_id:
+                run_class = RunClass.get(key=data.get("class_key"))
                 run.set(
                     name=data.get("name"),
                     race=data.get("race"),
+                    distance=round(data.get("distance"), 1),
+                    elapsed_time=data.get("elapsed_time"),
                     run_class=run_class
                 )
-            return self.get_athlete(mcase_id=mcase_id)
-        abort(404, description=f"Error: Invalid access to update a run")
+                return self.get_athlete(mcase_id=mcase_id)
+            abort(404, description=f"Error: Invalid access to update a run")
+
+    def delete_run(self, mcase_id, run_id):
+        """
+        Update an athlete run
+        :param mcase_id:
+        :param run_id:
+        :return:
+        """
+        with orm.db_session:
+            run = Run[run_id]
+            if run and run.athlete.id == mcase_id:
+                Run[run_id].delete()
+                orm.commit()
+                return self.get_athlete(mcase_id=mcase_id)
+            abort(404, description=f"Error: Invalid access to delete a run")
 
     def delete_athlete(self, mcase_id):
         """
@@ -603,3 +629,19 @@ class MedalCase:
         with orm.db_session:
             Athlete[mcase_id].delete()
             return 'OK'
+
+    def resync_run_from_strava(self, mcase_id, run_id):
+        """
+        Resync and update local run from strava
+        :param mcase_id:
+        :param run_id:
+        :return:
+        """
+        with orm.db_session:
+            run = Run[run_id]
+            if run and run.athlete.id == mcase_id:
+                activity = self.strava.get_activity(run_id)
+                run_params = self._build_run_from_activity(activity)
+                run.set(**run_params)
+                return self.get_athlete(mcase_id=mcase_id)
+            abort(404, description=f"Error: Invalid access to update a run")

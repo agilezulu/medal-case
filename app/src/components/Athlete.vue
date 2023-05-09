@@ -64,6 +64,33 @@ const confirmDelete = () => {
   });
 };
 
+const confirmDeleteRun = (run) => {
+  confirm.require({
+    group: 'account',
+    header: `Remove: ${run.name}?`,
+    message: 'Are you sure you want to proceed? <br /> You will not be able to re-sync just this run - you would have to delete your account and re-connect to rebuild all runs.',
+    icon: 'pi pi-exclamation-triangle',
+    acceptIcon: 'pi pi-check',
+    rejectIcon: 'pi pi-times',
+    accept: () => {
+      store.deleteRun(run).then((response) => {
+        store.refreshAthleteData(response);
+        toast.add({ severity: 'success', summary: 'Run removed', detail: 'This run has been removed from Medalcase', life: 3000 });
+      }, error => {
+        console.log(error);
+        toast.add({
+          severity:'error',
+          summary: error.name,
+          detail: error.description, life: 3000 });
+      });
+
+    },
+    reject: () => {
+      toast.add({ severity: 'info', summary: 'Cancelled', detail: 'Run has not been removed', life: 3000 });
+    }
+  });
+};
+
 const editRun = (run) => {
   dynamicDialogRef.value = dialog.open(RunEdit, {
     data: {
@@ -89,6 +116,20 @@ const editRun = (run) => {
   });
 }
 
+const resyncRun = (run) => {
+  store.resyncRun(run).then((response) => {
+    store.refreshAthleteData(response);
+    toast.add({ severity: 'success', summary: 'Run updated', detail: 'This run has been re-synced from Strava data', life: 3000 });
+    run.isLoading = false;
+  }, error => {
+    //console.log(error);
+    run.isLoading = false;
+    toast.add({
+      severity:'error',
+      summary: error.name,
+      detail: error.description, life: 3000 });
+  });
+}
 const fetchAthlete = () => {
   const athleteSlug = props.currentUser ? store.getSessionSlug : route.params.slug;
   if (athleteSlug) {
@@ -256,7 +297,13 @@ onUnmounted(() => {
                             <div class="run-dist">{{ metersToDistanceUnits(run.distance, selectedUnits)}}</div>
                           </div>
                           <div v-if="props.currentUser" class="run-tools">
-                            <a href="javascript:void(0);" class="action" @click="editRun(run)"><font-awesome-icon icon="fa-light fa-pencil" /></a>
+                              <div class="update">
+                                  <a href="javascript:void(0);" class="action" @click="resyncRun(run)"><font-awesome-icon icon="fa-light fa-fw fa-arrows-rotate" fixed-width :spin="run.isLoading" /></a>
+                                  <a href="javascript:void(0);" class="action" @click="editRun(run)"><font-awesome-icon icon="fa-light fa-fw fa-pencil"  fixed-width /></a>
+                              </div>
+                              <div class="remove">
+                                  <a href="javascript:void(0);" class="action" @click="confirmDeleteRun(run)"><font-awesome-icon icon="fa-light fa-fw fa-trash-can"  fixed-width /></a>
+                              </div>
                           </div>
                         </div>
                       </div>
@@ -398,7 +445,11 @@ onUnmounted(() => {
         padding-right: 4px;
       }
     }
-  }
+    .p-accordion-content {
+      padding: 0;
+    }
+
+    }
   .run-class {
     display: flex;
     flex: 1;
@@ -482,7 +533,7 @@ onUnmounted(() => {
     justify-content: space-between;
     border-bottom: solid 1px #eeeeee;
     margin-bottom: 12px;
-    padding-bottom: 3px;
+    padding: 7px;
   }
   .class-body {
     padding: 12px;
@@ -547,9 +598,16 @@ onUnmounted(() => {
     .run-tools {
       flex: 0 0 20px;
       display: flex;
-      justify-content: flex-end;
+      flex-direction: column;
+      justify-content: flex-start;
+      .update {
+        display: flex;
+      }
+      .action {
+        display: inline-block;
+        margin: 0 4px;
+      }
     }
-
   }
 
 
@@ -588,6 +646,40 @@ onUnmounted(() => {
       .m-count {
         text-align: right;
         min-width: 30px
+      }
+    }
+  }
+}
+@media screen and (max-width: 480px){
+  #case-summary {
+    .run-single {
+      flex-direction: column;
+      .run-info {
+        .run-date {
+          padding-top: 6px;
+        }
+      }
+    }
+    .run-list {
+      .run-tools {
+        flex: 1;
+        flex-direction: row-reverse;
+        justify-content: flex-start;
+        .action {
+          margin: 0 12px;
+          padding: 0 6px;
+        }
+      }
+      .run-stats {
+        display: flex;
+        align-items: center;
+        padding-left: 37px;
+        .run-time {
+
+        }
+        .run-dist {
+          padding-left: 12px;
+        }
       }
     }
   }

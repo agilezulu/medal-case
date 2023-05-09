@@ -13,6 +13,16 @@ const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   name: { value: null, matchMode: FilterMatchMode.STARTS_WITH }
 });
+const sortMeta = [
+  {field: "c_xtreme", order: -1},
+  {field: "c_100mi", order: -1},
+  {field: "c_100k_plus", order: -1},
+  {field: "c_100k", order: -1},
+  {field: "c_50mi", order: -1},
+  {field: "c_50k", order: -1},
+  {field: "c_marathon", order: -1},
+  {field: "firstname", order: 1},
+]
 
 getAthletes();
 </script>
@@ -21,8 +31,9 @@ getAthletes();
   <div id="athlete-list">
 
       <DataTable v-model:filters="filters"
-                 :value="athleteList" s
-                 ortField="firstname"
+                 :value="athleteList"
+                 sortMode="multiple"
+                 :multiSortMeta="sortMeta"
                  paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                  currentPageReportTemplate="{first} to {last} of {totalRecords}"
                  paginator :rows="50"
@@ -64,7 +75,7 @@ getAthletes();
           </template>
         </Column>
         <template v-for="runClass in CLASSES" :key="runClass.key">
-          <Column :field="runClass.key" :header="runClass.name" headerStyle="width: 75px;" >
+          <Column :field="runClass.key" :header="runClass.name" headerStyle="width: 75px;" :sortable="true">
             <template #body="slotProps">
               <div class="run-count" :class="runClass.key">
                 <div class="medal-bg"><MedalcaseLogo :border="slotProps.data[runClass.key] ? 'currentColor' : '#dddddd'" :center="slotProps.data[runClass.key] ? '#ffffff' : '#ffffff'" /></div>
@@ -156,6 +167,19 @@ $total-size: 50px;
     .p-sortable-column {
       .p-column-header-content {
         justify-content: start;
+      }
+      .p-sortable-column-badge {
+        display: none;
+      }
+      &.p-highlight {
+        color: #333333;
+
+      }
+      .p-sortable-column-icon {
+        font-size: 12px;
+        color: #333333;
+        margin-left: 3px;
+        margin-top: -10px;
       }
     }
 

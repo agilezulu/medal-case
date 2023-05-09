@@ -185,19 +185,48 @@ def get_athete_by_slug(slug):
     return make_response(athlete)
 
 
-@app.route(f'{BASE_PATH}/run', methods=['PUT'])
+@app.route(f'{BASE_PATH}/run/<strava_id>', methods=['PUT'])
 @jwt_required()
-def update_athlete_run():
+def update_athlete_run(strava_id):
     """
     Primary streaks builder to create new or rebuild all
     :param uuid: mcase athlete uuid
     :return: streaks
     """
     data = request.json
-    print('UPDATE RUN', data)
     mcase_id = get_jwt_identity()
-    mcase = MedalCase()
-    athlete = mcase.update_run(mcase_id, data)
+    mcase = MedalCase(mcase_id)
+    athlete = mcase.update_run(mcase_id, strava_id, data)
+    return make_response(athlete)
+
+
+@app.route(f'{BASE_PATH}/run', methods=['DELETE'])
+@jwt_required()
+def delete_athlete_run():
+    """
+    Primary streaks builder to create new or rebuild all
+    :param uuid: mcase athlete uuid
+    :return: streaks
+    """
+    data = request.json
+    run_id = data.get('strava_id')
+    mcase_id = get_jwt_identity()
+    mcase = MedalCase(mcase_id)
+    athlete = mcase.delete_run(mcase_id, run_id)
+    return make_response(athlete)
+
+
+@app.route(f'{BASE_PATH}/run/<strava_id>', methods=['PATCH'])
+@jwt_required()
+def resync_athlete_run(strava_id):
+    """
+    Primary streaks builder to create new or rebuild all
+    :param uuid: mcase athlete uuid
+    :return: streaks
+    """
+    mcase_id = get_jwt_identity()
+    mcase = MedalCase(mcase_id)
+    athlete = mcase.resync_run_from_strava(mcase_id, strava_id)
     return make_response(athlete)
 
 
@@ -210,7 +239,7 @@ def delete_athlete():
     :return: streaks
     """
     mcase_id = get_jwt_identity()
-    mcase = MedalCase()
+    mcase = MedalCase(mcase_id)
     resp = mcase.delete_athlete(mcase_id)
     return make_response(resp)
 

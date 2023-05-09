@@ -76,7 +76,6 @@ class Run(db.Entity):
     average_heartrate = Optional(float)
     average_cadence = Optional(float)
     race = Required(int)
-    summary_polyline = Optional(LongUnicode, sql_type='TEXT')
 
     athlete = Required('Athlete', cascade_delete=False, column='user_id')
     run_class = Required('RunClass', cascade_delete=False, column='run_class_id')

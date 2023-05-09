@@ -2,7 +2,16 @@ import { defineStore } from "pinia";
 import { API } from 'aws-amplify';
 import axios from "axios";
 import router from "@/router";
-import { groupBy, getJWT, getUser, removeJWT, removeUSER, setJWT, setUser } from "@/utils/helpers.js";
+import {
+  groupBy,
+  getJWT,
+  getUser,
+  removeJWT,
+  removeUSER,
+  setJWT,
+  setUser,
+  metersFromDistanceUnits
+} from "@/utils/helpers.js";
 
 const NODE_ENV = import.meta.env.VITE_NODE_ENV;
 const VUE_APP_CLIENT_ID = import.meta.env.VITE_VUE_APP_CLIENT_ID;
@@ -60,7 +69,7 @@ const apiPath = (key, param) => {
     list: `${mcaseAPI}/athlete/list`,
     athlete: `${mcaseAPI}/athlete/${param}`,
     build: `${mcaseAPI}/athlete`,
-    run: `${mcaseAPI}/athlete/run`,
+    run: `${mcaseAPI}/athlete/run/${param}`,
     delete: `${mcaseAPI}/athlete`,
     }[key];
 };
@@ -135,6 +144,9 @@ export const medalStore = defineStore('todos', {
           ] = `Bearer ${this.accessToken}`;
       }
     },
+    setLoadingLocal(isLoading) {
+      this.loadingLocal = isLoading;
+    },
     doLogout(){
       if (DEVMODE) {
         axios.defaults.headers.common["Authorization"] = null;
@@ -202,33 +214,29 @@ export const medalStore = defineStore('todos', {
         this.loading = false;
       });
     },
-    /*
-    async buildAthleteRuns() {
-      this.loadingLocal = true;
-      const api = DEVMODE ? axios.post(apiPath('build')) : API.post(apiName, apiPath('build'), null);
-      return api.then((response) => {
-          this.athlete = response;
-          this.loadingLocal = false;
-          return { data: this.athlete.meta, error: null };
-        })
-        .catch((error) => {
-          this.loadingLocal = false;
-          return { data: null, error: error };
-        });
-    },
-
-     */
     async updateRun(data) {
         const sendData = {
           class_key: data.class_key,
           name: data.name,
           race: data.race,
+          elapsed_time: (data.hh * 3600) + (data.mm * 60) + data.ss,
+          distance: metersFromDistanceUnits(data.dist_edit, data.dist_edit_unit),
           strava_id: data.strava_id
         }
-        return DEVMODE ? axios.put(apiPath('run'), sendData) : API.put(apiName, apiPath('run'), {body: sendData});
+        return DEVMODE ? axios.put(apiPath('run', data.strava_id), sendData) : API.put(apiName, apiPath('run', data.strava_id), {body: sendData});
     },
     async deleteAthlete() {
         return DEVMODE ? axios.delete(apiPath('delete'), {}) : API.del(apiName, apiPath('delete'), {});
+    },
+    async deleteRun(data) {
+      const sendData = {
+        strava_id: data.strava_id
+      }
+      return DEVMODE ? axios.delete(apiPath('run', data.strava_id), {}) : API.del(apiName, apiPath('run', data.strava_id), {});
+    },
+    async resyncRun(data) {
+      data.isLoading = true;
+      return DEVMODE ? axios.patch(apiPath('run', data.strava_id), {}) : API.patch(apiName, apiPath('run', data.strava_id), {});
     },
     refreshAthleteData(data) {
       this.athlete = data;

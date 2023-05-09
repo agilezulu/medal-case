@@ -62,3 +62,12 @@ class Strava:
         :return:
         """
         return self.client.get_activities(after=after, before=before)
+
+    def get_activity(self, strava_id):
+        """
+        Get activites after give date or no date for all
+        :param after:
+        :param strava_id:
+        :return:
+        """
+        return self.client.get_activity(strava_id, include_all_efforts=False)

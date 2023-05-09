@@ -23,6 +23,22 @@ export const metersToDistanceUnits = (meters, selectedUnits) => {
   if (!meters) { return 0; }
   return round(meters * (selectedUnits === 'km' ? 0.001 : 0.000621371), 1) + ` ${selectedUnits}`;
 }
+export const metersToDistanceValue = (meters, selectedUnits) => {
+  if (!meters) { return 0; }
+  return round(meters * (selectedUnits === 'km' ? 0.001 : 0.000621371), 1);
+}
+
+export const metersFromDistanceUnits = (distance, units) => {
+  if (units === 'mi'){
+    return distance * 1609.34;
+  }
+  else if (units === 'km'){
+    return distance * 1000;
+  }
+  else {
+    console.error("Invalid units for conversion");
+  }
+}
 
 export const miToKm = (miles) => {
   if (!miles) { return 0; }
