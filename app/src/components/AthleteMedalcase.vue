@@ -196,9 +196,9 @@ $f: calc($s * 1.732 + 4 * $m - 1px);
       }
     }
   }
-  @media (max-width: 549px) {
+  @media (max-width: 795px) {
     .athlete-medals {
-
+      margin-bottom: 120px;
     }
   }
   @media (max-width: 549px) {

@@ -26,7 +26,7 @@ export const CLASSES = [
   { name: "50k", key: "c_50k", seq: 2  },
   { name: "50mi", key: "c_50mi", seq: 3  },
   { name: "100k", key: "c_100k", seq: 4  },
-  { name: "100k+", key: "c_100kplus", seq: 5  },
+  { name: "100k+", key: "c_100k_plus", seq: 5  },
   { name: "100mi", key: "c_100mi", seq: 6  },
   { name: "Xtreme", key: "c_xtreme", seq: 7  },
 ];

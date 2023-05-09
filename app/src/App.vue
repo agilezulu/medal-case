@@ -50,7 +50,10 @@ onMounted(() => {
   </div>
     </div>
   <div id="app-footer">
-    <router-link to="/about" class="p-menuitem-link">About</router-link>
+      <div>
+        <router-link to="/about" class="p-menuitem-link">About</router-link>
+        <a href="https://medalcase.helpscoutdocs.com/" class="p-menuitem-link" target="_new">help</a>
+      </div>
     <div class="pbs"><img src="/img/api_logo_pwrdBy_strava_horiz_light.svg" style="width: 138px;"></div>
     <Toast position="top-right">
       <template #message="slotProps">
@@ -117,6 +120,9 @@ onMounted(() => {
   align-items: center;
   .pbs {
     display: flex;
+  }
+  .p-menuitem-link {
+    margin-right: 12px;
   }
 }
 .p-toast {

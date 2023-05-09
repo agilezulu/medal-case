@@ -20,8 +20,13 @@ getAthletes();
 <template>
   <div id="athlete-list">
 
-      <DataTable v-model:filters="filters" :value="athleteList" paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-                 currentPageReportTemplate="{first} to {last} of {totalRecords}"  paginator :rows="45" :rowsPerPageOptions="[45, 90, 150]"
+      <DataTable v-model:filters="filters"
+                 :value="athleteList" s
+                 ortField="firstname"
+                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                 currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                 paginator :rows="50"
+                 :rowsPerPageOptions="[50, 100, 200]"
                  :globalFilterFields="['firstname', 'lastname']" class="p-datatable-sm">
 
         <template #header>
@@ -63,7 +68,7 @@ getAthletes();
             <template #body="slotProps">
               <div class="run-count" :class="runClass.key">
                 <div class="medal-bg"><MedalcaseLogo :border="slotProps.data[runClass.key] ? 'currentColor' : '#dddddd'" :center="slotProps.data[runClass.key] ? '#ffffff' : '#ffffff'" /></div>
-                <div class="medal-stats">
+                <div class="medal-stats" v-if="slotProps.data[runClass.key] > 0">
                   <div class="medal-count">{{slotProps.data[runClass.key]}}</div>
                 </div>
               </div>
@@ -138,6 +143,12 @@ $total-size: 50px;
 
   }
   .p-datatable {
+    .p-datatable-wrapper {
+      overflow: visible;
+      overflow-x: scroll;
+      overflow-y: hidden;
+      height: 100%;
+    }
     .p-column-header-content {
       align-items: center;
       justify-content: center;
@@ -163,6 +174,9 @@ $total-size: 50px;
         left: 0;
         display: flex;
         justify-content: center;
+        svg {
+          height: 100%;
+        }
       }
       .medal-stats {
         z-index: 5;

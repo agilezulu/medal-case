@@ -237,10 +237,12 @@ class MedalCase:
             else:
                 # create if not exists
                 created_at = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')
-                print('UNITS', user['athlete'].measurement_preference)
+                # print('UNITS', user['athlete'].measurement_preference)
                 units = 'mi' if user['athlete'].measurement_preference == 'feet' else 'km'
 
-                country_code = next((c['Code'] for c in COUNTRIES if c["Name"] == user['athlete'].country), '__')
+                country_code = ''
+                if user['athlete'].country:
+                    country_code = next((c['Code'] for c in COUNTRIES if c["Name"] == user['athlete'].country), '__')
 
                 new_athelete = {
                     'uuid': str(uuid.uuid4()),
@@ -248,15 +250,14 @@ class MedalCase:
                     'slug': f's-{strava_id}',
                     'firstname': user['athlete'].firstname,
                     'lastname': user['athlete'].lastname,
-                    'units': units,
-                    'country': user['athlete'].country,
+                    'units': units or 'mi',
+                    'country': user['athlete'].country or '',
                     'country_code': country_code,
-                    'city': user['athlete'].city,
-                    'sex': user['athlete'].sex,
-                    'date_fmt': user['athlete'].date_preference,
-                    'photo_m': user['athlete'].profile_medium,
-                    'photo_l': user['athlete'].profile,
-
+                    'city': user['athlete'].city or '',
+                    'sex': user['athlete'].sex or '',
+                    'date_fmt': user['athlete'].date_preference or '%d/%m/%Y',
+                    'photo_m': user['athlete'].profile_medium or '',
+                    'photo_l': user['athlete'].profile or '',
                     'access_token': user['access_creds']['access_token'],
                     'refresh_token': user['access_creds']['refresh_token'],
                     'expires_at': user['access_creds']['expires_at'],
@@ -314,14 +315,16 @@ class MedalCase:
         return {
             "c_100k": athlete.c_100k,
             "c_100k_race": athlete.c_100k_race,
+            "c_100k_plus": athlete.c_100k_plus,
+            "c_100k_plus_race": athlete.c_100k_plus_race,
             "c_100mi": athlete.c_100mi,
             "c_100mi_race": athlete.c_100mi_race,
             "c_50k": athlete.c_50k,
             "c_50k_race": athlete.c_50k_race,
             "c_50mi": athlete.c_50mi,
             "c_50mi_race": athlete.c_50mi_race,
-            "c_extreme": athlete.c_extreme,
-            "c_extreme_race": athlete.c_extreme_race,
+            "c_xtreme": athlete.c_xtreme,
+            "c_xtreme_race": athlete.c_xtreme_race,
             "c_marathon": athlete.c_marathon,
             "c_marathon_race": athlete.c_marathon_race,
             "city": athlete.city,
@@ -462,37 +465,41 @@ class MedalCase:
             new_scans = 0
             new_distance = 0
             after = last_scanned_utc
-            print(f'AFTER: {after}')
+            # print(f'AFTER: {after}')
             min_medal_dist = min(c.min for c in RunClass.select())
+            global_count = 0
             for activity in self.strava.get_activities(after=after):
                 dist_mi = self.meters_to_miles(activity.distance)
                 athlete.total_runs += 1
                 activity_start_date_epoch = activity.start_date.timestamp()
 
-                if activity.type in self.valid_types and dist_mi >= min_medal_dist:
-                    act = activity.to_dict()
+                global_count += 1
+                if global_count % 100 == 0:
+                    message = json.dumps({'action': 'status', 'value': 'PING'}).encode('utf-8')
+                    apig_management_client.post_to_connection(Data=message, ConnectionId=connection_id)
 
+                if activity.type in self.valid_types and dist_mi >= min_medal_dist:
                     new_distance += int(unithelper.meters(activity.distance))
                     run_class = self.get_run_class(dist_mi)
                     location = self.get_start_location(activity.start_latlng)
                     run_params = {
                         "strava_id":  activity.id,
-                        "name":  activity.name,
+                        "name":  activity.name or 'No Name',
                         "distance":  activity.distance,
-                        "moving_time":  act["moving_time"],
-                        "elapsed_time":  act["elapsed_time"],
-                        "total_elevation_gain":  activity.total_elevation_gain,
+                        "moving_time":  activity.moving_time or 0,
+                        "elapsed_time":  activity.elapsed_time or 0,
+                        "total_elevation_gain":  activity.total_elevation_gain or 0,
                         "start_date":  activity.start_date.replace(tzinfo=None),
                         "start_date_local":  activity.start_date_local,
-                        "utc_offset":  activity.utc_offset,
-                        "timezone":  act["timezone"],
-                        "start_latlng":  act["start_latlng"] or '',
-                        "location_country":  location['country'],
-                        "location_city":  location['city'],
-                        "average_heartrate":  activity.average_heartrate,
-                        "average_cadence":  activity.average_cadence,
+                        "utc_offset":  activity.utc_offset or 0,
+                        "timezone":  activity.timezone or '',
+                        "start_latlng":  activity.start_latlng or '',
+                        "location_country":  location.get('country', 'Unknown'),
+                        "location_city":  location.get('city', 'Unknown'),
+                        "average_heartrate":  activity.average_heartrate or 0,
+                        "average_cadence":  activity.average_cadence or 0,
                         "race": activity.workout_type == 1,
-                        "summary_polyline":  activity.map.summary_polyline,
+                        "summary_polyline":  '',
                         "athlete": athlete,
                         "run_class": run_class
                     }
@@ -511,7 +518,8 @@ class MedalCase:
                         new_scans += 1
                         Run(**run_params)
                         message = {
-                            'data': {
+                            'action': 'newrun',
+                            'value': {
                                 'name': activity.name,
                                 'key': run_class.key
                             }

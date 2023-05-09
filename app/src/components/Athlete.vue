@@ -271,7 +271,7 @@ onUnmounted(() => {
       </template>
       <template v-else>
           <div class="noathlete">
-            <h3>No athele found</h3>
+            <h3>No athlete found</h3>
           </div>
       </template>
     </div>
@@ -515,9 +515,15 @@ onUnmounted(() => {
           margin-right: 6px;
           margin-top: 2px;
           width: 22px;
-          svg {
+          height: 22px;
+          flex: 0 0 22px;
+          .badge {
             width: 100%;
+            svg {
+              width: 100%;
+            }
           }
+
         }
       }
       .run-date {

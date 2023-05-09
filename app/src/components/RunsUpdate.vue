@@ -21,21 +21,27 @@ socket.onopen = function() {
 
 socket.onmessage = function(event) {
   let r = JSON.parse(event.data);
-  let response = r.data;
-  //console.log('response', response);
-  if (!response){ return; }
-  if (response === 'COMPLETE'){
-    processing.value = false;
+  let action = r.action;
+  let value = r.value
+  //console.log('response', event);
+  if (!action){ return; }
+  if (action === 'status'){
+    if (value ===  'COMPLETE') {
+      processing.value = false;
+    }
+    else if (value === 'PING'){
+      console.log('ws keepalive');
+    }
   }
-  else if ( response.key ) {
-    runUpdates.value.push(response);
+  else if ( action === 'newrun' ) {
+    runUpdates.value.push(value);
     nextTick();
     messageStreamContainer.value.scrollTop = messageStreamContainer.value.scrollHeight;
   }
-  else {
+  else if (action === 'error') {
     toast.add({
       severity: 'error',
-      summary: response ? JSON.stringify(response) : JSON.stringify(r),
+      summary: value,
       life: 5000
     });
     processing.value = false;

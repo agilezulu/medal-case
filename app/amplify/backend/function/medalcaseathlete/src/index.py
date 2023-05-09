@@ -338,12 +338,13 @@ def handler(event, context):
                     mcase_id = int(mcase_id)
 
                     handle_build_runs(mcase_id, apig_management_client, connection_id)
-                    message = json.dumps({'data': 'COMPLETE'}).encode('utf-8')
+                    message = json.dumps({'action': 'status', 'value': 'COMPLETE'}).encode('utf-8')
                     apig_management_client.post_to_connection(Data=message, ConnectionId=connection_id)
 
                 return response
         except Exception as exp:
-            message = json.dumps({'data': {'ERROR': str(exp)}}).encode('utf-8')
+            message = json.dumps({'action': 'error', 'value': str(exp)}).encode('utf-8')
+            print('WSS error:', exp)
             apig_management_client.post_to_connection(Data=message, ConnectionId=connection_id)
             return {'statusCode': 500}
 
