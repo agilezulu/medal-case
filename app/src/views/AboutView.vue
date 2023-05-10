@@ -27,26 +27,24 @@ const breaks = [
                 your own runs if our matching system gets it wrong - it's an honour thing.</p>
             <div>
                 Here are the break points between medal classifications:<br/>
-                <table>
-                    <tbody>
-                    <tr v-for="(b, idx) in breaks" :key="b[0]">
 
-                        <td class="m-name">
+                <div class="distance-bands">
+                    <div class="m-class" v-for="(b, idx) in breaks" :key="b[0]">
+                        <div class="m-name">
                           <MedalcaseBadge :class-name="b[1]" />
-                        </td>
-                        <td class="class-dist">
+                        </div>
+                        <div class="class-dist">
+
+                            <div class="band">
                             {{ selectedUnits === 'mi' ? `${b[2]}mi` : `${miToKm(b[2])}km` }}
                             <span v-if="idx < breaks.length-1">
                             <i class="pi pi-arrow-right"></i>&nbsp;{{ selectedUnits === 'mi' ? `${b[3]}mi` : `${miToKm(b[3])}km` }}
                             </span>
                             <span v-else><i class="pi pi-plus"></i></span>
-                        </td>
-                        <td class="class-dist">
-
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <p>&nbsp;</p>
             <p>&nbsp;</p>
@@ -62,17 +60,35 @@ const breaks = [
 .class-dist {
   text-align: left;
 }
-.m-name {
-  text-align: center;
-  font-weight: bold;
-  position: relative;
-  .class-label {
-    position: absolute;
-    width: 100%;
-    text-align: center;
-    bottom: 30px;
-    font-weight: 800;
-    color: #ffffff;
+.distance-bands {
+  display: flex;
+  flex-wrap: wrap;
+  .m-class {
+    display: flex;
+    align-items: center;
+    margin: 12px 12px 0 0;
+    flex-direction: column;
+    .class-dist {
+      padding: 0 8px;
+      .name {
+        font-weight: 800;
+        text-align: center;
+      }
+    }
+    .m-name {
+      text-align: center;
+      font-weight: bold;
+      position: relative;
+      .class-label {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        bottom: 30px;
+        font-weight: 800;
+        color: #ffffff;
+      }
+    }
   }
 }
+
 </style>

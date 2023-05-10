@@ -659,7 +659,7 @@ onUnmounted(() => {
     }
   }
 }
-@media screen and (max-width: 480px){
+@media screen and (max-width: 520px){
   #case-summary {
     .run-single {
       flex-direction: column;
@@ -693,6 +693,13 @@ onUnmounted(() => {
           padding-top: 0;
         }
       }
+    }
+  }
+  #action-bar {
+    flex-direction: column;
+    .tools-cont {
+      margin-top: 12px;
+      justify-content: space-evenly;
     }
   }
 }

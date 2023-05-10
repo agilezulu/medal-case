@@ -24,6 +24,7 @@ import InputText from "primevue/inputtext";
 import Dropdown from "primevue/dropdown";
 import InputSwitch from "primevue/inputswitch";
 import ConfirmDialog from "primevue/confirmdialog";
+import OverlayPanel from "primevue/overlaypanel";
 
 import DialogService from "primevue/dialogservice";
 import ToastService from "primevue/toastservice";
@@ -120,6 +121,7 @@ app.component("InputText", InputText);
 app.component("Dropdown", Dropdown);
 app.component("InputSwitch", InputSwitch);
 app.component("ConfirmDialog", ConfirmDialog);
+app.component("OverlayPanel", OverlayPanel);
 
 app.component("Popper", Popper);
 

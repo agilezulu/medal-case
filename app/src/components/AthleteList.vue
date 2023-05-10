@@ -26,11 +26,29 @@ const sortMeta = [
 ]
 
 getAthletes();
+
+const badgerefs = ref([]);
+const toggle = (idx) => {
+  //console.log(idx, badgerefs.value[idx]);
+  badgerefs.value[idx].toggle(event);
+}
 </script>
 
 <template>
   <div id="athlete-list">
+      <div class="medals">
+          <div v-for="(c, idx) in CLASSES" class="mcase-class" :key="c.key">
+              <img :src="`/img/${c.key}.png`" :alt="c.name" class="class-medal" @click="toggle(idx)" />
+              <OverlayPanel :ref="el => { badgerefs[idx] = el }">
+                  <img :src="`/img/${c.key}.png`" :alt="c.name" class="class-medal-pop" />
+              </OverlayPanel>
 
+          </div>
+      </div>
+      <div class="intro">
+          Medalcase is simply a celebration your marathons and ultras. <i>All of them</i>.<br />
+          Whether racing or training, these distances take grit so we made you some badges.
+      </div>
       <DataTable v-model:filters="filters"
                  :value="athleteList"
                  sortMode="multiple"
@@ -44,7 +62,7 @@ getAthletes();
         <template #header>
           <div class="flex justify-content-between align-items-center table-header">
             <div class="">
-              <div class="table-title">Medalcase Athletes</div>
+              <div class="table-title"><span class="mcase-face" style="letter-spacing: 0.5px; font-weight: 400;">Athletes</span></div>
             </div>
             <div class="">
               <span class="p-input-icon-left">
@@ -94,6 +112,10 @@ getAthletes();
 
 <style lang="scss">
 $total-size: 50px;
+
+.class-medal-pop {
+  max-width: 100%;
+}
 #athlete-list {
   .p-datatable-header {
     padding: 8px;
@@ -102,6 +124,24 @@ $total-size: 50px;
         font-size: 1.2rem;
       }
     }
+  }
+  .medals {
+    display: flex;
+    margin-top: 12px;
+    .mcase-class {
+      flex: 2 1 auto;
+      margin: 3px;
+      .class-medal {
+        cursor: pointer;
+      }
+      img {
+        width: 100%;
+      }
+    }
+  }
+  .intro {
+    text-align: center;
+    margin-bottom: 12px;
   }
   .athlete-name {
     position: relative;
@@ -206,6 +246,15 @@ $total-size: 50px;
       .medal-stats {
         z-index: 5;
       }
+    }
+  }
+}
+@media screen and (max-width: 520px){
+  .p-overlaypanel.p-component {
+    max-width: 100vw !important;
+    left: 0 !important;
+    .p-overlaypanel-content {
+
     }
   }
 }
