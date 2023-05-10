@@ -14,6 +14,7 @@ const filters = ref({
   name: { value: null, matchMode: FilterMatchMode.STARTS_WITH }
 });
 const sortMeta = [
+  {field: "total_medals", order: -1},
   {field: "c_xtreme", order: -1},
   {field: "c_100mi", order: -1},
   {field: "c_100k_plus", order: -1},

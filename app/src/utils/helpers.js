@@ -1,4 +1,5 @@
 import moment from "moment";
+import * as d3 from 'd3'
 
 export const jwtKey = "medalcase_jwt";
 export const userKey = "medalcase_user";
@@ -27,7 +28,22 @@ export const metersToDistanceValue = (meters, selectedUnits) => {
   if (!meters) { return 0; }
   return round(meters * (selectedUnits === 'km' ? 0.001 : 0.000621371), 1);
 }
+export const elevationColor =
+  d3.scaleDiverging()
+    .interpolator(d3.interpolateRdYlBu)
+    .domain([60, 18, 0]);
 
+/**
+ * units will be mi or km
+ * for mi use feet
+ * fom km use meters
+ */
+export const elevationFromDistanceUnits = (elevation, units) => {
+  if (units === 'mi'){
+    return Math.round(elevation * 3.28084) + ' ft';
+  }
+  return elevation + ' m';
+}
 export const metersFromDistanceUnits = (distance, units) => {
   if (units === 'mi'){
     return distance * 1609.34;

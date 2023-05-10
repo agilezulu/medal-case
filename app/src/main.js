@@ -50,7 +50,8 @@ import {
 } from "@fortawesome/pro-light-svg-icons";
 
 import {
-  faHexagon
+  faHexagon,
+  faMountain
 } from "@fortawesome/sharp-light-svg-icons";
 
 import {
@@ -72,7 +73,8 @@ library.add(
   faStarOfLife,
   faChevronLeft,
   faTrashCan,
-  fasHexagon
+  fasHexagon,
+  faMountain
 );
 
 //Amplify.configure(awsExports);

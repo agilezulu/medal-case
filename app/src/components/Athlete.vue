@@ -2,7 +2,7 @@
 import { onUnmounted, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { medalStore, CLASSES } from "@/store";
-import { metersToDistanceUnits, getDate, secsToHMS } from "@/utils/helpers.js";
+import { metersToDistanceUnits, getDate, secsToHMS, elevationFromDistanceUnits, elevationColor } from "@/utils/helpers.js";
 import {storeToRefs} from "pinia";
 import { useConfirm } from "primevue/useconfirm";
 import { useDialog } from "primevue/usedialog";
@@ -16,10 +16,8 @@ import AthletePhoto from "@/components/AthletePhoto.vue";
 import MedalcaseLogo from "@/components/icons/MedalcaseLogo.vue";
 import BadgeRace from "@/components/icons/BadgeRace.vue";
 import BadgeRun from "@/components/icons/BadgeRun.vue";
-import LoadingSpinner from "@/components/LoadingSpinner.vue";
+import Elevation from "@/components/Elevation.vue";
 import RunsUpdate from "@/components/RunsUpdate.vue";
-
-import ConnectionManager from "@/components/ConnectionManager.vue";
 
 const props =  defineProps({
   currentUser: Boolean,
@@ -294,7 +292,10 @@ onUnmounted(() => {
                           </div>
                           <div class="run-stats">
                             <div class="run-time face-mono" :class="[store.athleteRuns[runClass.key].pb === run.elapsed_time ? `class-pb ${runClass.key}_bg`: '']">{{ secsToHMS(run.elapsed_time)}}</div>
-                            <div class="run-dist">{{ metersToDistanceUnits(run.distance, selectedUnits)}}</div>
+                            <div class="run-dist">
+                                <span class="dist">{{ metersToDistanceUnits(run.distance, selectedUnits)}}</span>
+                                <Elevation :run="run" />
+                            </div>
                           </div>
                           <div v-if="props.currentUser" class="run-tools">
                               <div class="update">
@@ -579,20 +580,28 @@ onUnmounted(() => {
       }
       .run-date {
         padding-left: 22px;
+        padding-top: 6px;
       }
     }
     .run-stats {
       .run-time {
-        text-align: right;
+        text-align: center;
         padding: 0 12px;
+        border: solid 1px #eeeeee;
+        border-radius: 15px;
         &.class-pb {
-          border-radius: 18px;
           color: #ffffff;
+          border-color:transparent;
         }
       }
       .run-dist {
         text-align: right;
         padding-right: 12px;
+        padding-top: 6px;
+        .dist {
+          display: inline-block;
+          margin-right: 6px;
+        }
       }
     }
     .run-tools {
@@ -618,8 +627,8 @@ onUnmounted(() => {
   }
   .run-date,
   .run-dist {
-    font-weight: 300;
-    font-size: 0.8em;
+    font-weight: 400;
+    font-size: 14px;;
     color: #666666;
   }
   .run-date {
@@ -673,12 +682,15 @@ onUnmounted(() => {
       .run-stats {
         display: flex;
         align-items: center;
+        justify-content: flex-end;
         padding-left: 37px;
+        padding-top: 3px;
         .run-time {
 
         }
         .run-dist {
           padding-left: 12px;
+          padding-top: 0;
         }
       }
     }

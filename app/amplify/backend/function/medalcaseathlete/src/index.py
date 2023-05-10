@@ -190,7 +190,7 @@ def get_athete_by_slug(slug):
 def update_athlete_run(strava_id):
     """
     Primary streaks builder to create new or rebuild all
-    :param uuid: mcase athlete uuid
+    :param strava_id: strava_id
     :return: streaks
     """
     data = request.json
@@ -200,19 +200,17 @@ def update_athlete_run(strava_id):
     return make_response(athlete)
 
 
-@app.route(f'{BASE_PATH}/run', methods=['DELETE'])
+@app.route(f'{BASE_PATH}/run/<strava_id>', methods=['DELETE'])
 @jwt_required()
-def delete_athlete_run():
+def delete_athlete_run(strava_id):
     """
     Primary streaks builder to create new or rebuild all
-    :param uuid: mcase athlete uuid
+    :param strava_id: strava_id
     :return: streaks
     """
-    data = request.json
-    run_id = data.get('strava_id')
     mcase_id = get_jwt_identity()
     mcase = MedalCase(mcase_id)
-    athlete = mcase.delete_run(mcase_id, run_id)
+    athlete = mcase.delete_run(mcase_id, strava_id)
     return make_response(athlete)
 
 
